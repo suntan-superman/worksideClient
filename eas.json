@@ -1,0 +1,39 @@
+{
+  "cli": {
+    "version": ">=7.6.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "autoIncrement": true,
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "ios": {
+        "image": "macos-ventura-13.6-xcode-15.2"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "sroy@prologixsa.com",
+        "ascAppId": "6453604926",
+        "appleTeamId": "K2H76A4V66"
+      }
+    }
+  }
+}

@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "client",
-    "slug": "client",
-    "version": "1.0.0",
+    "name": "worksideclient",
+    "slug": "worksideclient",
+    "version": "1.1.10",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -11,17 +11,64 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Workside to use your location.",
+          "isAndroidForegroundServiceEnabled": true,
+          "isAndroidBackgroundLocationEnabled": true
+        }
+      ]
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "location"
+        ],
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Workside requires geolocation to improve the quality of the service",
+        "NSLocationAlwaysUsageDescription": "Workside requires geolocation to improve the quality of the service",
+        "NSLocationWhenInUseUsageDescription": "Workside requires geolocation to improve the quality of the service",
+        "NSCameraUsageDescription": "The picture will be used to inform the state of the products during delivery"
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyBsK1utYDK9o1MR2RsnTobmJW7PVLHp6B4"
+      },
+      "bundleIdentifier": "com.sjroy5.worksideclient",
+      "buildNumber": "1.1.63"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#FFFFFF"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBsK1utYDK9o1MR2RsnTobmJW7PVLHp6B4"
+        }
+      },
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION"
+      ],
+      "package": "com.sjroy5.worksideclient",
+      "versionCode": 33
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "85210335-09fb-40d4-9fd8-631cf8dd6f3b"
+      }
     }
   }
 }
