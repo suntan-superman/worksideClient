@@ -167,10 +167,10 @@ const SelectProject = () => {
       <View>
         <View className="items-center">
           <Text>
-            <Text className="text-green-500 text-xl font-bold">WORK</Text>
-            <Text className="text-black text-xl font-bold">SIDE</Text>
+            <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+            <Text className="text-black text-2xl font-bold">SIDE</Text>
           </Text>
-          <Text className="text-black text-sm font-bold">Projects</Text>
+          <Text className="text-black text-xl font-bold">Projects</Text>
         </View>
         <List
           style={{ maxHeight: listHeight }}
@@ -211,8 +211,8 @@ const SelectProject = () => {
         <ModalContent style={{ width: "100%", height: 400 }}>
           <View className="flex-start justify-center items-center pb-2">
             <Text>
-              <Text className="text-green-500 text-3xl font-bold">WORK</Text>
-              <Text className="text-black text-3xl font-bold">SIDE</Text>
+              <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+              <Text className="text-black text-2xl font-bold">SIDE</Text>
             </Text>
             <Text className="text-green-500 text-xl font-bold">
               Project Info

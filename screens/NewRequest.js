@@ -5,8 +5,6 @@ import {
   TextInput,
   StyleSheet,
   View,
-  Pressable,
-  Image,
   TouchableOpacity,
   TouchableWithoutFeedback,
   Keyboard,
@@ -14,24 +12,17 @@ import {
   Platform,
   Dimensions,
 } from "react-native";
-import Modal from "react-native-modal";
 import {
-  useNavigation,
-  useRoute,
-  useFocusEffect,
+  useNavigation
 } from "@react-navigation/native";
-import { FontFamily, FontSize, Color, Padding, Border } from "../GlobalStyles";
+import { FontFamily, Color } from "../GlobalStyles";
 import { Select, SelectItem, IndexPath } from "@ui-kitten/components";
-import Checkbox from "expo-checkbox";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 
-// import NumericInput from "@wwdrew/react-native-numeric-textinput";
-// import { NumericFormat } from "react-number-format";
 import axios from "axios";
 import { useStateContext } from "../src/contexts/ContextProvider";
-import { set } from "date-fns";
 import useDataStore from "../src/stores/DataStore";
 
 let newRequestData = null;
@@ -56,12 +47,6 @@ const NewRequest = () => {
   );
   //////////////////////////////////////////////////////////////
 
-  const buttonWidth = Platform.OS === "ios" ? 200 : 150;
-  const ssrWidth =
-    Platform.OS === "ios"
-      ? Dimensions.get("window").width * 0.8
-      : Dimensions.get("window").width * 0.8;
-
   let getRoundedDate = (minutes, d = new Date()) => {
     let ms = 1000 * 60 * minutes; // convert minutes to ms
     let roundedDate = new Date(Math.round(d.getTime() / ms) * ms);
@@ -80,7 +65,7 @@ const NewRequest = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const [strQuantity, setStrQuantity] = useState("1");
+  // const [strQuantity, setStrQuantity] = useState("1");
   const [comment, setComment] = useState("");
   const [selectedSupplier, setSelectedSupplier] = useState("");
   const [selectedSupplierID, setSelectedSupplierID] = useState(null);
@@ -101,7 +86,6 @@ const NewRequest = () => {
   const setModifyFlag = useDataStore((state) => state.setModifyFlag);
   const [reqList, setReqList] = useState([]);
 
-  // const id = route.params.id;
   const [selectedRadio, setSelectedRadio] = useState(1);
   const [msaRequest, setMSARequest] = useState(true);
   const [openRequest, setOpenRequest] = useState(false);
@@ -118,7 +102,14 @@ const NewRequest = () => {
   );
   ///////////////////////////////////////////////////////
   const navigation = useNavigation();
-  const route = useRoute();
+
+  ///////////////////////////////////////////////////////////////////
+  // Need this to get rid of warnings to console
+  const error = console.error;
+  console.error = (...args) => {
+    if (/defaultProps/.test(args[0])) return;
+    error(...args);
+  };
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
@@ -161,24 +152,9 @@ const NewRequest = () => {
     }
   };
 
-  const GetCategories = () => {
-    const cats = [...new Set(allProducts.map((p) => p.categoryname))];
-    setAllCategories(cats);
-  };
-
-  // const GetSuppliers = async () => {
-  //   const strAPI = `${apiURL}/api/firm`;
-
-  //   try {
-  //     const response = await axios.get(strAPI);
-  //     const suppliers = response.data.filter((p) => p.type === "SUPPLIER");
-
-  //     const filteredSuppliers = [...new Set(suppliers.map((s) => s.name))];
-
-  //     setSupplierList(filteredSuppliers);
-  //   } catch (error) {
-  //     console.log("error", error);
-  //   }
+  // const GetCategories = () => {
+  //   const cats = [...new Set(allProducts.map((p) => p.categoryname))];
+  //   setAllCategories(cats);
   // };
 
   useEffect(() => {
@@ -190,7 +166,7 @@ const NewRequest = () => {
         const requests = response.data.filter(
           (r) => r.project_id === projectID
         );
-        console.log("Requests: ", requests);
+        // console.log("Requests: ", requests);
         setReqList(requests);
       } catch (error) {
         console.log("error", error);
@@ -211,13 +187,8 @@ const NewRequest = () => {
       return;
     }
 
-    const vendorReqData = {
-      category: selectedCategory,
-      product: selectedProduct,
-    };
     const vendorAPI = `${apiURL}/api/supplierproductsview/byproduct`;
-    // console.log("Vendor API: ", vendorAPI);
-    // console.log("Vendor Request Data: ", vendorReqData);
+
     const suppliers = await axios.post(vendorAPI, {
       category: selectedCategory,
       product: selectedProduct,
@@ -235,47 +206,13 @@ const NewRequest = () => {
       setSelectedRadio(1);
     } else {
       const suppliers = [...new Set(filteredSuppliers.map((s) => s.supplier))];
-      // console.log("Suppliers: ", suppliers);
       setSupplierList(suppliers);
     }
-    // const filteredSuppliers = suppliers.data.filter((s) => {
-    //   s.category === selectedCategory;
-    //   // s.category === selectedCategory && s.product === selectedProduct;
-    // });
-
-    // console.log("Filtered Suppliers: ", filteredSuppliers);
-
-    // const vendorResponse = await fetch(vendorAPI, {
-    //   method: "POST",
-    //   body: JSON.stringify(vendorReqData),
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // });
-
-    // console.log("Vendor Response: ", vendorResponse.data);
-
-    // if (vendorResponse.status === 200) {
-    //   const vendorList = await vendorResponse.json();
-    //   var vendorArray = [];
-    //   vendorList.forEach(function (d) {
-    //     vendorArray.push({
-    //       id: d.firms[0]._id[0],
-    //       name: d.firms[0].name[0],
-    //     });
-    //   });
-    //   setSupplierList(vendorArray);
-    // }
   };
 
   useEffect(() => {
     GetProducts();
     // GetSuppliers();
-  }, []);
-
-  useEffect(() => {
-    var str = quantity.toString();
-    setStrQuantity(str);
   }, []);
 
   const FilterProducts = (selectedItem) => {
@@ -351,18 +288,11 @@ const NewRequest = () => {
       projectName: projectName,
       requestId: requestID,
     });
-    // worksideSocket.current.emit("send-msg", {
-    //   to: targetUser,
-    //   from: currentUser,
-    //   msg: smsMessage,
-    // });
   };
 
   const ValidateData = () => {
     const selectedVendorType =
       selectedRadio === 1 ? "MSA" : selectedRadio === 2 ? "OPEN" : "SSR";
-    // const datetimestatus = new Date();
-    // Get Selected Supplier ID and Set it in State
     if (selectedRadio === 3) {
       // const selectedVendor = supplierList.find((s) => s === selectedSupplier);
       // const selectedVendorIndex = supplierList.indexOf(selectedVendor);
@@ -382,7 +312,7 @@ const NewRequest = () => {
       vendorName: selectedSupplier,
       ssrVendorId: selectedSupplierID,
       datetimerequested: reqDateTime,
-      status: "PENDING",
+      status: "OPEN",
       statusdate: new Date(),
       project_id: projectID,
     };
@@ -448,18 +378,16 @@ const NewRequest = () => {
       vendorName: selectedSupplier,
       ssrVendorId: selectedRadio === 3 ? selectedSupplierID : null,
       datetimerequested: reqDateTime,
-      //////////////////////////////////////////////
-      // Update This
-      reqlinkname: selectedLink,
-      reqLinkId: reqList(selectedLinkIndex)._id,
-      //////////////////////////////////////////////
-      status: "PENDING",
+      reqlinkname: selectedLink !== 0 ? reqList(selectedLinkIndex).requestname : null,
+      reqLinkId: selectedLinkIndex !== 0 ? reqList(selectedLinkIndex)._id : null,
+      //////////////////////////////}}////////////////
+      status: "OPEN",
       statusdate: datetimerequested,
       project_id: projectID,
     };
 
-    console.log("Linked Request: " + selectedLink);
-    console.log("Linked Request ID: " + reqList(selectedLinkIndex)._id);
+    console.log("Linked Request: " + selectedLink !== 0 ? selectedLink : null);
+    console.log("Linked Request ID: " + selectedLinkIndex !== 0 ? reqList(selectedLinkIndex)._id : null);
 
     //////////////////////////////////////////////
     // Validate Data Fields
@@ -523,19 +451,15 @@ const NewRequest = () => {
     </TouchableWithoutFeedback>
   );
 
-  const handleChange = (e) => {
-    setQuantity(e.target.value);
-  };
-
   return (
     <View>
       <View className="items-center">
         <Text>
-          <Text className="text-green-500 text-xl font-bold">WORK</Text>
-          <Text className="text-black text-xl font-bold">SIDE</Text>
+          <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+          <Text className="text-black text-2xl font-bold">SIDE</Text>
         </Text>
-        <Text className="text-black text-lg font-bold">ELK HILLS 26Z 383</Text>
-        <Text className="text-black text-lg font-bold">GPS 85</Text>
+        <Text className="text-black text-xl font-bold">{projectName}</Text>
+        <Text className="text-black text-xl font-bold">{projectRig}</Text>
       </View>
 
       {/********************************************************** */}
@@ -561,7 +485,7 @@ const NewRequest = () => {
         </Text>
         <Text
           className={
-            emptyFields.includes("requestcategory") === true
+            emptyFields.includes("requestname") === true
               ? "text-red-600 text-sm font-bold"
               : "text-black text-sm font-bold"
           }

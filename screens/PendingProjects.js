@@ -132,10 +132,10 @@ const PendingProjects = () => {
     <View w-full h-full>
       <View className="items-center pb-2">
         <Text>
-          <Text className="text-green-500 text-xl font-bold">WORK</Text>
-          <Text className="text-black text-xl font-bold">SIDE</Text>
+          <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+          <Text className="text-black text-2xl font-bold">SIDE</Text>
         </Text>
-        <Text className="text-black text-lg font-bold">PENDING PROJECTS</Text>
+        <Text className="text-black text-xl font-bold">PENDING PROJECTS</Text>
       </View>
       {pendingProjects.length === 0 ? (
         <View className="items-center p-2">

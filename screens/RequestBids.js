@@ -349,11 +349,11 @@ const RequestBids = (props) => {
       <View w-full h-full>
         <View className="items-center">
           <Text>
-            <Text className="text-green-500 text-xl font-bold">WORK</Text>
-            <Text className="text-black text-xl font-bold">SIDE</Text>
+            <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+            <Text className="text-black text-2xl font-bold">SIDE</Text>
           </Text>
-          <Text className="text-black text-lg font-bold">{projectName}</Text>
-          <Text className="text-black text-lg font-bold">{projectRig}</Text>
+          <Text className="text-black text-xl font-bold">{projectName}</Text>
+          <Text className="text-black text-xl font-bold">{projectRig}</Text>
         </View>
         {bidData.length < 1 ? (
           <View className="items-center p-2">
@@ -417,8 +417,8 @@ const RequestBids = (props) => {
           {/* /////////////////////////////////////////////////////////// */}
           <View className="flex-start justify-center items-center">
             <Text>
-              <Text className="text-green-500 text-3xl font-bold">WORK</Text>
-              <Text className="text-black text-3xl font-bold">SIDE</Text>
+              <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+              <Text className="text-black text-2xl font-bold">SIDE</Text>
             </Text>
             <Text className="text-green-500 text-xl font-bold">
               {selectedBid !== null ? selectedBid.requestname : ""}

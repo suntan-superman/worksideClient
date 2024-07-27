@@ -15,14 +15,14 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
-import { Platform } from "react-native";
+// import { Platform } from "react-native";
 import Toast from "react-native-toast-message";
-import axios from "axios";
+// import axios from "axios";
 import { useStateContext } from "../src/contexts/ContextProvider";
 import useUserStore from "../src/stores/UserStore";
 
-import { FontFamily, FontSize, Color, Padding, Border } from "../GlobalStyles";
-import { set } from "date-fns";
+// import { FontFamily, FontSize, Color, Padding, Border } from "../GlobalStyles";
+// import { set } from "date-fns";
 
 export default function LoginScreen({ setIsAuthenticated }) {
   const navigation = useNavigation();
@@ -117,7 +117,14 @@ export default function LoginScreen({ setIsAuthenticated }) {
         } else {
           setLoggedInState(false);
           console.log("Authentication Error");
-          throw response;
+         Toast.show({
+          type: 'error',
+          text1: 'Workside Software',
+          text2: 'Unable to Log In',
+          visibilityTime: 3000,
+          autoHide: true,
+        });
+        throw response;
         }
 
         return response.json();
