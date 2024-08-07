@@ -3,6 +3,10 @@ import { create } from "zustand";
 const dataStore = (set, get) => ({
   modifyFlag: false,
   setModifyFlag: (value) => set({ modifyFlag: value }),
+  modifyRequestFlag: false,
+  setModifyRequestFlag: (value) => set({ modifyRequestFlag: value }),
+  modifyRequestBidFlag: false,
+  setModifyRequestBidFlag: (value) => set({ modifyRequestBidFlag: value }),
   currentUserId: null,
   setCurrentUserId: (value) => set({ currentUserId: value }),
   currentCustomer: null,

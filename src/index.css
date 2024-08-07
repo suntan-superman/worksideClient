@@ -1,3 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    .btn-active {
+      @apply bg-green-300 p-1 rounded-lg items-center justify-center border-2 border-solid border-black border-r-4 border-b-4;
+    }
+    .btn-inactive {
+        @apply bg-gray-300 p-1 rounded-lg items-center justify-center border-2 border-solid border-black border-r-4 border-b-4;
+    }
+  }

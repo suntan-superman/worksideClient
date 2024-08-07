@@ -82,8 +82,7 @@ const NewRequest = () => {
   const [selectedLinkIndex, setSelectedLinkIndex] = useState(new IndexPath(0));
   const [supplierList, setSupplierList] = useState([]);
   const [emptyFields, setEmptyFields] = useState([]);
-  const modifyFlag = useDataStore((state) => state.modifyFlag);
-  const setModifyFlag = useDataStore((state) => state.setModifyFlag);
+  const setModifyRequestFlag = useDataStore((state) => state.setModifyRequestFlag);
   const [reqList, setReqList] = useState([]);
 
   const [selectedRadio, setSelectedRadio] = useState(1);
@@ -428,7 +427,8 @@ const NewRequest = () => {
     if (newRequestData.data._id !== null) {
       SendRequestMessage(newRequestData.data._id);
     }
-
+     setRequestModifyFlag(true);
+  
     return true;
   };
 

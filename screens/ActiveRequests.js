@@ -33,6 +33,8 @@ const ActiveRequests = () => {
   const [projectRig, setProjectRig] = useState(
     useDataStore((state) => state.currentRigCompany)
   );
+  const modifyRequestBidFlag = useDataStore((state) => state.modifyRequestBidFlag);
+  const setModifyRequestBidFlag = useDataStore((state) => state.setModifyRequestBidFlag);
 
   //////////////////////////////////////////////////////////////
 
@@ -54,9 +56,19 @@ const ActiveRequests = () => {
     }
   };
 
+  const testCallback = () => {  
+    console.log("Callback function called from ActiveRequests");
+  };
+
   useEffect(() => {
     GetActiveRequests();
   }, []);
+
+  useEffect(() => {
+    console.log("ActiveRequests Modify Request Bid Flag:", modifyRequestBidFlag);
+    GetActiveRequests();
+    setModifyRequestBidFlag(false);
+  }, [modifyRequestBidFlag===true]);
 
   useEffect(() => {
     GetActiveRequests();
@@ -77,8 +89,9 @@ const ActiveRequests = () => {
       // Let's pass the selected item to the BidsScreen
       onPress={() =>
         navigation.navigate("RequestBids", {
+          // callbackFunction={GetActiveRequests} // This is the callback function to update the status
           reqID: props.selectedItem._id,
-        })
+      })
       }
       className={
         props.selectedItem.status === "AWARDED"
@@ -228,7 +241,7 @@ const ActiveRequests = () => {
           </TouchableOpacity>
         </View>
         {/* Refresh Button */}
-        <View
+        {/* <View
           style={{
             marginTop: 10,
             padding: Padding.p_2xs,
@@ -246,7 +259,7 @@ const ActiveRequests = () => {
               style={{ color: "black", width: 16, height: 16 }}
             />
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
       {/* //////////////////////////////////////////////////////////////////// */}
     </View>

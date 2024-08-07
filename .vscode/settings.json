@@ -2,6 +2,7 @@
     "cSpell.words": [
         "animatable",
         "categoryname",
+        "checkmark",
         "creationdate",
         "customercontact",
         "customername",
@@ -10,8 +11,10 @@
         "datetimepicker",
         "datetimerequested",
         "deliverydate",
+        "ENROUTE",
         "geolocation",
         "nativewind",
+        "Pressable",
         "productname",
         "projectname",
         "reqlinkname",

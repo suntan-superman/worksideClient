@@ -6,7 +6,6 @@ import {
   TextInput,
   View,
   Pressable,
-  Dimensions,
   TouchableOpacity,
 } from "react-native";
 import { CheckBox, List, ListItem } from "@ui-kitten/components";
@@ -16,13 +15,13 @@ import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Modal, SlideAnimation, ModalContent } from "react-native-modals";
 // import { authenticateAsync } from "expo-local-authentication";
-// import Toast from "react-native-toast-message";
+import Toast from "react-native-toast-message";
 
 let currentStatus = false;
 let bidArray = [];
 let bidSupplierArray = [];
 
-const RequestBids = (props) => {
+const RequestBids = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
@@ -35,6 +34,9 @@ const RequestBids = (props) => {
   const [confirmationText, setConfirmationText] = useState("");
   const [confirmationMsg, setConfirmationMsg] = useState("");
   const [confirmationFlag, setConfirmationFlag] = useState(false);
+  const modifyRequestFlag = useDataStore((state) => state.modifyRequestFlag);
+  const setModifyRequestFlag = useDataStore((state) => state.setModifyRequestFlag);
+  const setModifyRequestBidFlag = useDataStore((state) => state.setModifyRequestBidFlag);
 
   let bidResponse = null;
 
@@ -76,24 +78,25 @@ const RequestBids = (props) => {
   ///////////////////////////////////////////////////////
 
   // Get Original Bid Array
-  useEffect(() => {
-    const GetBids = async () => {
-      const strAPI = `${apiURL}/api/requestbidsview`;
-      try {
-        const response = await axios.get(strAPI).then((response) => {
-          bidResponse = response.data;
-          // Filter Bids by Request ID
-          const bids = bidResponse.filter(
-            (b) => b.requestbids.requestid === reqID
-          );
+  const GetBids = async () => {
+    const strAPI = `${apiURL}/api/requestbidsview`;
+    try {
+      const response = await axios.get(strAPI).then((response) => {
+        bidResponse = response.data;
+        // Filter Bids by Request ID
+        const bids = bidResponse.filter(
+          (b) => b.requestbids.requestid === reqID
+        );
+        bidArray = bids;
+        GetSupplierInfo();
+      });
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
 
-          bidArray = bids;
-          GetSupplierInfo();
-        });
-      } catch (error) {
-        console.log("error", error);
-      }
-    };
+  // Get Bids 
+  useEffect(() => {
     GetBids();
   }, []);
 
@@ -195,6 +198,7 @@ const RequestBids = (props) => {
         status: "AWARDED",
       })
       .then((response) => {
+        // Notify User of Request Status Change
         // console.log("Request Updated: ", response.data);
       })
       .catch((error) => {
@@ -237,22 +241,22 @@ const RequestBids = (props) => {
     if (cText === sText) {
       const result = BiometricConfirmation();
       setConfirmationMsg("Supplier Confirmed And Has Been Notified");
-      // SendRequestEmail();
-      //////////////////////////////////////////////////////////////
+      SendRequestEmail();
+      ////////////////////////////////////////////////////////////
       // Update Request Status
       //////////////////////////////////////////////////////////////
-      // UpdateRequestStatus();
-      //////////////////////////////////////////////////////////////
+      UpdateRequestStatus();
+      // //////////////////////////////////////////////////////////////
       // Update Request Bid Status
       //////////////////////////////////////////////////////////////
-      // UpdateRequestBidStatus();
-      // Toast.show({
-      //   type: "success",
-      //   text1: "Workside Software",
-      //   text2: "Supplier Confirmed And Will Be Notified",
-      //   visibilityTime: 5000,
-      //   autoHide: true,
-      // });
+      UpdateRequestBidStatus();
+      Toast.show({
+        type: "success",
+        text1: "Workside Software",
+        text2: "Supplier Confirmed And Will Be Notified",
+        visibilityTime: 5000,
+        autoHide: true,
+      });
       // ProcessSelectedBid(selectedBid);
 
       setConfirmationFlag(true);
@@ -360,15 +364,19 @@ const RequestBids = (props) => {
             <Text className="text-red-500 text-xl font-bold">NO BIDS</Text>
           </View>
         ) : (
+          <View className="h-[550px]">
           <List
-            style={{ maxHeight: viewHeight }}
+            // style={{ maxHeight: 400 }}
+            // style={{ maxHeight: viewHeight }}
             data={bidData}
             renderItem={renderBids}
           />
+          </View>
         )}
 
         <View
-          style={{ alignItems: "center", paddingTop: 6, top: buttonPosition }}
+          // style={{ alignItems: "center", paddingTop: 6, top: buttonPosition }}
+          style={{ alignItems: "center", paddingTop: 6 }}
         >
           <TouchableOpacity
             disabled={checkedStatus === false ? true : false}
@@ -496,6 +504,8 @@ const RequestBids = (props) => {
                 ConfirmChanges();
                 // ProcessSelectedBid(selectedBid);
                 // console.log("Selected Item: ", selectedBid);
+                // Call Callback Function
+                setModifyRequestBidFlag(true)
                 navigation.navigate("ActiveRequests");
               }}
             >
