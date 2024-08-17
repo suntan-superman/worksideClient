@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import {
+  Alert,
   Text,
   TextInput,
   View,
@@ -16,6 +17,7 @@ import axios from "axios";
 import { useStateContext } from "../src/contexts/ContextProvider";
 import { format } from "date-fns";
 import useDataStore from "../src/stores/DataStore";
+import { logTransaction } from "../src/helperFunction";
 
 const RequestDetails = () => {
   const navigation = useNavigation();
@@ -38,9 +40,11 @@ const RequestDetails = () => {
   const stringDateTime = new Date().toLocaleString();
   const [reqList, setReqList] = useState([]);
   const [editFlag, setEditFlag] = useState(false);
+  const [allowEditFlag, setAllowEditFlag] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
   const [disabledFlag, setDisabledFlag] = useState(true);
   const [dateTimeRequested, setDateTimeRequested] = useState(new Date());
+  const [bidAwardedFlag, setBidAwardedFlag] = useState(false);
 
   //////////////////////////////////////////////////////////////////////
   const currentSupplier = useDataStore((state) => state.currentSupplier);
@@ -49,6 +53,9 @@ const RequestDetails = () => {
   const setCurrentRequestName = useDataStore(
     (state) => state.setCurrentRequestName
   );
+	const setModifyRequestBidFlag = useDataStore(
+		(state) => state.setModifyRequestBidFlag
+	);
   //////////////////////////////////////////////////////////////////////
 
   const GetRequests = async () => {
@@ -77,14 +84,14 @@ const RequestDetails = () => {
     setDatePickerVisible(Platform.OS === "ios");
     setSelectedDate(currentDate);
 
-    let tempDate = new Date(currentDate);
-    let fDate =
+    const tempDate = new Date(currentDate);
+    const fDate =
       tempDate.getDay() +
       "/" +
       (tempDate.getMonth() + 1) +
       "/" +
       tempDate.getFullYear();
-    let fTime =
+    const fTime =
       "Hours: " + tempDate.getHours() + " | Minutes: " + tempDate.getMinutes();
 
     setSelectedDate(date);
@@ -108,6 +115,10 @@ const RequestDetails = () => {
         setReqData(response.data);
         setRequestQty(response.data.quantity.toLocaleString());
         setDateTimeRequested(response.data.datetimerequested);
+        if(response.data.status === "AWARDED" || response.data.status === "AWARDED-A" || response.data.status === "AWARDED-WOA") {
+          setBidAwardedFlag(true);
+          setAllowEditFlag(false);
+              }
       } catch (error) {
         console.log("error", error);
       }
@@ -152,8 +163,8 @@ const RequestDetails = () => {
       project_id: projectID,
     };
 
-    console.log("Linked Request: " + selectedLink);
-    console.log("Linked Request ID: " + reqList(selectedLinkIndex)._id);
+    // console.log("Linked Request: " + selectedLink);
+    // console.log("Linked Request ID: " + reqList(selectedLinkIndex)._id);
 
     // //////////////////////////////////////////////
     const response = await fetch(strAPI, {
@@ -174,37 +185,156 @@ const RequestDetails = () => {
     return true;
   };
 
+  const UpdateRequestStatus = async (reqID, status) => {
+		const strAPI = `${apiURL}/api/request`;
+		await axios
+			.patch(strAPI, {
+				id: reqID,
+				status: status,
+			})
+			.then((response) => {
+				setModifyRequestBidFlag(true);
+				// logTransaction(userId, table, action, result, id);
+				logTransaction(
+					currentUserID,
+					"REQUEST",
+					"UPDATE",
+					reqID,
+					response.status
+				);
+				// Notify User of Request Status Change
+				// console.log("Request Updated: ", response.data);
+			})
+			.catch((error) => {
+				console.log("Error: ", error);
+			});
+	};
+
+  const UpdateRequestBidsStatus = async (reqID, status) => {
+		const strAPI = `${apiURL}/api/requestbid/updateall`;
+
+		// if( selectedBid === null ) return;
+
+		// console.log(
+		// 	"Update Selected Request: " + reqID + " Status: " + status
+		// );
+		await axios
+			.post(strAPI, {
+				id: reqID,
+				status: status,
+			})
+			.then((response) => {
+				setModifyRequestBidFlag(true);
+				// logTransaction(userID, table, action, result, id);
+				logTransaction(
+					currentUserID,
+					"REQUESTBID",
+					"UPDATE",
+					reqID,
+					response.status
+				);
+			})
+			.catch((error) => {
+				console.log("Error: ", error);
+			});
+	};
+
+  const ProcessPostponedRequest = (requestId) => {
+		Alert.alert(
+			"Postpone Request",
+			"Are you sure you want to POSTPONE the Request? This cannot be reversed!",
+			[
+				{
+					text: "Yes",
+					style: "destructive",
+					onPress: () => {
+            // Set Request Status to POSTPONED
+            UpdateRequestStatus( requestId, "POSTPONED");
+            // Set Bid Status to POSTPONED
+            UpdateRequestBidsStatus(requestId, "POSTPONED");
+            // Set Awarded Bid to FALSE
+            // Email All Parties
+					},
+				},
+				{ text: "No", style: "cancel", onPress: () => {} },
+			]
+		);
+	};
+
+  const ProcessCanceledRequest = (requestId) => {
+		Alert.alert(
+			"Cancel Request",
+			"Are you sure you want to CANCEL the Request? This cannot be reversed!",
+			[
+				{
+					text: "Yes",
+					style: "destructive",
+					onPress: () => {
+            // Set Request Status to CANCELED
+            UpdateRequestStatus(requestId, "CANCELED");
+            // Set Bid Status to CANCELED
+            UpdateRequestBidsStatus(requestId, "CANCELED");
+            // Set Awarded Bid to FALSE
+            // Email All Parties
+					},
+				},
+				{ text: "No", style: "cancel", onPress: () => {} },
+			]
+		);
+	};
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View>
-        <View className="items-center">
+        <View className="items-center mb-0">
           <Text>
-            <Text className="text-green-500 text-2xl font-bold">WORK</Text>
-            <Text className="text-black text-2xl font-bold">SIDE</Text>
+            <Text className="text-green-500 text-xl font-bold">WORK</Text>
+            <Text className="text-black text-xl font-bold">SIDE</Text>
           </Text>
-          <Text className="text-black text-xl font-bold">
+          <Text className="text-black text-lg font-bold">
             {reqData.projectname}
           </Text>
-          <Text className="text-black text-xl font-bold">
+          <Text className="text-black text-lg font-bold">
             {reqData.rigcompany}
           </Text>
         </View>
-        <View className="items-end">
-          <TouchableOpacity
-            className={
-              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 right-5 rounded-lg w-32 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-            }
-            onPress={() => setEditFlag(!editFlag)}
-          >
-            {!editFlag && (
-              <Text className="text-black text-base font-bold">Edit Mode</Text>
-            )}
-            {editFlag && (
-              <Text className="text-black text-base font-bold">
-                Cancel Edit
-              </Text>
-            )}
-          </TouchableOpacity>
+        <View 
+          style={{
+            flexDirection: "row",
+            alignContent: "space-around",
+            justifyContent: "space-evenly",
+            paddingTop: 2,
+            gap: 100,
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
+          <View className="items-start">
+            <Text>
+              <Text className="text-black text-sm font-bold">STATUS: </Text>
+              <Text className="text-green-500 text-sm font-bold">{reqData.status}</Text>
+            </Text>
+          </View>
+          <View className="items-end">
+            <TouchableOpacity
+              className={
+                bidAwardedFlag === false
+                ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 right-5 rounded-lg w-32 h-8 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+                : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 right-5 rounded-lg w-32 h-8 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+              }
+              disabled={!allowEditFlag}
+              onPress={() => setEditFlag(!editFlag)}
+            >
+              {!editFlag && (
+                <Text className="text-black text-base font-bold">Edit Mode</Text>
+              )}
+              {editFlag && (
+                <Text className="text-black text-base font-bold">
+                  Cancel Edit
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
         {/* ***************************************************************************** */}
         {/* Request Data Field */}
@@ -218,6 +348,7 @@ const RequestDetails = () => {
           }}
         >
           <Text className="text-black text-base font-bold">Request</Text>
+          {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
           <TextInput
             defaultValue="Request"
             value={reqData.requestname}
@@ -251,7 +382,7 @@ const RequestDetails = () => {
             editable={editFlag}
             keyboardType="numeric"
             onChangeText={(text) => setRequestQty(text)}
-          ></TextInput>
+          />
         </View>
 
         {/* ***************************************************************************** */}
@@ -271,13 +402,13 @@ const RequestDetails = () => {
             value={requestComment}
             className={
               editFlag === true
-                ? "bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-24 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
-                : "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-24 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
+                ? "bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
+                : "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
             }
             editable={editFlag}
             keyboardType="default"
             multiline={true}
-            numberOfLines={5}
+            numberOfLines={3}
             onChangeText={(text) => setRequestComment(text)}
           />
         </View>
@@ -294,6 +425,7 @@ const RequestDetails = () => {
           }}
         >
           <Text className="text-black text-base font-bold">Vendor</Text>
+          {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
           <TextInput
             defaultValue="Request"
             value={reqData.vendortype}
@@ -322,6 +454,7 @@ const RequestDetails = () => {
           <Text className="text-black text-base font-bold">
             Date/Time Required
           </Text>
+          {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
           <TextInput
             value={format(dateTimeRequested, "MM/dd/yyyy HH:mm")}
             className={
@@ -344,6 +477,7 @@ const RequestDetails = () => {
         >
           <Text className="text-black text-base font-bold">Link To</Text>
           {editFlag === false ? (
+            // biome-ignore lint/style/useSelfClosingElements: <explanation>
             <TextInput
               defaultValue="Link To Other Request"
               className={
@@ -395,7 +529,7 @@ const RequestDetails = () => {
             flexDirection: "row",
             alignContent: "space-around",
             justifyContent: "space-evenly",
-            paddingTop: 30,
+            paddingTop: 20,
             gap: 20,
             alignItems: "center",
             width: "100%",
@@ -403,7 +537,7 @@ const RequestDetails = () => {
         >
           <TouchableOpacity
             className={
-              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
             }
             onPress={() => (
               setCurrentRequestName(reqData.requestname),
@@ -417,8 +551,8 @@ const RequestDetails = () => {
           <TouchableOpacity
             className={
               disabledFlag === false
-                ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-                : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+                ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+                : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
             }
             /// Need to Save Any Changes Before Navigating
             disabled={disabledFlag}
@@ -427,6 +561,45 @@ const RequestDetails = () => {
             // onPress={() => navigation.navigate("ActiveRequests")}
           >
             <Text className="text-lg font-bold text-black">Save Changes</Text>
+          </TouchableOpacity>
+        </View>
+        <View
+          style={{
+            flexDirection: "row",
+            alignContent: "space-around",
+            justifyContent: "space-evenly",
+            paddingTop: 15,
+            gap: 20,
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
+          <TouchableOpacity
+            className={
+              bidAwardedFlag === false
+                ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+                : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+            }
+            disabled={bidAwardedFlag}
+            onPress={() => (
+              ProcessPostponedRequest((reqID))
+              )}
+          >
+            <Text className="text-lg font-bold text-black">Postpone</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className={
+              bidAwardedFlag === false
+                ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+                : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+            }
+            disabled={bidAwardedFlag}
+            onPress={() => (
+              ProcessCanceledRequest((reqID))
+              )}
+          >
+            <Text className="text-lg font-bold text-black">Cancel</Text>
           </TouchableOpacity>
         </View>
       </View>

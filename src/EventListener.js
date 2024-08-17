@@ -5,35 +5,35 @@ import { useStateContext } from "../src/contexts/ContextProvider";
 import { io } from "socket.io-client";
 
 const EventListener = () => {
-  const { apiURL, currentUserID, setCurrentUserID, worksideSocket } =
-    useStateContext();
+	const { apiURL, currentUserID, setCurrentUserID, worksideSocket } =
+		useStateContext();
 
-  // useEffect(() => {
-  //   async function updateUserID() {
-  //     if (currentUserID === null) {
-  //       const currentUser = await AsyncStorage.getItem("userId");
-  //       setCurrentUserID(currentUser);
-  //     }
-  //   }
-  //   updateUserID();
-  // }, []);
+	// useEffect(() => {
+	//   async function updateUserID() {
+	//     if (currentUserID === null) {
+	//       const currentUser = await AsyncStorage.getItem("userId");
+	//       setCurrentUserID(currentUser);
+	//     }
+	//   }
+	//   updateUserID();
+	// }, []);
 
-  useEffect(() => {
-    if (currentUserID) {
-      worksideSocket.current = io(apiURL);
-      worksideSocket.current.emit("add-user", currentUserID);
-    }
-  }, [currentUserID]);
+	useEffect(() => {
+		if (currentUserID) {
+			worksideSocket.current = io(apiURL);
+			worksideSocket.current.emit("add-user", currentUserID);
+		}
+	}, [currentUserID]);
 
-  useEffect(() => {
-    if (worksideSocket.current) {
-      worksideSocket.current.on("msg-recieve", (msg) => {
-        console.log("Message Received: ", msg);
-      });
-    }
-  }, []);
+	useEffect(() => {
+		if (worksideSocket.current) {
+			worksideSocket.current.on("msg-receive", (msg) => {
+				console.log("Message Received: ", msg);
+			});
+		}
+	}, []);
 
-  return;
+	return;
 };
 
 export default EventListener;
