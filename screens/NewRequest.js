@@ -45,9 +45,9 @@ const NewRequest = () => {
 	);
 	//////////////////////////////////////////////////////////////
 
-	let getRoundedDate = (minutes, d = new Date()) => {
-		let ms = 1000 * 60 * minutes; // convert minutes to ms
-		let roundedDate = new Date(Math.round(d.getTime() / ms) * ms);
+	const getRoundedDate = (minutes, d = new Date()) => {
+		const ms = 1000 * 60 * minutes; // convert minutes to ms
+		const roundedDate = new Date(Math.round(d.getTime() / ms) * ms);
 
 		return roundedDate;
 	};
@@ -240,19 +240,19 @@ const NewRequest = () => {
 		}
 	};
 
-	let roundTime = (time, minutesToRound) => {
+	const roundTime = (time, minutesToRound) => {
 		let [hours, minutes] = time.split(":");
-		hours = parseInt(hours);
-		minutes = parseInt(minutes);
-
+		hours = Number.parseInt(hours);
+		minutes = Number.parseInt(minutes);
+	
 		// Convert hours and minutes to time in minutes
-		time = hours * 60 + minutes;
-
-		let rounded = Math.round(time / minutesToRound) * minutesToRound;
-		let rHr = "" + Math.floor(rounded / 60);
-		let rMin = "" + (rounded % 60);
-
-		return rHr.padStart(2, "0") + ":" + rMin.padStart(2, "0");
+		const totalMinutes = hours * 60 + minutes;
+	
+		const rounded = Math.round(totalMinutes / minutesToRound) * minutesToRound;
+		const rHr = `${Math.floor(rounded / 60)}`;
+		const rMin = `${rounded % 60}`;
+	
+		return `${rHr.padStart(2, "0")}:${rMin.padStart(2, "0")}`;
 	};
 
 	const SendRequestEmail = () => {
@@ -387,9 +387,9 @@ const NewRequest = () => {
 			project_id: projectID,
 		};
 
-		console.log("Linked Request: " + selectedLink !== 0 ? selectedLink : null);
+		console.log(`Linked Request: ${selectedLink}` !== 0 ? selectedLink : null);
 		console.log(
-			"Linked Request ID: " + selectedLinkIndex !== 0
+			`Linked Request ID: ${selectedLinkIndex}` !== 0
 				? reqList(selectedLinkIndex)._id
 				: null
 		);
@@ -538,10 +538,10 @@ const NewRequest = () => {
 						// console.log("Selected Category Modify Flag: ", modifyFlag);
 					}}
 				>
-					{allCategories.map((item, index) => {
+					{allCategories.map((item) => {
 						return (
 							<SelectItem
-								key={index}
+								key={item.id} // Replace with a unique identifier from the allCategories array
 								title={item}
 								onPress={() => {
 									setSelectedCategory(item);
@@ -574,10 +574,10 @@ const NewRequest = () => {
 						// GetSuppliers();
 					}}
 				>
-					{filteredProducts.map((item, index) => {
+					{filteredProducts.map((item) => {
 						return (
 							<SelectItem
-								key={index}
+								key={item.id} // Replace with a unique identifier from the item object
 								title={item}
 								onPress={() => {
 									setSelectedProduct(item);
@@ -623,7 +623,10 @@ const NewRequest = () => {
 					type="numeric"
 					keyboardType="numeric"
 					defaultValue="1"
-					onChange={(text) => (setQuantity(text), setModifyFlag(true))}
+					onChange={(text) => {
+					  setQuantity(text);
+					  setModifyFlag(true);
+					}}
 				/>
 
 				{/* <DismissKeyboard> */}
@@ -651,9 +654,10 @@ const NewRequest = () => {
 					}
 					editable={true}
 					multiline
-					onChangeText={(newComment) => (
-						setComment(newComment), setModifyFlag(true)
-					)}
+					onChangeText={(newComment) => {
+						setComment(newComment);
+						setModifyFlag(true);
+					}}
 				/>
 			</View>
 			{/* </DismissKeyboard> */}
@@ -690,12 +694,15 @@ const NewRequest = () => {
 				{/* MSA Radio Button */}
 				<View style={styles.main}>
 					<TouchableOpacity
-						onPress={() => (setSelectedRadio(1), setModifyFlag(true))}
+						onPress={() => {
+						  setSelectedRadio(1);
+						  setModifyFlag(true);
+						}}
 					>
 						<View style={styles.wrapper}>
-							{selectedRadio !== 1 ? <View style={styles.radio}></View> : null}
+							{selectedRadio !== 1 ? <View style={styles.radio} /> : null}
 							{selectedRadio === 1 ? (
-								<View style={styles.radioBg}></View>
+								<View style={styles.radioBg} />
 							) : null}
 							<Text style={styles.radioText}>MSA</Text>
 						</View>
@@ -704,12 +711,15 @@ const NewRequest = () => {
 				{/* Open Radio Button */}
 				<View style={styles.main}>
 					<TouchableOpacity
-						onPress={() => (setSelectedRadio(2), setModifyFlag(true))}
+						onPress={() => {
+						  setSelectedRadio(2);
+						  setModifyFlag(true);
+						}}
 					>
 						<View style={styles.wrapper}>
-							{selectedRadio !== 2 ? <View style={styles.radio}></View> : null}
+							{selectedRadio !== 2 ? <View style={styles.radio} /> : null}
 							{selectedRadio === 2 ? (
-								<View style={styles.radioBg}></View>
+								<View style={styles.radioBg} />
 							) : null}
 							<Text style={styles.radioText}>Open</Text>
 						</View>
@@ -718,14 +728,16 @@ const NewRequest = () => {
 				{/* Sole Source Radio Button */}
 				<View style={styles.main}>
 					<TouchableOpacity
-						onPress={() => (
-							setSelectedRadio(3), GetSuppliers(), setModifyFlag(true)
-						)}
+						onPress={() => {
+						  setSelectedRadio(3);
+						  GetSuppliers();
+						  setModifyFlag(true);
+						}}
 					>
 						<View style={styles.wrapper}>
-							{selectedRadio !== 3 ? <View style={styles.radio}></View> : null}
+							{selectedRadio !== 3 ? <View style={styles.radio} /> : null}
 							{selectedRadio === 3 ? (
-								<View style={styles.radioBg}></View>
+								<View style={styles.radioBg} />
 							) : null}
 							<Text style={styles.radioText}>SSR</Text>
 						</View>
@@ -764,13 +776,14 @@ const NewRequest = () => {
 						selectedIndex={selectedSupplierIndex}
 						value={selectedSupplier}
 						onSelect={(index) => {
-							setSelectedSupplierIndex(index), setModifyFlag(true);
+							setSelectedSupplierIndex(index);
+							setModifyFlag(true);
 						}}
 					>
-						{supplierList.map((item, index) => {
+						{supplierList.map((item) => {
 							return (
 								<SelectItem
-									key={index}
+									key={item.id} // Replace 'index' with a unique identifier from the 'item' object
 									title={item}
 									onPress={() => {
 										setSelectedSupplier(item);
@@ -854,7 +867,7 @@ const NewRequest = () => {
 						value={reqDateTime}
 						mode={"date"}
 						is24Hour={true}
-						onChange={(onChange, setModifyFlag(true))}
+						onChange={(onChange) => { onChange(); setModifyFlag(true); }}
 					/>
 				)}
 				{showTimePicker && (
@@ -862,7 +875,7 @@ const NewRequest = () => {
 						value={reqDateTime}
 						mode={"time"}
 						is24Hour={true}
-						onChange={(onChange, setModifyFlag(true))}
+						onChange={() => { onChange(); setModifyFlag(true); }}
 					/>
 				)}
 			</View>
@@ -886,14 +899,15 @@ const NewRequest = () => {
 					selectedIndex={selectedLinkIndex}
 					value={selectedLink}
 					onSelect={(index) => {
-						setSelectedLinkIndex(index), setModifyFlag(true);
+						setSelectedLinkIndex(index);
+						setModifyFlag(true);
 						console.log("Selected Link: ", index);
 					}}
 				>
 					{reqList.map((item, index) => {
 						return (
 							<SelectItem
-								key={index}
+								key={item.id} // Replace with a unique identifier from the item object
 								title={item.requestname}
 								onPress={() => {
 									// setReqList(item.requestname);

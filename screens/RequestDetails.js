@@ -539,11 +539,11 @@ const RequestDetails = () => {
             className={
               "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
             }
-            onPress={() => (
-              setCurrentRequestName(reqData.requestname),
-              setCurrentSupplier("Supplier"),
-              navigation.navigate("RequestMapping")
-            )}
+            onPress={() => {
+							setCurrentRequestName(reqData.requestname);
+							setCurrentSupplier("Supplier");
+							navigation.navigate("RequestMapping");
+						}}
           >
             <Text className="text-lg font-bold text-black">Progress</Text>
           </TouchableOpacity>

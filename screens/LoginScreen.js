@@ -45,7 +45,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 				}
 				setUsername(value);
 			} catch (error) {
-				console.error(`useAsyncStorage getUserName error:`, error);
+				console.error("useAsyncStorage getUserName error:", error);
 			}
 			try {
 				const value = await AsyncStorage.getItem("password");
@@ -54,7 +54,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 				}
 				setPassword(value);
 			} catch (error) {
-				console.error(`useAsyncStorage getPassword error:`, error);
+				console.error("useAsyncStorage getPassword error:", error);
 			}
 		};
 
@@ -62,7 +62,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 	}, []);
 
 	const validateForm = () => {
-		if (username === "") {
+		if (username === "" || password === "") {
 			Toast.show({
 				type: "error",
 				text1: "Workside Software",
@@ -71,16 +71,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 				autoHide: true,
 			});
 			return false;
-		} else if (password === "") {
-			Toast.show({
-				type: "error",
-				text1: "Workside Software",
-				text2: "Email and Password Required!",
-				visibilityTime: 5000,
-				autoHide: true,
-			});
-			return false;
-		}
+		} 
 		return true;
 	};
 
@@ -100,7 +91,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 	// }, [rootFlag, isLoggedIn, navigation]);
 
 	const handleLogin = async (event) => {
-		const reqURL = apiURL + "/api/user/" + username + "?password=" + password;
+		const reqURL = `${apiURL}/api/user/${username}?password=${password}`;
 
 		event.preventDefault();
 		if (validateForm()) {
@@ -274,7 +265,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 			</TouchableOpacity>
 				<View className="flex-1">
 		        <View className="flex-1 justify-end items-center">
-						<Text className="text-gray-500 text-sm font-bold mb-2">
+						<Text className="text-gray-500 text-center text-sm font-bold mb-2">
 							By logging into Workside, you agree to our Terms of Service and
 							Privacy Policy. By using Workside, you acknowledge and accept the
 							potential risks involved.

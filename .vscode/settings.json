@@ -16,6 +16,7 @@
 		"nativewind",
 		"Pressable",
 		"productname",
+		"projectedstartdate",
 		"projectname",
 		"reqlinkname",
 		"requestbid",
@@ -32,6 +33,7 @@
 		"supplierproductsview",
 		"tablename",
 		"tailwindcss",
+		"updateall",
 		"vendortype",
 		"Workside",
 		"zustand"

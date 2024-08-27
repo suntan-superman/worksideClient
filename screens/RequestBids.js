@@ -115,9 +115,9 @@ const RequestBids = () => {
 			//////////////////////////////////////////////////////
 			if (bidArray.length === 0) return;
 			let supplierName = "";
-			bidArray.forEach((bid) => {
+			for (const bid of bidArray) {
 				const strAPI = `${apiURL}/api/firm/${bid.requestbids.supplierid}`;
-				axios.get(strAPI).then((response) => {
+				await axios.get(strAPI).then((response) => {
 					supplierName = response.data.name;
 					if( bid.requestbids.status === "AWARDED-A" ) setBidAwardedFlag(true);
 					if( bid.requestbids.status === "AWARDED-P" ) setBidAwardedFlag(true);
@@ -137,7 +137,7 @@ const RequestBids = () => {
 					});
 					setBidData(bidSupplierArray);
 				});
-			});
+			}
 		} catch (error) {
 			console.log("error", error);
 		}
@@ -145,9 +145,9 @@ const RequestBids = () => {
 
 	const SetAllBidsFalse = (flag) => {
 		if (flag === false)
-			bidData.forEach((bid) => {
+			for (const bid of bidData) {
 				bid.status = "SUBMITTED";
-			});
+			}
 	};
 
 	const ProcessCanceledBid = (selectedBid) => {
@@ -182,6 +182,9 @@ const ProcessAwardedBid = (selectedBid) => {
 				text: "Yes",
 				style: "destructive",
 				onPress: () => {
+					// Set Other Bids To DECLINED
+					UpdateRequestBidsStatus(reqID, "DECLINED");
+
 					console.log("Selected Bid: ", selectedBid);
 					selectedBid.status = "AWARDED-A";
 					setBidAwardedFlag(true);
@@ -195,7 +198,36 @@ const ProcessAwardedBid = (selectedBid) => {
 	);
 };
 
-	const renderItemAccessory = (props) => {
+const UpdateRequestBidsStatus = async (reqID, status) => {
+	const strAPI = `${apiURL}/api/requestbid/updateall`;
+
+	// if( selectedBid === null ) return;
+
+	// console.log(
+	// 	"Update Selected Request: " + reqID + " Status: " + status
+	// );
+	await axios
+		.post(strAPI, {
+			id: reqID,
+			status: status,
+		})
+		.then((response) => {
+			// setModifyRequestBidFlag(true);
+			// logTransaction(userID, table, action, result, id);
+			logTransaction(
+				currentUserID,
+				"REQUESTBID",
+				"UPDATE",
+				reqID,
+				response.status
+			);
+		})
+		.catch((error) => {
+			console.log("Error: ", error);
+		});
+};
+
+const renderItemAccessory = (props) => {
 		currentStatus= false;
 
 		if( bidAwardedFlag === true ) {
@@ -214,27 +246,15 @@ const ProcessAwardedBid = (selectedBid) => {
 					// If checkedStatus === false, and currentStatus === false then set the status to SELECTED
 					// And set checkedStatus to true
 					if( bidAwardedFlag === true) {
-			  			setSelectedBid(props.selectedItem),	
+			  		setSelectedBid(props.selectedItem);	
 						ProcessCanceledBid(props.selectedItem)
 					}
 					else {
-						setSelectedBid(props.selectedItem),	
+						setSelectedBid(props.selectedItem);	
 						ProcessAwardedBid(props.selectedItem);
 					}
-					// checkedStatus === false && currentStatus === false
-					// 	? ((props.selectedItem.status = "AWARDED-WOA"),
-					// 	  setUpdateFlag(true),
-					// 	  setSelectedBid(props.selectedItem))
-					// 	: ((props.selectedItem.status = "DECLINED"),
-  					// 	  setSelectedBid(props.selectedItem),
-					// 	  setUpdateFlag(true)),
-					// checkedStatus === true && currentStatus === true
-					// 	? ((props.selectedItem.status = "DECLINED"),
-  					// 	  setSelectedBid(props.selectedItem),
-					// 	  setUpdateFlag(true))
-					// 	: null
 				}}
-				disabled={currentStatus=== true ? false : true}
+				disabled={!currentStatus}
 				size="small"
 				className={
 					currentStatus=== true ?
@@ -249,7 +269,7 @@ const ProcessAwardedBid = (selectedBid) => {
 		);
 	};
 
-	const ProcessSelectedBid = (selectedBid) => {
+	// const ProcessSelectedBid = (selectedBid) => {
 		// const msg = "Notify Supplier: " + selectedBid.supplier + " of selection?";
 		// Toast.show({
 		//   type: "success",
@@ -258,8 +278,8 @@ const ProcessAwardedBid = (selectedBid) => {
 		//   visibilityTime: 10000,
 		//   autoHide: true,
 		// });
-		setModalVisible(true);
-	};
+	// 	setModalVisible(true);
+	// };
 
 	const UpdateRequestStatus = async (status) => {
 		const strAPI = `${apiURL}/api/request`;
@@ -344,10 +364,12 @@ const ProcessAwardedBid = (selectedBid) => {
 	};
 
 	const ConfirmChanges = () => {
-		var cText = confirmationText.toUpperCase();
-		var sText = selectedBid.requestname.toUpperCase();
+		const cText = confirmationText.toUpperCase();
+		const sText = selectedBid.requestname.toUpperCase();
+		let result = false;
+
 		if (cText === sText) {
-			const result = BiometricConfirmation();
+			// const bioResult = BiometricConfirmation();
 			setConfirmationMsg("Supplier Confirmed And Has Been Notified");
 			SendRequestEmail();
 			////////////////////////////////////////////////////////////
@@ -368,7 +390,7 @@ const ProcessAwardedBid = (selectedBid) => {
 			// ProcessSelectedBid(selectedBid);
 
 			setConfirmationFlag(true);
-			return true;
+			result= true;
 		} else {
 			setConfirmationMsg("Confirmation Failed");
 			// Toast.show({
@@ -379,8 +401,9 @@ const ProcessAwardedBid = (selectedBid) => {
 			//   autoHide: true,
 			// });
 			setConfirmationFlag(false);
-			return false;
+			result= false;
 		}
+		return result;
 	};
 
 	const SendRequestEmail = async () => {
@@ -494,7 +517,7 @@ const ProcessAwardedBid = (selectedBid) => {
 					style={{ alignItems: "center", paddingTop: 6 }}
 				>
 					<TouchableOpacity
-						disabled={updateFlag === false ? true : false}
+						disabled={!updateFlag}
 						className={
 							// checkedStatus === false
 							updateFlag === false
@@ -503,7 +526,7 @@ const ProcessAwardedBid = (selectedBid) => {
 						}
 						onPress={() => {
 							setConfirmationText("");
-							ProcessSelectedBid(selectedBid);
+							// ProcessSelectedBid(selectedBid);
 							// console.log("Selected Item: ", selectedBid);
 							// navigation.navigate("ActiveRequests");
 						}}
@@ -562,13 +585,7 @@ const ProcessAwardedBid = (selectedBid) => {
             supplier: supplierName, */}
 
 							{selectedBid !== null
-								? selectedBid.supplier +
-								  " will provide " +
-								  selectedBid.requestname +
-								  " to " +
-								  selectedBid.rigcompany +
-								  " by " +
-								  selectedBid.deliverydate
+								? `${selectedBid.supplier} will provide ${selectedBid.requestname} to ${selectedBid.rigcompany} by ${selectedBid.deliverydate}`
 								: ""}
 						</Text>
 					</View>
@@ -580,7 +597,7 @@ const ProcessAwardedBid = (selectedBid) => {
 							<Text>
 								<Text className="text-black text-lg font-bold">Enter </Text>
 								<Text className="text-red-600 text-lg font-bold">
-									{selectedBid.requestname + " "}
+									{`${selectedBid.requestname} `}
 								</Text>
 								<Text className="text-black text-lg font-bold">
 									then Click CONFIRM
@@ -614,7 +631,7 @@ const ProcessAwardedBid = (selectedBid) => {
 									? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-40 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
 									: "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-40 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
 							}
-							disabled={confirmationText.length > 3 ? false : true}
+							disabled={confirmationText.length <= 3}
 							onPress={() => {
 								ConfirmChanges();
 								// ProcessSelectedBid(selectedBid);

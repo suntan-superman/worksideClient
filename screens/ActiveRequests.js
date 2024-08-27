@@ -271,7 +271,7 @@ const ActiveRequests = () => {
 								: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-56 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
 						}
 						onPress={() => (
-							console.log("Request ID:", selectedIndex),
+							// console.log("Request ID:", selectedIndex),
 							navigation.navigate("RequestDetails", { reqID: selectedIndex })
 						)}
 					>

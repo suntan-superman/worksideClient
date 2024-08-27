@@ -26,7 +26,7 @@ const LOCATION_TASK_NAME = "background-location-task";
 
 let alertModifyFlag = false;
 
-let locationsOfInterest = [
+const locationsOfInterest = [
   {
     title: "Rig Location",
     location: {
@@ -186,17 +186,14 @@ const RequestMapping = () => {
   };
 
   const getLocation = async () => {
-    let location = await Location.getCurrentPositionAsync({
+    const location = await Location.getCurrentPositionAsync({
       accuracy: Location.Accuracy.Highest,
       maximumAge: 10000,
       timeout: 5000,
     });
     setAnimating(false);
     Alert.alert(
-      "Latitude: " +
-        location.coords.latitude +
-        " Longitude: " +
-        location.coords.longitude
+      `Latitude: ${location.coords.latitude} Longitude: ${location.coords.longitude}`
     );
     setLocation(location);
   };
@@ -205,7 +202,7 @@ const RequestMapping = () => {
     const permission = await Location.getForegroundPermissionsAsync();
     // console.log("Permission: " + permission.status);
     if (permission.status !== "granted") {
-      let { fgGranted } = await Location.requestForegroundPermissionsAsync();
+      const { fgGranted } = await Location.requestForegroundPermissionsAsync();
     }
   };
 
@@ -269,7 +266,7 @@ const RequestMapping = () => {
     return locationsOfInterest.map((item, index) => {
       return (
         <Marker
-          key={index}
+          key={item.id} // Use a unique identifier as the key
           coordinate={item.location}
           title={item.title}
           description={item.description}
@@ -448,7 +445,7 @@ const RequestMapping = () => {
                   innerIconStyle={{ borderWidth: 2 }}
                   size={25}
                   onPress={(isChecked) => {
-                    setOnDepartureAlertFlag(isChecked),
+                    setOnDepartureAlertFlag(isChecked);
                       setAlertModifyFlag(true);
                   }}
                 />
@@ -466,7 +463,8 @@ const RequestMapping = () => {
                   innerIconStyle={{ borderWidth: 2 }}
                   size={25}
                   onPress={(isChecked) => {
-                    setOn15MinAlertFlag(isChecked), setAlertModifyFlag(true);
+                    setOn15MinAlertFlag(isChecked);
+                    setAlertModifyFlag(true);
                   }}
                 />
                 <Text className="text-black text-xl font-bold ml-0">
@@ -483,7 +481,8 @@ const RequestMapping = () => {
                   innerIconStyle={{ borderWidth: 2 }}
                   size={25}
                   onPress={(isChecked) => {
-                    setOnArrivalAlertFlag(isChecked), setAlertModifyFlag(true);
+                    setOnArrivalAlertFlag(isChecked);
+                    setAlertModifyFlag(true);
                   }}
                 />
                 <Text className="text-black text-xl font-bold ml-0">
@@ -500,7 +499,7 @@ const RequestMapping = () => {
                   innerIconStyle={{ borderWidth: 2 }}
                   size={25}
                   onPress={(isChecked) => {
-                    setOnDepartLocationAlertFlag(isChecked),
+                    setOnDepartLocationAlertFlag(isChecked);
                       setAlertModifyFlag(true);
                   }}
                 />
@@ -519,7 +518,8 @@ const RequestMapping = () => {
                   innerIconStyle={{ borderWidth: 2 }}
                   size={25}
                   onPress={(isChecked) => {
-                    setAlertTeamFlag(isChecked), setAlertModifyFlag(true);
+                    setAlertTeamFlag(isChecked);
+                    setAlertModifyFlag(true);
                   }}
                 />
                 <Text className="text-black text-xl font-bold ml-0">
@@ -537,7 +537,10 @@ const RequestMapping = () => {
                 }
                 /// Need to Save Any Changes Before Navigating
                 disabled={!alertModifyFlag}
-                onPress={() => (SaveAlertChanges(), setModalVisible(false))}
+                onPress={() => {
+                  SaveAlertChanges();
+                  setModalVisible(false);
+                }}
               >
                 <Text className="text-xl font-bold text-black">
                   Save Changes

@@ -96,15 +96,11 @@ const PendingProjects = () => {
     // Title and Description for each ListItem
     ////////////////////////////////////////////////////////
 
-    var strTitle = item.projectname + " " + item.description;
+    const strTitle = `${item.projectname} ${item.description}`;
     // description={`${format(item.datetimerequested, "MM/dd/yyyy")} ${
 
-    var strDescription =
-      item.rigcompany +
-      "   Start Date: " +
-      `${format(item.projectedstartdate, "MM/dd/yyyy")}` +
-      "\n Status: " +
-      item.status;
+    const strDescription =
+      `${item.rigcompany}   Start Date: ${format(item.projectedstartdate, "MM/dd/yyyy")}\n Status: ${item.status}`;
     return (
       <ListItem
         style={{

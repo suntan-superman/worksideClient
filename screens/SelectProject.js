@@ -122,7 +122,7 @@ const SelectProject = () => {
 
   const renderItemAccessory = (props) => (
     <Pressable
-      onPress={() => projectPressHandler((item = props.selectedItem))}
+      onPress={() => projectPressHandler(props.selectedItem)}
       size="tiny"
       className={
         "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-28 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
