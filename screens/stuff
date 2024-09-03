@@ -1,0 +1,46 @@
+{/* Show List of MSA Vendors */ }
+{
+  selectedRadio === 3 ? (
+    <View
+      style={{
+        paddingTop: 5,
+        paddingBottom: 10,
+        left: 20,
+        gap: 20,
+        alignItems: "left",
+        width: "300px",
+      }}
+    >
+      <Select
+        style={{
+          height: 45,
+          // width: ssrWidth,
+          width: "300px",
+          borderRadius: 5,
+          borderWidth: 2,
+          borderColor: "black",
+          backgroundColor: "white",
+        }}
+        placeholder={"Select Supplier"}
+      // selectedIndex={selectedSupplierIndex}
+      // value={selectedSupplier}
+      // onSelect={(index) => {
+      // 	setSelectedSupplierIndex(index);
+      // 	setModifyFlag(true);
+      // }}
+      >
+        {/* {supplierList.map((item) => {
+							return (
+								<SelectItem
+									key={item} // Replace 'index' with a unique identifier from the 'item' object
+									title={item}
+									onPress={() => {
+										setSelectedSupplier(item);
+									}}
+								/>
+							);
+						})} */}
+      </Select>
+    </View>
+  ) : null
+}

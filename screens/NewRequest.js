@@ -43,6 +43,10 @@ const NewRequest = () => {
 	const [projectRig, setProjectRig] = useState(
 		useDataStore((state) => state.currentRigCompany)
 	);
+	const setWorksideModifyFlag = useDataStore(
+		(state) => state.setWorksideModifyFlag
+	);
+
 	//////////////////////////////////////////////////////////////
 
 	const getRoundedDate = (minutes, d = new Date()) => {
@@ -226,9 +230,12 @@ const NewRequest = () => {
 	};
 
 	const onChange = (e, selectedDate) => {
+		const currentDate = selectedDate;
 		setShowDatePicker(false);
 		setShowTimePicker(false);
-		const roundedDate = getRoundedDate(15, selectedDate);
+		setModifyFlag(true)
+		
+		const roundedDate = getRoundedDate(15, currentDate);
 		setReqDateTime(roundedDate);
 	};
 
@@ -377,22 +384,25 @@ const NewRequest = () => {
 			vendorName: selectedSupplier,
 			ssrVendorId: selectedRadio === 3 ? selectedSupplierID : null,
 			datetimerequested: reqDateTime,
-			reqlinkname:
-				selectedLink !== 0 ? reqList(selectedLinkIndex).requestname : null,
-			reqLinkId:
-				selectedLinkIndex !== 0 ? reqList(selectedLinkIndex)._id : null,
+			// Need to fix
+			// reqlinkname: null,
+			// reqLinkId: null,
+			// reqlinkname:
+			// 	selectedLink !== 0 ? reqList(selectedLinkIndex).requestname : null,
+			// reqLinkId:
+			// 	selectedLinkIndex !== 0 ? reqList(selectedLinkIndex)._id : null,
 			//////////////////////////////}}////////////////
 			status: "OPEN",
 			statusdate: datetimerequested,
 			project_id: projectID,
 		};
 
-		console.log(`Linked Request: ${selectedLink}` !== 0 ? selectedLink : null);
-		console.log(
-			`Linked Request ID: ${selectedLinkIndex}` !== 0
-				? reqList(selectedLinkIndex)._id
-				: null
-		);
+		// console.log(`Linked Request: ${selectedLink}` !== 0 ? selectedLink : null);
+		// console.log(
+		// 	`Linked Request ID: ${selectedLinkIndex}` !== 0
+		// 		? reqList(selectedLinkIndex)._id
+		// 		: null
+		// );
 
 		//////////////////////////////////////////////
 		// Validate Data Fields
@@ -419,6 +429,8 @@ const NewRequest = () => {
 		//   return false;
 		// }
 		// //////////////////////////////////////////////
+		console.log("Save New Request Data: ", reqData);
+
 		const response = await fetch(strAPI, {
 			method: "POST",
 			body: JSON.stringify(reqData),
@@ -433,7 +445,8 @@ const NewRequest = () => {
 		if (newRequestData.data._id !== null) {
 			SendRequestMessage(newRequestData.data._id);
 		}
-		setRequestModifyFlag(true);
+		setModifyRequestFlag(true);
+		setWorksideModifyFlag(true);
 
 		return true;
 	};
@@ -541,13 +554,12 @@ const NewRequest = () => {
 					{allCategories.map((item) => {
 						return (
 							<SelectItem
-								key={item.id} // Replace with a unique identifier from the allCategories array
+								key={item}
 								title={item}
 								onPress={() => {
 									setSelectedCategory(item);
 									FilterProducts(item);
 									setModifyFlag(true);
-									// console.log("Selected Category Modify Flag: ", modifyFlag);
 								}}
 							/>
 						);
@@ -577,7 +589,7 @@ const NewRequest = () => {
 					{filteredProducts.map((item) => {
 						return (
 							<SelectItem
-								key={item.id} // Replace with a unique identifier from the item object
+								key={item} // Replace with a unique identifier from the item object
 								title={item}
 								onPress={() => {
 									setSelectedProduct(item);
@@ -637,29 +649,29 @@ const NewRequest = () => {
 			{/* Comments Field */}
 			{/********************************************************** */}
 			{/* <DismissKeyboard> */}
-			<View
-				style={{
-					flexDirection: "row",
-					justifyContent: "",
-					paddingTop: 5,
-					left: 40,
-					alignItems: "center",
-					width: "90%",
-				}}
-			>
-				<TextInput
-					value={comment}
-					className={
-						"bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm right-5"
-					}
-					editable={true}
-					multiline
-					onChangeText={(newComment) => {
-						setComment(newComment);
-						setModifyFlag(true);
+				<View
+					style={{
+						flexDirection: "row",
+						justifyContent: "",
+						paddingTop: 5,
+						left: 40,
+						alignItems: "center",
+						width: "90%",
 					}}
-				/>
-			</View>
+				>
+					<TextInput
+						value={comment}
+						className={
+							"bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm right-5"
+						}
+						editable={true}
+						// multiline
+						onChangeText={(newComment) => {
+							setComment(newComment);
+							setModifyFlag(true);
+						}}
+					/>
+				</View>
 			{/* </DismissKeyboard> */}
 			{/********************************************************** */}
 
@@ -721,7 +733,7 @@ const NewRequest = () => {
 							{selectedRadio === 2 ? (
 								<View style={styles.radioBg} />
 							) : null}
-							<Text style={styles.radioText}>Open</Text>
+							<Text style={styles.radioText}>OPEN</Text>
 						</View>
 					</TouchableOpacity>
 				</View>
@@ -783,7 +795,7 @@ const NewRequest = () => {
 						{supplierList.map((item) => {
 							return (
 								<SelectItem
-									key={item.id} // Replace 'index' with a unique identifier from the 'item' object
+									key={item} // Replace 'index' with a unique identifier from the 'item' object
 									title={item}
 									onPress={() => {
 										setSelectedSupplier(item);
@@ -805,7 +817,7 @@ const NewRequest = () => {
 				style={{
 					// // flexDirection: "row",
 					// justifyContent: "flex-start",
-					paddingTop: 10,
+					paddingTop: 5,
 					paddingBottom: 0,
 					left: 20,
 					gap: 20,
@@ -821,25 +833,25 @@ const NewRequest = () => {
 						gap: 10,
 					}}
 				>
-					<Text className="text-black text-base font-bold p-2">
-						Date/Time Requested
+					<Text className="text-black text-sm font-bold p-2">
+						Date Requested
 					</Text>
 					<TouchableOpacity
 						className={
-							"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-20 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-16 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
 						}
 						onPress={() => setShowDatePicker(true)}
 					>
-						<Text className="text-base font-bold text-black">Date</Text>
+						<Text className="text-sm font-bold text-black">Date</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity
 						className={
-							"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-20 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-16 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
 						}
 						onPress={() => setShowTimePicker(true)}
 					>
-						<Text className="text-base font-bold text-black">Time</Text>
+						<Text className="text-sm font-bold text-black">Time</Text>
 					</TouchableOpacity>
 				</View>
 				<View
@@ -865,24 +877,26 @@ const NewRequest = () => {
 				{showDatePicker && (
 					<DateTimePicker
 						value={reqDateTime}
-						mode={"date"}
+						mode="date"
 						is24Hour={true}
-						onChange={(onChange) => { onChange(); setModifyFlag(true); }}
+						// onChange={(onChange) => { onChange(); setModifyFlag(true); }}
+						onChange={onChange}
 					/>
 				)}
 				{showTimePicker && (
 					<DateTimePicker
 						value={reqDateTime}
-						mode={"time"}
+						mode="time"
 						is24Hour={true}
-						onChange={() => { onChange(); setModifyFlag(true); }}
+						// onChange={() => { onChange(); setModifyFlag(true); }}
+						onChange={onChange}
 					/>
 				)}
 			</View>
 			{/********************************************************** */}
 			{/* Link To Field */}
 			{/********************************************************** */}
-			<View className="items-center w-full pt-3">
+			<View className="items-center w-full pt-2">
 				<Select
 					style={{
 						width: 350,
@@ -904,10 +918,10 @@ const NewRequest = () => {
 						console.log("Selected Link: ", index);
 					}}
 				>
-					{reqList.map((item, index) => {
+					{reqList.map((item) => {
 						return (
 							<SelectItem
-								key={item.id} // Replace with a unique identifier from the item object
+								key={item.requestname} // Replace with a unique identifier from the item object
 								title={item.requestname}
 								onPress={() => {
 									// setReqList(item.requestname);
@@ -951,7 +965,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	radioText: {
-		fontSize: 16,
+		fontSize: 14,	// 16
 		color: "black",
 		fontWeight: "700",
 	},

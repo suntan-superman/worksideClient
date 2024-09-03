@@ -1,8 +1,8 @@
 import { create } from "zustand";
 
 const dataStore = (set, get) => ({
-  modifyFlag: false,
-  setModifyFlag: (value) => set({ modifyFlag: value }),
+  worksideModifyFlag: false,
+  setWorksideModifyFlag: (value) => set({ worksideModifyFlag: value }),
   modifyRequestFlag: false,
   setModifyRequestFlag: (value) => set({ modifyRequestFlag: value }),
   modifyRequestBidFlag: false,
@@ -11,8 +11,6 @@ const dataStore = (set, get) => ({
   setCurrentUserId: (value) => set({ currentUserId: value }),
   currentCustomer: null,
   setCurrentCustomer: (value) => set({ currentCustomer: value }),
-  currentProject: null,
-  setCurrentProject: (value) => set({ currentProject: value }),
   currentProjectId: null,
   setCurrentProjectId: (value) => set({ currentProjectId: value }),
   currentProjectDesc: null,

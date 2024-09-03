@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import useDataStore from "../src/stores/DataStore";
 import {
 	Text,
@@ -7,16 +7,26 @@ import {
 	View,
 	Pressable,
 	TouchableOpacity,
+	TouchableWithoutFeedback,
+	Keyboard,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
 import { FontFamily, FontSize, Color, Padding } from "../GlobalStyles";
 import { useStateContext } from "../src/contexts/ContextProvider";
-import { Icon, List, ListItem, IndexPath } from "@ui-kitten/components";
+import { Icon, List, ListItem, IndexPath,	Radio, RadioGroup } from "@ui-kitten/components";
+import MaterialIcon from "react-native-vector-icons/MaterialCommunityIcons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 import axios from "axios";
 import { format, set } from "date-fns";
 
 const ActiveRequests = () => {
 	const navigation = useNavigation();
+	const filterSheetModalRef = useRef(null);
+	const snapPoints = useMemo(() => ["25%", "50%", "75%", "90%"], []);
+	const [filterSelectedIndex, setFilterSelectedIndex] = useState(0);
+
 	const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
 	const [projectID, setProjectID] = useState(
 		useDataStore((state) => state.currentProjectId)
@@ -32,6 +42,12 @@ const ActiveRequests = () => {
 	);
 	const [projectRig, setProjectRig] = useState(
 		useDataStore((state) => state.currentRigCompany)
+	);
+	const worksideModifyFlag = useDataStore(
+		(state) => state.worksideModifyFlag
+	);
+	const setWorksideModifyFlag = useDataStore(
+		(state) => state.setWorksideModifyFlag
 	);
 	const modifyRequestBidFlag = useDataStore(
 		(state) => state.modifyRequestBidFlag
@@ -62,18 +78,21 @@ const ActiveRequests = () => {
 
 	useEffect(() => {
 		GetActiveRequests();
+		GeRequestFilter();
 	}, []);
 
 	useEffect(() => {
 		// console.log("ActiveRequests Modify Request Bid Flag:", modifyRequestBidFlag);
 		GetActiveRequests();
 		setModifyRequestBidFlag(false);
-	}, [modifyRequestBidFlag === true]);
+		setWorksideModifyFlag(false);
+	}, [modifyRequestBidFlag === true || worksideModifyFlag === true]);
 
 	useEffect(() => {
 		GetActiveRequests();
 		setDataModifiedFlag(false);
-	}, [dataModifiedFlag]);
+		setWorksideModifyFlag(false);
+	}, [dataModifiedFlag || worksideModifyFlag === true]);
 
 	const pressHandler = (item) => {
 		// setProjectID(item._id);
@@ -191,8 +210,19 @@ const ActiveRequests = () => {
 		/>
 	);
 
-	const renderRequests = ({ item }) => (
-		<ListItem
+	const renderRequests = ({ item }) => {
+		if (filterSelectedIndex === 1 && item.status !== "OPEN") return null;
+		if (
+			filterSelectedIndex === 2 &&
+			item.status !== "AWARDED-WOA" &&
+			item.status !== "AWARDED-A" &&
+			item.status !== "AWARDED-P"
+		)
+			return null;
+		if (filterSelectedIndex === 3 && item.status !== "POSTPONED") return null;
+		if (filterSelectedIndex === 4 && item.status !== "COMPLETED") return null;
+
+		return <ListItem
 			style={{
 				backgroundColor: item._id === selectedIndex ? "yellow" : "white",
 			}}
@@ -212,8 +242,70 @@ const ActiveRequests = () => {
 				setSelectedIndex(item._id);
 				pressHandler(item);
 			}}
-		/>
-	);
+		/>;
+	};
+
+	const handlePresentFilterModalPress = () => {
+		filterSheetModalRef.current?.present();
+	};
+
+	const handleCloseFilterModal = () => {
+		filterSheetModalRef.current?.dismiss();
+	};
+
+	const GeRequestFilter = async () => {
+		await AsyncStorage.getItem("RequestFilter").then((value) => {
+			// console.log("Get RequestFilter: ", Number.parseInt(value));
+			if (value !== null) {
+				setFilterSelectedIndex(Number.parseInt(value));
+			}
+		});
+	};
+
+	const SaveRequestFilter = async (value) => {
+		// console.log("SaveRequestFilter: ", value);
+		await AsyncStorage.setItem("RequestFilter", value.toString());
+	};
+
+	const renderFilterModal = () => {
+		return (
+			<>
+				<View className="flex-start justify-center items-center">
+					<Text>
+						<Text className="text-green-500 text-xl font-bold">WORK</Text>
+						<Text className="text-black text-xl font-bold">SIDE </Text>
+						<Text className="text-black text-xl font-bold">Requests </Text>
+						<Text className="text-black text-xl font-bold">Filter</Text>
+					</Text>
+				</View>
+				{/* /////////////////////////////////////////////////////////////// */}
+				{/* Outline Line */}
+				<View className="flex-row items-center justify-between w-[100%] pt-1 pb-2">
+					<View className="h-2 bg-green-300 flex-grow w-1/2" />
+				</View>
+				{/********************************************************** */}
+				{/* Radio Button Group to Make Changes */}
+				{/********************************************************** */}
+
+				<View className="pt-2 pb-2 items-center">
+					<RadioGroup
+						selectedIndex={filterSelectedIndex}
+						onChange={(index) => {
+							setFilterSelectedIndex(index);
+							SaveRequestFilter(index);
+							// console.log("Filter Selected Index: ", index);
+						}}
+					>
+						<Radio status="success" >Show All</Radio>
+						<Radio status="success">Show Open</Radio>
+						<Radio status="success">Show Awarded</Radio>
+						<Radio status="success">Show Postponed</Radio>
+						<Radio status="success">Show Completed</Radio>
+					</RadioGroup>
+				</View>
+			</>
+		);
+	};
 
 	return (
 		<View w-full h-full>
@@ -234,11 +326,20 @@ const ActiveRequests = () => {
 					</Text>
 				</View>
 			) : (
-				<List
-					style={{ maxHeight: 500 }}
-					data={requestData}
-					renderItem={renderRequests}
-				/>
+				<><View className="flex-row justify-items-end justify-end gap-5 pr-2">
+						<TouchableOpacity
+							onPress={() => {
+								handlePresentFilterModalPress();
+							} }
+						>
+							<MaterialIcon
+								name="filter-variant"
+								size={30} />
+						</TouchableOpacity>
+					</View><List
+							style={{ maxHeight: 500 }}
+							data={requestData}
+							renderItem={renderRequests} /></>
 			)}
 			{/* //////////////////////////////////////////////////////////////////// */}
 			{/* Format View for Buttons */}
@@ -295,6 +396,19 @@ const ActiveRequests = () => {
 					>
 						<Text className="text-xl font-bold text-black">New Request</Text>
 					</TouchableOpacity>
+					{/* Date/Time Modal */}
+					<BottomSheetModal
+						ref={filterSheetModalRef}
+						index={1}
+						snapPoints={snapPoints}
+						// onDismiss={handleCloseDateTimeModal}
+					>
+						<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+							<BottomSheetView style={styles.contentContainer}>
+								{renderFilterModal()}
+							</BottomSheetView>
+						</TouchableWithoutFeedback>
+					</BottomSheetModal>
 				</View>
 				{/* Refresh Button */}
 				{/* <View
@@ -321,5 +435,71 @@ const ActiveRequests = () => {
 		</View>
 	);
 };
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1,
+		padding: 24,
+		height: "50%", // 50%
+		justifyContent: "center",
+		backgroundColor: "white",
+	},
+	contentContainer: {
+		flex: 1,
+		height: "50%", // 50%
+		padding: 12,
+		// width: "90%",
+		alignSelf: "center",
+		alignItems: "center",
+    // backgroundColor: "#D4D4D8",
+    backgroundColor: "#D6D3D1",
+	},
+	button: {
+		alignItems: "center",
+		justifyContent: "center",
+		paddingVertical: 12,
+		paddingHorizontal: 32,
+		borderRadius: 4,
+		elevation: 3,
+		backgroundColor: "black",
+	},
+	text: {
+		fontSize: 16,
+		lineHeight: 21,
+		fontWeight: "bold",
+		letterSpacing: 0.25,
+		color: "white",
+	},
+	main: {
+		flex: 1,
+		justifyContent: "space-around",
+		// justifyContent: "center",
+		alignItems: "center",
+	},
+	radioText: {
+		fontSize: 14, // 16
+		color: "black",
+		fontWeight: "700",
+	},
+	radio: {
+		width: 25,
+		height: 25,
+		borderColor: "black",
+		borderRadius: 15,
+		borderWidth: 3,
+		margin: 10,
+	},
+	wrapper: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	radioBg: {
+		backgroundColor: "black",
+		height: 25,
+		width: 25,
+		margin: 3,
+		borderRadius: 15,
+	},
+});
 
 export default ActiveRequests;

@@ -9,6 +9,8 @@ import * as eva from "@eva-design/eva";
 import { ContextProvider } from "./src/contexts/ContextProvider";
 import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
 import { ModalPortal } from "react-native-modals";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 import { createStackNavigator } from "@react-navigation/stack";
 import { StyleSheet } from "react-native";
@@ -177,7 +179,7 @@ const App = () => {
   return (
     <>
       <IconRegistry icons={[MaterialIconsPack]} />
-      <ApplicationProvider {...eva} theme={eva.light}>
+      {/* <ApplicationProvider {...eva} theme={eva.light}> */}
         <NavigationContainer>
           <Stack.Navigator initialRouteName="SplashScreen">
             {/* SplashScreen which will come once for 5 Seconds */}
@@ -203,18 +205,24 @@ const App = () => {
             />
           </Stack.Navigator>
         </NavigationContainer>
-      </ApplicationProvider>
+      {/* </ApplicationProvider> */}
     </>
   );
 };
 
-export default AppWrapper = () => {
-  return (
-    <ContextProvider>
-      <App />
-      <Toast config={toastConfig} />
-      {/* <EventListener /> */}
-      <ModalPortal />
-    </ContextProvider>
-  );
-};
+// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
+export default AppWrapper = () => (
+    <>
+      <ApplicationProvider {...eva} theme={eva.light}>
+      <ContextProvider>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <BottomSheetModalProvider>
+            <App />
+          </BottomSheetModalProvider>
+        </GestureHandlerRootView>
+        <Toast config={toastConfig} />
+        {/* <EventListener /> */}
+        <ModalPortal />
+      </ContextProvider>
+    </ApplicationProvider></>
+);
