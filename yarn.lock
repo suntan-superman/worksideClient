@@ -12820,10 +12820,10 @@ recharts-scale@^0.4.4:
   dependencies:
     decimal.js-light "^2.4.1"
 
-recharts@^2.13.0-alpha.4:
-  version "2.13.0-alpha.4"
-  resolved "https://registry.yarnpkg.com/recharts/-/recharts-2.13.0-alpha.4.tgz#068c295c2b1435795ac0513af6bd4aeb83037654"
-  integrity sha512-K9naL6F7pEcDYJE6yFQASSCQecSLPP0JagnvQ9hPtA/aHgsxsnIOjouLP5yrFZehxzfCkV5TEORr7/uNtSr7Qw==
+recharts@2.13.0-alpha.5:
+  version "2.13.0-alpha.5"
+  resolved "https://registry.yarnpkg.com/recharts/-/recharts-2.13.0-alpha.5.tgz#9cdfb362f9d8cd9d16701ccac946fdcc4dd7f407"
+  integrity sha512-mm8ORfDusDhyWlrY/2NntUAsNeYukteplvRqKGkBEmqNPwqYq9GoEzaVsVDYj8bjGSKJynWGhjEO1NFcntl29g==
   dependencies:
     clsx "^2.0.0"
     eventemitter3 "^4.0.1"

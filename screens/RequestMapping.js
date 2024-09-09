@@ -4,23 +4,19 @@ import {
   Text,
   StyleSheet,
   View,
-  Pressable,
   TouchableOpacity,
-  Platform,
   Alert,
-  ActivityIndicator,
 } from "react-native";
-import { CheckBox } from "@react-native-community/checkbox";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import { useNavigation } from "@react-navigation/native";
-import { FontFamily, FontSize, Color, Padding, Border } from "../GlobalStyles";
 import MapView, { Marker } from "react-native-maps";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import * as Location from "expo-location";
 import useDataStore from "../src/stores/DataStore";
 import { BottomModal, SlideAnimation, ModalContent } from "react-native-modals";
+import useRequestStore from "../src/stores/RequestStore";
+import { format } from "date-fns";
 
-// import * as TaskManager from "expo-task-manager";
 
 const LOCATION_TASK_NAME = "background-location-task";
 
@@ -28,6 +24,7 @@ let alertModifyFlag = false;
 
 const locationsOfInterest = [
   {
+    id: 1,
     title: "Rig Location",
     location: {
       latitude: 35.2,
@@ -37,6 +34,7 @@ const locationsOfInterest = [
     icon: "account-hard-hat",
   },
   {
+    id:2,
     title: "Supplier Location",
     location: {
       latitude: 35.4,
@@ -58,7 +56,7 @@ const RequestMapping = () => {
   const [errorMsg, setErrorMsg] = useState(null);
   const [editFlag, setEditFlag] = useState(false);
   const [departureTime, setDepartureTime] = useState("07:00");
-  const [arrivalTime, setArrivalTime] = useState("08:00");
+  const [arrivalTime, setArrivalTime] = useState(Date.now());
   const [animating, setAnimating] = useState(true);
   //////////////////////////////////////////////////////////////////
   const currentSupplier = useDataStore((state) => state.currentSupplier);
@@ -94,6 +92,16 @@ const RequestMapping = () => {
     (state) => state.setAlertReqTeamFlag
   );
   /////////////////////////////////////////////////////////////////////
+  // Global Request Data
+  const currentRequest = useRequestStore((state) => state.request);
+  const setCurrentRequest = useRequestStore((state) => state.setRequest);
+  const currentRequestId = useRequestStore((state) => state.requestId);
+  const setCurrentRequestId = useRequestStore((state) => state.setRequestId);
+  const reqArrivalTime = useRequestStore((state) => state.reqArrivalTime);
+  const setReqArrivalTime = useRequestStore((state) => state.setReqArrivalTime);
+  const reqStatus = useRequestStore((state) => state.reqStatus);
+  const setReqStatus = useRequestStore((state) => state.setReqStatus);
+
   /////////////////////////////////////////////////////////////////////
   // Local Alert Flags
   const [onDepartureAlertFlag, setOnDepartureAlertFlag] =
@@ -106,16 +114,9 @@ const RequestMapping = () => {
   );
   const [alertTeamFlag, setAlertTeamFlag] = useState(alertReqTeamFlag);
 
-  // const [onDepartureAlertFlag, setOnDepartureAlertFlag] = useState(false);
-  // const [on15MinAlertFlag, setOn15MinAlertFlag] = useState(false);
-  // const [onArrivalAlertFlag, setOnArrivalAlertFlag] = useState(false);
-  // const [onDepartLocationAlertFlag, setOnDepartLocationAlertFlag] =
-  //   useState(false);
-  // const [alertTeamFlag, setAlertTeamFlag] = useState(false);
-
   /////////////////////////////////////////////////////////////////////
   useEffect(() => {
-    navigation.addListener("beforeRemove", (e) => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       // Prevent Default Behavior if modifyFlag === true
       if (alertModifyFlag === true) {
         e.preventDefault();
@@ -123,7 +124,6 @@ const RequestMapping = () => {
           "Alerts Changed!!",
           "Are you sure you want to discard changes?",
           [
-            { text: "No", style: "cancel", onPress: () => {} },
             {
               text: "Yes",
               style: "destructive",
@@ -132,34 +132,13 @@ const RequestMapping = () => {
                 navigation.dispatch(e.data.action);
               },
             },
+            { text: "No", style: "cancel", onPress: () => {} },
           ]
         );
       }
     });
+    return unsubscribe;
   }, [navigation]);
-
-  // TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
-  //   console.log("Task executed");
-  //   try {
-  //     if (error) {
-  //       // Error occurred - check `error.message` for more details.
-  //       return;
-  //     }
-  //     if (data) {
-  //       const { locations } = data;
-  //       console.log("paso");
-  //       setTimeout(() => {
-  //         console.log("paso timeout");
-  //       }, 5000);
-  //       setInterval(() => {
-  //         console.log(locations[0]);
-  //       }, 4000);
-  //       // do something with the locations captured in the background
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // });
 
   const getLocationAsync = async () => {
     Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
@@ -206,61 +185,9 @@ const RequestMapping = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const GetLocationInfo = async () => {
-  //     await getPermissionsAsync().then(() => {
-  //       getLocation();
-  //     });
-  //   };
-  //   GetLocationInfo();
-  // }, []);
-
   onRegionChange = (region) => {
     // console.log(region);
   };
-
-  // useEffect(() => {
-  //   (async () => {
-  //     let { fgGranted } = await Location.requestForegroundPermissionsAsync();
-  //     console.log("Foreground Permission: " + fgGranted);
-  //     if (fgGranted !== "granted") {
-  //       // return;
-  //       return Alert.alert(
-  //         "Location Access Required",
-  //         "Workside requires GPS location. Access Denied"
-  //       );
-  //     }
-  //     // const bgGranted = await Location.requestBackgroundPermissionsAsync();
-  //     // if (bgGranted !== "granted") {
-  //     //   return;
-  //     //   // return Alert.alert(
-  //     //   //   "Location Access Required",
-  //     //   //   "Workside requires location even when the App is backgrounded."
-  //     //   // );
-  //     // }
-  //     await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-  //       accuracy: Location.Accuracy.BestForNavigation,
-  //       timeInterval: 10000,
-  //       // foregroundService: {
-  //       //   notificationTitle: "Workside Location Service",
-  //       //   notificationBody: "Location is used when Workside is in background",
-  //       // },
-  //       activityType: Location.ActivityType.AutomotiveNavigation,
-  //       showsBackgroundLocationIndicator: true,
-  //     });
-  //     // console.log("Permission granted");
-  //     // Alert.alert("Let's Get Current Location");
-  //     let location = await Location.getCurrentPositionAsync({
-  //       accuracy: Location.Accuracy.Highest,
-  //       maximumAge: 10000,
-  //       timeout: 5000,
-  //     });
-
-  //     // let location = await Location.getCurrentPositionAsync({});
-  //     Alert.alert("Current Location", JSON.stringify(location));
-  //     // setLocation(location);
-  //   })();
-  // }, []);
 
   const ShowLocations = () => {
     return locationsOfInterest.map((item, index) => {
@@ -285,18 +212,6 @@ const RequestMapping = () => {
     });
   };
 
-  // useEffect(() => {
-  //   (async () => {
-  //     let { status } = await Location.requestForegroundPermissionsAsync();
-  //     if (status !== "granted") {
-  //       setErrorMsg("Permission to access location was denied");
-  //       return;
-  //     }
-
-  //     let location = await Location.getCurrentPositionAsync({});
-  //     setLocation(location);
-  //   })();
-  // }, []);
   const Hide_Animation = () => {
     setShowAnimationFlag(false);
     setAnimating(false);
@@ -312,6 +227,8 @@ const RequestMapping = () => {
     setArrivalAlertFlag(onArrivalAlertFlag);
     setDepartLocationAlertFlag(onDepartLocationAlertFlag);
     setAlertReqTeamFlag(alertTeamFlag);
+
+    // TODO Save Alert Flags to Database
 
     setAlertModifyFlag(false);
   };
@@ -339,6 +256,11 @@ const RequestMapping = () => {
           <Text>
             <Text className="text-green-500 text-xl font-bold">
               {currentRequestName}
+            </Text>
+          </Text>
+          <Text>
+            <Text className="text-black text-lg font-bold">
+              {`Status: ${reqStatus}`}
             </Text>
           </Text>
         </View>
@@ -376,17 +298,19 @@ const RequestMapping = () => {
         >
           <TouchableOpacity
             className={
-              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
             }
-            // onPress={() => navigation.navigate("RequestMapping")}
-          >
+            onPress={() => {
+              Alert.alert("Contact Supplier");
+            }}
+        >
             <Text className="text-base font-bold text-black">
               Contact Supplier
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
             className={
-              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
             }
             onPress={() => setModalVisible(true)}
           >
@@ -395,7 +319,7 @@ const RequestMapping = () => {
         </View>
         <View
           style={{
-            flexDirection: "row",
+            // flexDirection: "row",
             justifyContent: "space-evenly",
             paddingTop: 10,
             left: 0,
@@ -405,10 +329,10 @@ const RequestMapping = () => {
           }}
         >
           <Text className="text-black text-base font-bold">
-            Departure Time {departureTime}
+          {`Scheduled Arrival: ${format(reqArrivalTime, "MM/dd/yyyy HH:mm")}`}
           </Text>
           <Text className="text-black text-base font-bold">
-            Arrival Time {arrivalTime}
+          {`Estimated Arrival: ${format(arrivalTime, "MM/dd/yyyy HH:mm")}`}
           </Text>
         </View>
       </View>
@@ -443,13 +367,13 @@ const RequestMapping = () => {
                   fillColor="green"
                   iconStyle={{ borderColor: "green" }}
                   innerIconStyle={{ borderWidth: 2 }}
-                  size={25}
+                  size={20}
                   onPress={(isChecked) => {
                     setOnDepartureAlertFlag(isChecked);
                       setAlertModifyFlag(true);
                   }}
                 />
-                <Text className="text-black text-xl font-bold ml-0">
+                <Text className="text-black text-base font-bold ml-0">
                   On Departure
                 </Text>
               </View>
@@ -461,13 +385,13 @@ const RequestMapping = () => {
                   fillColor="green"
                   iconStyle={{ borderColor: "green" }}
                   innerIconStyle={{ borderWidth: 2 }}
-                  size={25}
+                  size={20}
                   onPress={(isChecked) => {
                     setOn15MinAlertFlag(isChecked);
                     setAlertModifyFlag(true);
                   }}
                 />
-                <Text className="text-black text-xl font-bold ml-0">
+                <Text className="text-black text-base font-bold ml-0">
                   15 Minutes Prior To Arrival
                 </Text>
               </View>
@@ -479,13 +403,13 @@ const RequestMapping = () => {
                   fillColor="green"
                   iconStyle={{ borderColor: "green" }}
                   innerIconStyle={{ borderWidth: 2 }}
-                  size={25}
+                  size={20}
                   onPress={(isChecked) => {
                     setOnArrivalAlertFlag(isChecked);
                     setAlertModifyFlag(true);
                   }}
                 />
-                <Text className="text-black text-xl font-bold ml-0">
+                <Text className="text-black text-base font-bold ml-0">
                   Upon Arrival On Location
                 </Text>
               </View>
@@ -497,13 +421,13 @@ const RequestMapping = () => {
                   fillColor="green"
                   iconStyle={{ borderColor: "green" }}
                   innerIconStyle={{ borderWidth: 2 }}
-                  size={25}
+                  size={20}
                   onPress={(isChecked) => {
                     setOnDepartLocationAlertFlag(isChecked);
                       setAlertModifyFlag(true);
                   }}
                 />
-                <Text className="text-black text-xl font-bold ml-0">
+                <Text className="text-black text-base font-bold ml-0">
                   Depart Location
                 </Text>
               </View>
@@ -516,13 +440,13 @@ const RequestMapping = () => {
                   fillColor="green"
                   iconStyle={{ borderColor: "green" }}
                   innerIconStyle={{ borderWidth: 2 }}
-                  size={25}
+                  size={20}
                   onPress={(isChecked) => {
                     setAlertTeamFlag(isChecked);
                     setAlertModifyFlag(true);
                   }}
                 />
-                <Text className="text-black text-xl font-bold ml-0">
+                <Text className="text-black text-base font-bold ml-0">
                   Alert Entire Team
                 </Text>
               </View>
@@ -532,8 +456,8 @@ const RequestMapping = () => {
               <TouchableOpacity
                 className={
                   alertModifyFlag === true
-                    ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-                    : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+                    ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+                    : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
                 }
                 /// Need to Save Any Changes Before Navigating
                 disabled={!alertModifyFlag}
@@ -542,7 +466,7 @@ const RequestMapping = () => {
                   setModalVisible(false);
                 }}
               >
-                <Text className="text-xl font-bold text-black">
+                <Text className="text-lg font-bold text-black">
                   Save Changes
                 </Text>
               </TouchableOpacity>

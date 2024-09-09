@@ -7,6 +7,7 @@ import MIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import { IconRegistry, ApplicationProvider } from "@ui-kitten/components";
 import * as eva from "@eva-design/eva";
 import { ContextProvider } from "./src/contexts/ContextProvider";
+import { default as theme } from "./blacktheme.json";
 import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
 import { ModalPortal } from "react-native-modals";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -118,6 +119,45 @@ const App = () => {
   const [isBiometricSupported, setIsBiometricSupported] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  React.useEffect(() => {
+    setTimeout(() => {
+      setHideSplashScreen(true);
+    }, 1000);
+  }, []);
+
+  return (
+    <>
+        <NavigationContainer>
+          <Stack.Navigator initialRouteName="SplashScreen">
+            {/* SplashScreen which will come once for 5 Seconds */}
+            <Stack.Screen
+              name="SplashScreen"
+              component={WorksideAnimation}
+              options={{ headerShown: false }}
+            />
+            {/* )} */}
+            <Stack.Screen name="LoginScreen" options={{ headerShown: false }}>
+              {(props) => (
+                <LoginScreen
+                  {...props}
+                  setIsAuthenticated={setIsAuthenticated}
+                />
+              )}
+            </Stack.Screen>
+
+            <Stack.Screen
+              name="RootDrawer"
+              component={RootDrawerNavigator}
+              options={{ headerShown: false }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+    </>
+  );
+};
+
+const AppWrapper = () => {
+
   const [fontsLoaded, error] = useFonts({
     "Work Sans": require("./assets/fonts/Work_Sans.ttf"),
     "Work Sans_semibold": require("./assets/fonts/Work_Sans_semibold.ttf"),
@@ -138,12 +178,6 @@ const App = () => {
     "SF Pro Display_Medium": require("./assets/fonts/SF_Pro_Display_Medium.ttf"),
     "SF Pro Display_Semibold": require("./assets/fonts/SF_Pro_Display_Semibold.ttf"),
   });
-
-  React.useEffect(() => {
-    setTimeout(() => {
-      setHideSplashScreen(true);
-    }, 1000);
-  }, []);
 
   function MaterialIcon({ name, style }) {
     const { height, tintColor, ...iconStyle } = StyleSheet.flatten(style);
@@ -179,50 +213,20 @@ const App = () => {
   return (
     <>
       <IconRegistry icons={[MaterialIconsPack]} />
-      {/* <ApplicationProvider {...eva} theme={eva.light}> */}
-        <NavigationContainer>
-          <Stack.Navigator initialRouteName="SplashScreen">
-            {/* SplashScreen which will come once for 5 Seconds */}
-            <Stack.Screen
-              name="SplashScreen"
-              component={WorksideAnimation}
-              options={{ headerShown: false }}
-            />
-            {/* )} */}
-            <Stack.Screen name="LoginScreen" options={{ headerShown: false }}>
-              {(props) => (
-                <LoginScreen
-                  {...props}
-                  setIsAuthenticated={setIsAuthenticated}
-                />
-              )}
-            </Stack.Screen>
-
-            <Stack.Screen
-              name="RootDrawer"
-              component={RootDrawerNavigator}
-              options={{ headerShown: false }}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-      {/* </ApplicationProvider> */}
+      <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <ContextProvider>
+            <BottomSheetModalProvider>
+              <App />
+              <Toast config={toastConfig} />
+            </BottomSheetModalProvider>
+            {/* <EventListener /> */}
+            <ModalPortal />
+          </ContextProvider>
+        </GestureHandlerRootView>
+      </ApplicationProvider>
     </>
   );
 };
 
-// biome-ignore lint/suspicious/noAssignInExpressions: <explanation>
-export default AppWrapper = () => (
-    <>
-      <ApplicationProvider {...eva} theme={eva.light}>
-      <ContextProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <BottomSheetModalProvider>
-            <App />
-          </BottomSheetModalProvider>
-        </GestureHandlerRootView>
-        <Toast config={toastConfig} />
-        {/* <EventListener /> */}
-        <ModalPortal />
-      </ContextProvider>
-    </ApplicationProvider></>
-);
+export default AppWrapper;

@@ -26,6 +26,7 @@ const ActiveRequests = () => {
 	const filterSheetModalRef = useRef(null);
 	const snapPoints = useMemo(() => ["25%", "50%", "75%", "90%"], []);
 	const [filterSelectedIndex, setFilterSelectedIndex] = useState(0);
+	const [filterLabel, setFilterLabel] = useState("Show All");
 
 	const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
 	const [projectID, setProjectID] = useState(
@@ -103,6 +104,28 @@ const ActiveRequests = () => {
 		// Navigate to Active Requests for the selected project
 	};
 
+	const SetFilterLabel = (index) => {
+		switch (index) {
+			case 0:
+				setFilterLabel("Show All");
+				break;
+			case 1:
+				setFilterLabel("Show Open");
+				break;
+			case 2:
+				setFilterLabel("Show Awarded");
+				break;
+			case 3:
+				setFilterLabel("Show Postponed");
+				break;
+			case 4:
+				setFilterLabel("Show Completed");
+				break;
+			default:
+				break;
+		}
+	};
+
 	const renderItemAccessory = (props) => {
 		let buttonFormat = null;
 		let buttonColor = null;
@@ -158,7 +181,7 @@ const ActiveRequests = () => {
 			textColor= "text-white";
 			buttonText = "COMPLETED";
 		}
-		buttonFormat = `${buttonColor} hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`;
+		buttonFormat = `${buttonColor} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`;
 		textFormat = `${textColor} text-sm font-semibold`;
 
 		return (
@@ -270,6 +293,16 @@ const ActiveRequests = () => {
 	const renderFilterModal = () => {
 		return (
 			<>
+			<View className="flex-1">
+			<View className="flex-row justify-items-end justify-end gap-5 pr-2">
+				<MaterialIcon
+					name="close-octagon-outline"
+					size={25}
+					color="red"
+					onPress={handleCloseFilterModal}
+				/>
+			</View>
+
 				<View className="flex-start justify-center items-center">
 					<Text>
 						<Text className="text-green-500 text-xl font-bold">WORK</Text>
@@ -293,27 +326,29 @@ const ActiveRequests = () => {
 						onChange={(index) => {
 							setFilterSelectedIndex(index);
 							SaveRequestFilter(index);
+							SetFilterLabel(index);
 							// console.log("Filter Selected Index: ", index);
 						}}
 					>
-						<Radio status="success" >Show All</Radio>
+						<Radio status="success">Show All</Radio>
 						<Radio status="success">Show Open</Radio>
 						<Radio status="success">Show Awarded</Radio>
 						<Radio status="success">Show Postponed</Radio>
 						<Radio status="success">Show Completed</Radio>
 					</RadioGroup>
 				</View>
+				</View>
 			</>
 		);
 	};
 
 	return (
-		<View w-full h-full>
-			<View className="items-center">
-				<Text>
+		<View className="flex-1">
+		<View className="items-center">
+				{/* <Text>
 					<Text className="text-green-500 text-2xl font-bold">WORK</Text>
 					<Text className="text-black text-2xl font-bold">SIDE</Text>
-				</Text>
+				</Text> */}
 				<Text className="text-black text-xl font-bold">
 					{projectID === null ? "No Project Selected" : projectName}
 				</Text>
@@ -326,7 +361,11 @@ const ActiveRequests = () => {
 					</Text>
 				</View>
 			) : (
-				<><View className="flex-row justify-items-end justify-end gap-5 pr-2">
+				<><View className="flex-row justify-items-end justify-between gap-5 pr-2 pl-2 pt-1">
+				<Text>
+					<Text className="text-black text-sm font-bold">Filter Setting: </Text>
+					<Text className="text-red-500 text-sm font-bold">{filterLabel}</Text>
+				</Text>
 						<TouchableOpacity
 							onPress={() => {
 								handlePresentFilterModalPress();
@@ -337,99 +376,52 @@ const ActiveRequests = () => {
 								size={30} />
 						</TouchableOpacity>
 					</View><List
-							style={{ maxHeight: 500 }}
+							contentContainerStyle className="flex-grow"
+							// style={{ maxHeight: 500 }}
 							data={requestData}
 							renderItem={renderRequests} /></>
 			)}
 			{/* //////////////////////////////////////////////////////////////////// */}
 			{/* Format View for Buttons */}
 			{/* //////////////////////////////////////////////////////////////////// */}
-			<View
-				style={{
-					marginLeft: 0,
-					top: 550,
-					width: "100%",
-					height: 100,
-					paddingHorizontal: 0,
-					paddingVertical: 10,
-					justifyContent: "center",
-					alignItems: "center",
-					position: "absolute",
-				}}
-			>
-				<View
-					style={{
-						marginTop: 10,
-						padding: Padding.p_2xs,
-						alignItems: "center",
-					}}
+			<View className="flex-row items-center justify-between gap-3 pr-3 pl-3 pb-4">
+				<TouchableOpacity
+					disabled={disabledFlag}
+					className={
+						disabledFlag
+							? "bg-gray-300 p-0 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+					}
+					onPress={() => (
+						// console.log("Request ID:", selectedIndex),
+						navigation.navigate("RequestDetails", { reqID: selectedIndex })
+					)}
 				>
-					<TouchableOpacity
-						disabled={disabledFlag}
-						className={
-							disabledFlag
-								? "bg-gray-300 p-1 rounded-lg w-56 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-								: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-56 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-						}
-						onPress={() => (
-							// console.log("Request ID:", selectedIndex),
-							navigation.navigate("RequestDetails", { reqID: selectedIndex })
-						)}
-					>
-						<Text className="text-xl font-bold text-black">
-							Request Details
-						</Text>
-					</TouchableOpacity>
-				</View>
-				<View
-					style={{
-						marginTop: 10,
-						padding: Padding.p_2xs,
-						alignItems: "center",
-					}}
+					<Text className="text-lg font-bold text-black">
+						Request Details
+					</Text>
+				</TouchableOpacity>
+				<TouchableOpacity
+					className={
+						"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+					}
+					onPress={() => navigation.navigate("NewRequest")}
 				>
-					<TouchableOpacity
-						className={
-							"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-56 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-						}
-						onPress={() => navigation.navigate("NewRequest")}
-					>
-						<Text className="text-xl font-bold text-black">New Request</Text>
-					</TouchableOpacity>
-					{/* Date/Time Modal */}
-					<BottomSheetModal
-						ref={filterSheetModalRef}
-						index={1}
-						snapPoints={snapPoints}
-						// onDismiss={handleCloseDateTimeModal}
-					>
-						<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-							<BottomSheetView style={styles.contentContainer}>
-								{renderFilterModal()}
-							</BottomSheetView>
-						</TouchableWithoutFeedback>
-					</BottomSheetModal>
-				</View>
-				{/* Refresh Button */}
-				{/* <View
-          style={{
-            marginTop: 10,
-            padding: Padding.p_2xs,
-            alignItems: "center",
-          }}
-        >
-          <TouchableOpacity
-            className={
-              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg items-center justify-center border-2 border-solid border-black border-r-4 border-b-4 h-12 w-12"
-            }
-            onPress={() => setDataModifiedFlag(true)}
-          >
-            <Icon
-              name={"restore"}
-              style={{ color: "black", width: 16, height: 16 }}
-            />
-          </TouchableOpacity>
-        </View> */}
+					<Text className="text-lg font-bold text-black">New Request</Text>
+				</TouchableOpacity>
+				{/* Date/Time Modal */}
+				<BottomSheetModal
+					ref={filterSheetModalRef}
+					index={1}
+					snapPoints={snapPoints}
+					// onDismiss={handleCloseDateTimeModal}
+				>
+					<TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+						<BottomSheetView style={styles.contentContainer}>
+							{renderFilterModal()}
+						</BottomSheetView>
+					</TouchableWithoutFeedback>
+				</BottomSheetModal>
 			</View>
 			{/* //////////////////////////////////////////////////////////////////// */}
 		</View>
@@ -452,7 +444,7 @@ const styles = StyleSheet.create({
 		alignSelf: "center",
 		alignItems: "center",
     // backgroundColor: "#D4D4D8",
-    backgroundColor: "#D6D3D1",
+    backgroundColor: "#CBD5E1",
 	},
 	button: {
 		alignItems: "center",

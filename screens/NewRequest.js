@@ -125,7 +125,6 @@ const NewRequest = () => {
 					"Discard Changes?",
 					"Are you sure you want to discard changes?",
 					[
-						{ text: "No", style: "cancel", onPress: () => {} },
 						{
 							text: "Yes",
 							style: "destructive",
@@ -135,6 +134,7 @@ const NewRequest = () => {
 								navigation.dispatch(e.data.action);
 							},
 						},
+						{ text: "No", style: "cancel", onPress: () => {} },
 					]
 				);
 			}
@@ -950,7 +950,7 @@ const NewRequest = () => {
 					disabled={disabledFlag}
 					onPress={() => SubmitNewRequest()}
 				>
-					<Text className="text-base font-bold text-black">SAVE CHANGES</Text>
+					<Text className="text-base font-bold text-black">Save Changes</Text>
 				</TouchableOpacity>
 			</View>
 		</View>

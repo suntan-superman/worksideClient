@@ -83,7 +83,7 @@ const RootDrawerNavigator = () => {
         name="Select Project"
         component={SelectProject}
         options={{
-          title: "Select Project",
+          title: "WORKSIDE",
           headerRight: () => (
             <View>
               <TouchableOpacity style={{ marginLeft: 15 }}>
@@ -98,7 +98,7 @@ const RootDrawerNavigator = () => {
         name="Pending Projects"
         component={PendingProjects}
         options={{
-          title: "Pending Projects",
+          title: "WORKSIDE",
           headerRight: () => (
             <View>
               <TouchableOpacity style={{ marginLeft: 15 }}>

@@ -18,6 +18,7 @@ import axios from "axios";
 import { useStateContext } from "../src/contexts/ContextProvider";
 import { format } from "date-fns";
 import useDataStore from "../src/stores/DataStore";
+import useRequestStore from "../src/stores/RequestStore";
 import { logTransaction } from "../src/helperFunction";
 import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
 import DateTimePickerModal from "@react-native-community/datetimepicker";
@@ -93,19 +94,24 @@ const RequestDetails = () => {
     (state) => state.setModifyRequestBidFlag
   );
   //////////////////////////////////////////////////////////////////////
+    // Global Request Data
+    const setCurrentRequest = useRequestStore((state) => state.setRequest);
+    const setCurrentRequestId = useRequestStore((state) => state.setRequestId);
+    const setReqArrivalTime = useRequestStore((state) => state.setReqArrivalTime);
+    const setReqStatus = useRequestStore((state) => state.setReqStatus);
+    
+  
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       // Prevent Default Behavior
       e.preventDefault();
       if (modifyDialogFlag === false) {
-        console.log("No Changes in Request Details");
         navigation.dispatch(e.data.action);
       } else {
         Alert.alert(
           "Discard Changes?",
           "Are you sure you want to discard changes?",
           [
-            { text: "No", style: "cancel", onPress: () => { } },
             {
               text: "Yes",
               style: "destructive",
@@ -115,6 +121,7 @@ const RequestDetails = () => {
                 navigation.dispatch(e.data.action);
               },
             },
+            { text: "No", style: "cancel", onPress: () => { } },
           ]
         );
       }
@@ -487,10 +494,10 @@ const RequestDetails = () => {
         {/* Output Header */}
         <View className="flex-start justify-center items-center">
           <Text>
-            <Text className="text-green-500 text-2xl font-bold">WORK</Text>
-            <Text className="text-black text-2xl font-bold">SIDE</Text>
+            <Text className="text-green-500 text-xl font-bold">WORK</Text>
+            <Text className="text-black text-xl font-bold">SIDE</Text>
           </Text>
-          <Text className="text-black text-xl font-bold">
+          <Text className="text-black text-lg font-bold">
             Update Date and Time Requested
           </Text>
         </View>
@@ -603,10 +610,10 @@ const RequestDetails = () => {
         {/* Output Header */}
         <View className="flex-start justify-center items-center">
           <Text>
-            <Text className="text-green-500 text-2xl font-bold">WORK</Text>
-            <Text className="text-black text-2xl font-bold">SIDE</Text>
+            <Text className="text-green-500 text-xl font-bold">WORK</Text>
+            <Text className="text-black text-xl font-bold">SIDE</Text>
           </Text>
-          <Text className="text-black text-xl font-bold">Change Vendor</Text>
+          <Text className="text-black text-lg font-bold">Change Vendor</Text>
         </View>
         <View className="flex-row items-center justify-between w-[100%] pt-1 pb-2">
           <View className="h-2 bg-green-300 flex-grow w-1/2" />
@@ -739,10 +746,10 @@ const RequestDetails = () => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View>
         <View className="items-center mb-0">
-          <Text>
+          {/* <Text>
             <Text className="text-green-500 text-xl font-bold">WORK</Text>
             <Text className="text-black text-xl font-bold">SIDE</Text>
-          </Text>
+          </Text> */}
           <Text className="text-black text-lg font-bold">
             {reqData.projectname}
           </Text>
@@ -778,10 +785,10 @@ const RequestDetails = () => {
               onPress={() => setEditFlag(!editFlag)}
             >
               {!editFlag && (
-                <Text className="text-black text-base font-bold">Edit Mode</Text>
+                <Text className="text-black text-sm font-bold">Edit Mode</Text>
               )}
               {editFlag && (
-                <Text className="text-black text-base font-bold">
+                <Text className="text-black text-sm font-bold">
                   Cancel Edit
                 </Text>
               )}
@@ -1011,6 +1018,11 @@ const RequestDetails = () => {
             onPress={() => {
               setCurrentRequestName(reqData.requestname);
               setCurrentSupplier("Supplier");
+              setCurrentRequest(reqData.requestname);
+              setCurrentRequestId(reqID);
+              setReqArrivalTime(dateTimeRequested);
+              setReqStatus(reqData.status);
+          
               navigation.navigate("RequestMapping");
             }}
           >
@@ -1139,7 +1151,7 @@ const styles = StyleSheet.create({
     // width: "90%",
     alignSelf: "center",
     alignItems: "center",
-    backgroundColor: "#D4D4D8",
+    backgroundColor: "#D4D4D4",
   },
   button: {
     alignItems: "center",

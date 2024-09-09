@@ -15,10 +15,12 @@
 		"deliverydate",
 		"dimgray",
 		"dodgerblue",
+		"Dyhq",
 		"ENROUTE",
 		"fuschia",
 		"geolocation",
 		"gorhom",
+		"Ionicons",
 		"lightgray",
 		"lightgreen",
 		"nativewind",
@@ -41,6 +43,7 @@
 		"supplierproductsview",
 		"tablename",
 		"tailwindcss",
+		"Tobm",
 		"updateall",
 		"vendortype",
 		"Workside",
@@ -49,7 +52,25 @@
 	"workbench.tree.indent": 15,
 	"workbench.tree.renderIndentGuides": "always",
 	"workbench.colorCustomizations": {
-		"tree.indentGuidesStroke": "#05ef3c"
+		"tree.indentGuidesStroke": "#05ef3c",
+		"activityBar.activeBackground": "#93e6fc",
+		"activityBar.background": "#93e6fc",
+		"activityBar.foreground": "#15202b",
+		"activityBar.inactiveForeground": "#15202b99",
+		"activityBarBadge.background": "#fa45d4",
+		"activityBarBadge.foreground": "#15202b",
+		"commandCenter.border": "#15202b99",
+		"sash.hoverBorder": "#93e6fc",
+		"statusBar.background": "#61dafb",
+		"statusBar.foreground": "#15202b",
+		"statusBarItem.hoverBackground": "#2fcefa",
+		"statusBarItem.remoteBackground": "#61dafb",
+		"statusBarItem.remoteForeground": "#15202b",
+		"titleBar.activeBackground": "#61dafb",
+		"titleBar.activeForeground": "#15202b",
+		"titleBar.inactiveBackground": "#61dafb99",
+		"titleBar.inactiveForeground": "#15202b99"
 	},
-	"editor.defaultFormatter": null
+	"editor.defaultFormatter": null,
+	"peacock.color": "#61dafb"
 }

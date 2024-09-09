@@ -35,6 +35,8 @@ export default function LoginScreen({ setIsAuthenticated }) {
 		useStateContext();
 	const focusRef = useRef(null);
 	const setLoggedInState = useUserStore((state) => state.setLoggedIn);
+	const setWorksideUsername = useUserStore((state) => state.setUsername);
+	const setWorksideEmail = useUserStore((state) => state.setEmail);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -144,8 +146,10 @@ export default function LoginScreen({ setIsAuthenticated }) {
 					// Context Problem
 					// SetContextUserID(response.user.userId);
 					setCurrentUserID(response.user.userId);
-					console.log("Current User ID: ", response.user.userId);
 				}
+				setWorksideUsername(response.user.user);
+				setWorksideEmail(response.user.email);
+			
 				// localStorage.setItem(
 				//   process.env.REACT_APP_LOCALHOST_KEY,
 				//   JSON.stringify(data.user)

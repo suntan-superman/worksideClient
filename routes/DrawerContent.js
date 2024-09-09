@@ -1,14 +1,18 @@
 import React from "react";
-import { View, Alert, StyleSheet } from "react-native";
+import { View, Alert, StyleSheet, Text } from "react-native";
 import { useTheme, Avatar, Title, Caption, Drawer } from "react-native-paper";
 import { DrawerContentScrollView, DrawerItem } from "@react-navigation/drawer";
 
 import { useNavigation } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import IonIcon from "react-native-vector-icons/Ionicons";
 import Toast from "react-native-toast-message";
+import useUserStore from "../src/stores/UserStore";
 
 export function DrawerContent(props) {
   const navigation = useNavigation();
+  const userName = useUserStore((state) => state.username);
+  const email = useUserStore((state) => state.email);
 
   const paperTheme = useTheme();
 
@@ -31,21 +35,37 @@ export function DrawerContent(props) {
     ]);
   };
 
+  const ShowSettingsMessage = () => {
+    Toast.show({
+      type: "success",
+      text1: "Workside Software",
+      text2: "Settings To Be Done!",
+      visibilityTime: 3000,
+      autoHide: true,
+    });
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <DrawerContentScrollView {...props}>
         <View style={styles.drawerContent}>
           <View style={styles.userInfoSection}>
             <View style={{ flexDirection: "row", marginTop: 15 }}>
-              <Avatar.Image
+              {/* <Text>
+        				<Text style={styles.title}>WORKSIDE</Text>
+      			</Text> */}
+              {/* <Avatar.Image
                 source={{
                   uri: "https://api.adorable.io/avatars/50/abott@adorable.png",
                 }}
                 size={50}
-              />
+              /> */}
               <View style={{ marginLeft: 15, flexDirection: "column" }}>
-                <Title style={styles.title}>Mike Hunt</Title>
-                <Caption style={styles.caption}>mike_hunt@xyzoil.com</Caption>
+              <Text>
+        				<Text style={styles.header}>WORKSIDE CLIENT</Text>
+      			</Text>
+                <Title style={styles.title}>{userName}</Title>
+                <Caption style={styles.caption}>{email}</Caption>
               </View>
             </View>
           </View>
@@ -87,27 +107,25 @@ export function DrawerContent(props) {
                 props.navigation.navigate("Pending Projects");
               }}
             />
-            {/* <DrawerItem
+            <DrawerItem
               icon={({ color, size }) => (
-                <Icon name="archive" color={color} size={size} />
+                <IonIcon name="settings" color={color} size={size} />
               )}
-              label="Archived Projects"
-              onPress={() => {
-                props.navigation.navigate("Archived Projects");
-              }}
-            /> */}
+              label="Settings"
+              onPress={() => { ShowSettingsMessage();	}}
+            />
           </Drawer.Section>
-          {/* <Drawer.Section title="Preferences"> */}
-          {/* <TouchableRipple onPress={() => {toggleTheme()}}> */}
-          {/* <TouchableRipple>
+          {/* <Drawer.Section title="Preferences">
+          <TouchableRipple onPress={() => {toggleTheme()}}>
+          <TouchableRipple>
                         <View style={styles.preference}>
                                 <Text>Dark Theme</Text>
                                 <View pointerEvents="none">
                                     <Switch value={paperTheme.dark}/>
                                 </View>
                             </View>
-                        </TouchableRipple> */}
-          {/* </Drawer.Section> */}
+                        </TouchableRipple>
+          </Drawer.Section> */}
         </View>
       </DrawerContentScrollView>
       <Drawer.Section style={styles.bottomDrawerSection}>
@@ -129,6 +147,13 @@ const styles = StyleSheet.create({
   },
   userInfoSection: {
     paddingLeft: 20,
+  },
+  header: {
+    fontFamily: "sans-serif",
+    fontSize: 16,
+    marginTop: 3,
+    fontWeight: "bold",
+    color: "green",
   },
   title: {
     fontSize: 16,

@@ -258,8 +258,8 @@ const renderItemAccessory = (props) => {
 				size="small"
 				className={
 					currentStatus=== true ?
-					"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-					: "bg-gray-300 p-1 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+					"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-40 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+					: "bg-gray-300 p-1 rounded-lg w-40 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
 				}
 			>
 				<Text className="text-sm font-semibold">
@@ -488,35 +488,30 @@ const renderItemAccessory = (props) => {
 
 	return (
 		<>
-			<View w-full h-full>
-				<View className="items-center">
-					<Text>
+		<View className="flex-1">
+			<View className="items-center">
+					{/* <Text>
 						<Text className="text-green-500 text-2xl font-bold">WORK</Text>
 						<Text className="text-black text-2xl font-bold">SIDE</Text>
-					</Text>
-					<Text className="text-black text-xl font-bold">{projectName}</Text>
-					<Text className="text-black text-xl font-bold">{projectRig}</Text>
+					</Text> */}
+					<Text className="text-black text-lg font-bold">{projectName}</Text>
+					<Text className="text-black text-lg font-bold">{projectRig}</Text>
 				</View>
 				{bidData.length < 1 ? (
 					<View className="items-center p-2">
-						<Text className="text-red-500 text-xl font-bold">NO BIDS</Text>
+						<Text className="text-red-500 text-lg font-bold">NO BIDS</Text>
 					</View>
 				) : (
-					<View className="h-[550px]">
 						<List
-							// style={{ maxHeight: 400 }}
-							// style={{ maxHeight: viewHeight }}
+							contentContainerStyle className="flex-grow"
 							data={bidData}
 							renderItem={renderBids}
 						/>
-					</View>
 				)}
+				{bidData.length  ? (
 
-				<View
-					// style={{ alignItems: "center", paddingTop: 6, top: buttonPosition }}
-					style={{ alignItems: "center", paddingTop: 6 }}
-				>
-					<TouchableOpacity
+			<View className="items-center justify-between gap-3 pr-3 pl-3 pb-3">
+				<TouchableOpacity
 						disabled={!updateFlag}
 						className={
 							// checkedStatus === false
@@ -531,9 +526,10 @@ const renderItemAccessory = (props) => {
 							// navigation.navigate("ActiveRequests");
 						}}
 					>
-						<Text className="text-lg font-bold text-black">SAVE CHANGES</Text>
-					</TouchableOpacity>
-				</View>
+						<Text className="text-base font-bold text-black">Save Changes</Text>
+				</TouchableOpacity>
+			</View>
+				) : ( "" )}
 			</View>
 			<Modal
 				onBackdropPress={() => setModalVisible(!modalVisible)}

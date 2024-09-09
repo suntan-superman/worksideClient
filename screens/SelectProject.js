@@ -72,14 +72,13 @@ const SelectProject = () => {
   // };
 
   useEffect(() => {
-    navigation.addListener("beforeRemove", (e) => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       // Prevent Default Behavior
       e.preventDefault();
       Alert.alert(
         "Discard Changes?",
         "Are you sure you want to discard changes?",
         [
-          { text: "No", style: "cancel", onPress: () => {} },
           {
             text: "Yes",
             style: "destructive",
@@ -87,9 +86,11 @@ const SelectProject = () => {
               navigation.dispatch(e.data.action);
             },
           },
+          { text: "No", style: "cancel", onPress: () => {} },
         ]
       );
     });
+    return unsubscribe;
   }, [navigation]);
 
   const SaveProjectInfoToLocalStorage = () => {
@@ -125,13 +126,10 @@ const SelectProject = () => {
       onPress={() => projectPressHandler(props.selectedItem)}
       size="tiny"
       className={
-        "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-28 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-        // props.selectedItem.bidStatus === true
-        //   ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-16 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-        //   : "bg-yellow-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-16 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+        "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-28 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
       }
     >
-      <Text className="text-sm font-semibold">DETAILS</Text>
+      <Text className="text-base font-semibold">Details</Text>
     </Pressable>
   );
 
@@ -164,35 +162,37 @@ const SelectProject = () => {
 
   return (
     <>
-      <View>
-        <View className="items-center">
+		<View className="flex-1">
+    <View className="items-center">
           <Text>
             <Text className="text-green-500 text-2xl font-bold">WORK</Text>
             <Text className="text-black text-2xl font-bold">SIDE</Text>
-          </Text>
-          <Text className="text-black text-xl font-bold">Projects</Text>
+            <Text className="text-black text-xl font-bold"> Projects</Text>
+            </Text>
+          {/* <Text className="text-black text-xl font-bold">Projects</Text> */}
         </View>
         <List
-          style={{ maxHeight: listHeight }}
+          contentContainerStyle className="flex-grow"
+          // style={{ maxHeight: listHeight }}
           data={activeProjects}
           renderItem={renderProjects}
         />
-        <View style={{ alignItems: "center", paddingTop: 20 }}>
-          <TouchableOpacity
-            className={
-              disabledFlag
-                ? "bg-gray-400 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-64 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-                : "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-64 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-            }
-            disabled={disabledFlag}
-            onPress={() => {
-              SaveProjectInfoToLocalStorage();
-            }}
-          >
-            <Text className="text-base font-bold text-black">
-              SELECT PROJECT
-            </Text>
-          </TouchableOpacity>
+			<View className="items-center pt-2 pb-4">
+        <TouchableOpacity
+          className={
+            disabledFlag
+              ? "bg-gray-400 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-56 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+              : "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-56 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+          }
+          disabled={disabledFlag}
+          onPress={() => {
+            SaveProjectInfoToLocalStorage();
+          }}
+        >
+          <Text className="text-base font-bold text-black">
+            Project Requests
+          </Text>
+        </TouchableOpacity>
         </View>
       </View>
       <BottomModal

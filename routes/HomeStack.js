@@ -1,5 +1,4 @@
 import { Text, View, Alert, TouchableOpacity } from "react-native";
-import { useEffect } from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import RequestMapping from "../screens/RequestMapping";
 import NewRequest from "../screens/NewRequest";
@@ -56,60 +55,6 @@ async function registerForPushNotificationsAsync() {
   return token;
 }
 
-const screens = {
-  //////////////////////////////////////////////////////////
-  /////////////////////////////////////////////////////////
-  // LoginScreen: {
-  //   screen: LoginScreen,
-  // },
-  ///////////////////////////////////////////////////////////
-  SelectProject: {
-    screen: SelectProject,
-    navigationOptions: ({ navigation }) => {
-      return {
-        // May Not Need This
-        headerTitle: () => (
-          <Header title="Select Project" navigation={navigation} />
-        ),
-      };
-    },
-  },
-  ActiveRequests: {
-    screen: ActiveRequests,
-    navigationOptions: ({ navigation }) => {
-      return {
-        headerTitle: () => (
-          <Header title="Active Requests" navigation={navigation} />
-        ),
-      };
-    },
-  },
-  RequestDetails: {
-    screen: RequestDetails,
-    navigationOptions: {
-      title: "Request Details",
-    },
-  },
-  RequestBids: {
-    screen: RequestBids,
-    navigationOptions: {
-      title: "Request Bids",
-    },
-  },
-  NewRequest: {
-    screen: NewRequest,
-    navigationOptions: {
-      title: "New Request",
-    },
-  },
-  RequestMapping: {
-    screen: RequestMapping,
-    navigationOptions: {
-      title: "Request Mapping",
-    },
-  },
-};
-
 const HomeStack = createStackNavigator();
 
 const alarmSelected = () => {
@@ -127,11 +72,10 @@ const HomeStackScreen = ({ navigation }) => (
       name="SelectProject"
       component={SelectProject}
       options={{
-        title: "Select Project",
+        title: "WORKSIDE",
         headerRight: () => (
           <View>
             <TouchableOpacity style={{ marginLeft: 15 }}>
-              {/* <Icon name='alarm' size={28} onPress={alarmSelected} style={styles.alarmIcon} /> */}
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
@@ -142,27 +86,24 @@ const HomeStackScreen = ({ navigation }) => (
       name="ActiveRequests"
       component={ActiveRequests}
       options={{
-        title: "Active Requests",
+        title: "WORKSIDE Requests",
         headerRight: () => (
           <View>
             <TouchableOpacity style={{ marginLeft: 15 }}>
-              {/* <Icon name='alarm' size={28} onPress={alarmSelected} style={styles.alarmIcon} /> */}
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
         ),
       }}
     />
-    {/* <HomeStack.Screen name="RequestDetails" component={RequestDetails}/> */}
     <HomeStack.Screen
       name="RequestDetails"
       component={RequestDetails}
       options={{
-        title: "Request Details",
+        title: "WORKSIDE Details",
         headerRight: () => (
           <View>
             <TouchableOpacity style={{ marginLeft: 15 }}>
-              {/* <Icon name='alarm' size={28} onPress={alarmSelected} style={styles.alarmIcon} /> */}
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
@@ -173,11 +114,10 @@ const HomeStackScreen = ({ navigation }) => (
       name="RequestBids"
       component={RequestBids}
       options={{
-        title: "Request Bids",
+        title: "WORKSIDE Request Bids",
         headerRight: () => (
           <View>
             <TouchableOpacity style={{ marginLeft: 15 }}>
-              {/* <Icon name='alarm' size={28} onPress={alarmSelected} style={styles.alarmIcon} /> */}
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
@@ -189,11 +129,10 @@ const HomeStackScreen = ({ navigation }) => (
       name="NewRequest"
       component={NewRequest}
       options={{
-        title: "New Request",
+        title: "WORKSIDE New Request",
         headerRight: () => (
           <View>
             <TouchableOpacity style={{ marginLeft: 15 }}>
-              {/* <Icon name='alarm' size={28} onPress={alarmSelected} style={styles.alarmIcon} /> */}
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
@@ -206,11 +145,10 @@ const HomeStackScreen = ({ navigation }) => (
       name="RequestMapping"
       component={RequestMapping}
       options={{
-        title: "Request Mapping",
+        title: "WORKSIDE Tracking",
         headerRight: () => (
           <View>
             <TouchableOpacity style={{ marginLeft: 15 }}>
-              {/* <Icon name='alarm' size={28} onPress={alarmSelected} style={styles.alarmIcon} /> */}
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
