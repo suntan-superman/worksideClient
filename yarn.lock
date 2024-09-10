@@ -12512,6 +12512,11 @@ react-native-dropdown-picker@^5.4.6:
   resolved "https://registry.yarnpkg.com/react-native-dropdown-picker/-/react-native-dropdown-picker-5.4.6.tgz#3736fc468de4a295e4df8d1f65ed2eadaf9b445f"
   integrity sha512-T1XBHbE++M6aRU3wFYw3MvcOuabhWZ29RK/Ivdls2r1ZkZ62iEBZknLUPeVLMX3x6iUxj4Zgr3X2DGlEGXeHsA==
 
+react-native-floating-label-input@^1.4.3:
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/react-native-floating-label-input/-/react-native-floating-label-input-1.4.3.tgz#4945ea61e9733e8922a0601cde4a7f248c0ce867"
+  integrity sha512-+M4jxs5KiqzXGiFeUi+G69tpgQFDUknGpWbiRtiQVREvwFA5rkZW3HiETzx0zxYhhr7Jgb47thh+DOzkwwcQnA==
+
 react-native-gesture-handler@2.16.1:
   version "2.16.1"
   resolved "https://registry.yarnpkg.com/react-native-gesture-handler/-/react-native-gesture-handler-2.16.1.tgz#a2b6828134988632a87f5444a2cc2caa34f16748"

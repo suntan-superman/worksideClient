@@ -36,7 +36,9 @@ export default function LoginScreen({ setIsAuthenticated }) {
 	const focusRef = useRef(null);
 	const setLoggedInState = useUserStore((state) => state.setLoggedIn);
 	const setWorksideUsername = useUserStore((state) => state.setUsername);
+	const setWorksidePassword = useUserStore((state) => state.setPassword);
 	const setWorksideEmail = useUserStore((state) => state.setEmail);
+	const setWorksidePasscode = useUserStore((state) => state.setPasscode);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -57,6 +59,15 @@ export default function LoginScreen({ setIsAuthenticated }) {
 				setPassword(value);
 			} catch (error) {
 				console.error("useAsyncStorage getPassword error:", error);
+			}
+			try {
+				const value = await AsyncStorage.getItem("passcode");
+				if (!value) {
+					return;
+				}
+				setWorksidePasscode(value);
+			} catch (error) {
+				console.error("useAsyncStorage getPasscode error:", error);
 			}
 		};
 
@@ -148,6 +159,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 					setCurrentUserID(response.user.userId);
 				}
 				setWorksideUsername(response.user.user);
+				setWorksidePassword(response.user.password);
 				setWorksideEmail(response.user.email);
 			
 				// localStorage.setItem(

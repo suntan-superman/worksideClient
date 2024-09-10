@@ -1,4 +1,4 @@
-import { Text, View, Alert, TouchableOpacity } from "react-native";
+import { Text, View, Alert, TouchableOpacity, Settings } from "react-native";
 import "react-native-gesture-handler";
 import * as React from "react";
 import { useState, useEffect, useRef } from "react";
@@ -13,6 +13,7 @@ import Toast from "react-native-toast-message";
 
 import PendingProjects from "../screens/PendingProjects";
 import SelectProject from "../screens/SelectProject";
+import SettingsScreen from "../screens/SettingsScreen";
 
 const DrawerNavigator = createDrawerNavigator();
 
@@ -109,6 +110,14 @@ const RootDrawerNavigator = () => {
           ),
         }}
       />
+      <DrawerNavigator.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          title: "WORKSIDE",
+        }}
+      />
+
     </DrawerNavigator.Navigator>
   );
 };

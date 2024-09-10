@@ -16,13 +16,40 @@ import { Color } from "../GlobalStyles";
 import { Select, SelectItem, IndexPath } from "@ui-kitten/components";
 import axios from "axios";
 import { useStateContext } from "../src/contexts/ContextProvider";
-import { format } from "date-fns";
+import { format, set } from "date-fns";
 import useDataStore from "../src/stores/DataStore";
 import useRequestStore from "../src/stores/RequestStore";
 import { logTransaction } from "../src/helperFunction";
 import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
 import DateTimePickerModal from "@react-native-community/datetimepicker";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+
+// Passcode Modal
+import {
+	Dimensions,
+	FlatList,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withRepeat,
+	withSequence,
+	withTiming,
+} from "react-native-reanimated";
+import usePasscodeStore from "../src/stores/PasscodeStore";
+const { width, height } = Dimensions.get("window");
+const OFFSET = 20;
+const TIMING = 80;
+
+const dialPad = [1, 2, 3, 4, 5, 6, 7, 8, 9, "", 0, "del"];
+const dialPadSize = width * 0.125;
+const dialPadHeight = height * 0.125;
+const pinLength = 6;
+let numOfAttempts = 0;
+
+
+// End of Passcode Modal
 
 let modifyDialogFlag = false;
 
@@ -40,6 +67,8 @@ const RequestDetails = () => {
   // const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const dateTimeModalRef = useRef(null);
   const vendorModalRef = useRef(null);
+  const passcodeModalRef = useRef(null);
+  const [pinCode, setPinCode] = useState([]);
 
   const [modifyFlag, setModifyFlag] = useState(false);
   const [modalEditFlag, setModalEditFlag] = useState(false);
@@ -100,6 +129,8 @@ const RequestDetails = () => {
     const setReqArrivalTime = useRequestStore((state) => state.setReqArrivalTime);
     const setReqStatus = useRequestStore((state) => state.setReqStatus);
     
+    const [worksideValidatedFlag, setWorksideValidatedFlag] = useState(false);
+    const [postponedRequestFlag, setPostponedRequestFlag] = useState(false);
   
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
@@ -416,6 +447,7 @@ const RequestDetails = () => {
   };
 
   const ProcessPostponedRequest = (requestId) => {
+    setPostponedRequestFlag(false);
     Alert.alert(
       "Postpone Request",
       "Are you sure you want to POSTPONE the Request? This cannot be reversed!",
@@ -424,9 +456,13 @@ const RequestDetails = () => {
           text: "Yes",
           style: "destructive",
           onPress: () => {
+            handlePasscodePress();
+            setPostponedRequestFlag(true);
             // Set Request Status to POSTPONED
-            UpdateRequestStatus(requestId, "POSTPONED");
+            // TODO Change Back
+            // UpdateRequestStatus(requestId, "POSTPONED");
             // Set Bid Status to POSTPONED
+            // TODO Change Back
             UpdateRequestBidsStatus(requestId, "POSTPONED");
             // Set Awarded Bid to FALSE
             // Email All Parties
@@ -436,6 +472,17 @@ const RequestDetails = () => {
       ]
     );
   };
+
+  useEffect(() => {
+    // console.log("Postponed Request Flag: ", postponedRequestFlag);
+    // console.log("Validation Flag: ", worksideValidatedFlag);
+
+    if (postponedRequestFlag === true && worksideValidatedFlag === true) {
+      console.log("Validated Postponed Request Flag: ", postponedRequestFlag);
+      console.log("Validation Flag: ", worksideValidatedFlag);
+      setPostponedRequestFlag(false);
+    }
+  }, [postponedRequestFlag, worksideValidatedFlag]);
 
   const ProcessCanceledRequest = (requestId) => {
     Alert.alert(
@@ -740,8 +787,205 @@ const RequestDetails = () => {
       </>
     );
   };
+// Passcode Modal
+const handlePasscodePress = () => {
+  setWorksideValidatedFlag(false);
+  passcodeModalRef.current?.present();
+};
 
+const handlePasscodeClose = () => {
+  numOfAttempts = 0;
+  setPinCode([]);
+  // setWorksideValidatedFlag(false);
+  passcodeModalRef.current?.dismiss();
+};
 
+const handleSavePasscodeModalChanges = () => {
+  // Save Data
+  passcodeModalRef.current?.dismiss();
+};
+
+  const renderPasscodeModal = () => {
+  
+    // const [pinCode, setPinCode] = useState([]);
+    const codeLength = Array(6).fill(0);
+    const offset = useSharedValue(0);
+    const style = useAnimatedStyle(() => {
+      return {
+        transform: [{ translateX: offset.value }],
+      };
+    });
+  
+    useEffect(() => {
+      numOfAttempts = 0;
+      setPinCode([]);
+    }, []);
+  
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+    useEffect(() => {
+      if (numOfAttempts === 3) {
+        Alert.alert("Error", "Too many attempts");
+        setPinCode([]);
+        // Navigate to home screen
+      }
+    }, [numOfAttempts]);
+  
+    useEffect(() => {
+      if (pinCode.length === pinLength) {
+        numOfAttempts += 1;
+        // Validate passcode and re-route to home screen
+        if (pinCode.join("") !== "123456") {
+          offset.value = withSequence(
+            withTiming(-OFFSET, { duration: TIMING }),
+            withRepeat(withTiming(OFFSET, { duration: TIMING }), 4, true),
+            withTiming(0, { duration: TIMING }),
+          );
+  
+          setPinCode([]);
+          if(numOfAttempts === 3) {
+            Alert.alert("Error", "Too many attempts");
+            handlePasscodeClose();
+            // setValidatedFlag(false);
+            // setPasscodeRequested(true);
+            // navigation.goBack();
+            return;
+          }
+          return;
+        }
+  
+        numOfAttempts = 0;
+        setPinCode([]);
+        // setValidatedFlag(true);
+        // setPasscodeRequested(true);
+        console.log("Passcode validated");
+        setWorksideValidatedFlag(true);
+        handlePasscodeClose();
+        // navigation.goBack();
+      }
+    }, [pinCode]);
+  
+    const DialPad = ({ onPress }) => {
+      return (
+        <>
+        {/* <View className="flex-1 pt-2"> */}
+        <View className="flex-1 pt-2">
+          <FlatList
+            data={dialPad}
+            numColumns={3}
+            style={{ flexGrow: 1 }}
+            keyExtractor={(_, index) => index.toString()}
+            scrollEnabled={false}
+            columnWrapperStyle={{ gap: 20 }}
+            contentContainerStyle={{ gap: 20 }}
+            renderItem={({ item }) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => onPress(item)}
+                  disabled={item === ""}
+                >
+                  <View
+                    style={{
+                      width: dialPadSize,
+                      height: dialPadSize,
+                      borderRadius: dialPadSize / 2,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item === "del" ? (
+                      <Ionicons
+                        name="backspace-outline"
+                        size={dialPadSize / 2}
+                        color="black"
+                      />
+                    ) : item === "" ? (
+                      <Ionicons
+                        name="finger-print"
+                        size={dialPadSize / 2}
+                        color="black"
+                      />
+                    ) : (
+                      <Text className="text-green-500 text-3xl font-bold">
+                        {item}
+                      </Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </View>
+        </>
+      );
+    };
+  
+    return (
+      <>
+      <View className="flex-1 bg-white items-center">
+        <View className="items-center pb-2 pt-2">
+          <Text>
+            <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+            <Text className="text-black text-2xl font-bold">SIDE</Text>
+          </Text>
+        </View>
+  
+        <Text className="text-xl font-bold text-center mb-2 text-black">
+          Confirm with Passcode
+        </Text>
+        <Text className="text-xs font-bold text-center mb-2 text-black">
+            After 3 Failed Attempts, You Will Be Locked Out
+          </Text>
+          {numOfAttempts > 0 ? (
+          <View>
+            <Text className="text-xs font-bold text-center text-red-500">
+              {`Invalid passcode. Attempts Left: ${3 - numOfAttempts}`}
+            </Text>
+          </View>
+        ) : null}
+        <Animated.View style={[styles.codeView, style]}>
+          {codeLength.map((_, index) => (
+            <View
+              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+              key={index}
+              style={[
+                styles.codeEmpty,
+                {
+                  backgroundColor: pinCode[index] ? "black" : "transparent",
+                },
+              ]}
+            />
+          ))}
+        </Animated.View>
+        <DialPad
+          onPress={(item) => {
+            if (item === "del") {
+              setPinCode((prevCode) => prevCode.slice(0, prevCode.length - 1));
+            } else if (typeof item === "number") {
+              setPinCode((prevCode) => [...prevCode, item]);
+            }
+          }}
+        />
+        {/* {numOfAttempts > 0 ? (
+          <View>
+            <Text className="text-sm font-bold text-center text-red-500">
+              {`Invalid passcode. Attempts Left: ${3 - numOfAttempts}`}
+            </Text>
+          </View>
+        ) : null} */}
+        <View>
+          <Text className="text-sm font-bold text-center mb-2 text-black">
+            After Three Failed Attempts, You Will Be Locked Out
+          </Text>
+          <Text className="text-sm font-bold text-center mb-2 text-black">
+            Workside Software Copyright 2024
+          </Text>
+        </View>
+      </View>
+      </>
+    );
+  };
+  
+  
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <View>
@@ -1130,6 +1374,20 @@ const RequestDetails = () => {
             </BottomSheetView>
           </TouchableWithoutFeedback>
         </BottomSheetModal>
+        {/* Passcode Modal */}
+        <BottomSheetModal
+          ref={passcodeModalRef}
+          index={2}
+          snapPoints={snapPoints}
+          onDismiss={handlePasscodeClose}
+        // onDismiss={handleCloseDateTimeModal}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <BottomSheetView style={styles.contentContainer}>
+              {renderPasscodeModal()}
+            </BottomSheetView>
+          </TouchableWithoutFeedback>
+        </BottomSheetModal>
 
       </View>
     </TouchableWithoutFeedback>
@@ -1199,6 +1457,21 @@ const styles = StyleSheet.create({
     margin: 3,
     borderRadius: 15,
   },
+  // Passcode Modal styles
+  codeView: {
+		flexDirection: "row",
+		justifyContent: "center",
+		alignItems: "center",
+		gap: 20,
+		marginVertical: 20,
+    backgroundColor: "white",
+	},
+	codeEmpty: {
+		width: 20,
+		height: 20,
+		borderRadius: 10,
+		borderWidth: 2,
+	},
 });
 
 export default RequestDetails;

@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import useDataStore from "../src/stores/DataStore";
+import usePasscodeStore from "../src/stores/PasscodeStore";
 import {
 	Alert,
 	Text,
@@ -18,6 +19,8 @@ import { Modal, SlideAnimation, ModalContent } from "react-native-modals";
 // import { authenticateAsync } from "expo-local-authentication";
 import Toast from "react-native-toast-message";
 import { logTransaction } from "../src/helperFunction";
+
+////////////////////////////////////////////////////////////////////////////
 
 let currentStatus = false;
 let bidArray = [];
@@ -37,6 +40,8 @@ const RequestBids = () => {
 	const [confirmationMsg, setConfirmationMsg] = useState("");
 	const [confirmationFlag, setConfirmationFlag] = useState(false);
 	const modifyRequestFlag = useDataStore((state) => state.modifyRequestFlag);
+	const validatedFlag = usePasscodeStore((state) => state.validated);
+	const passcodeRequested = usePasscodeStore((state) => state.passcodeRequested);
 	const setModifyRequestFlag = useDataStore(
 		(state) => state.setModifyRequestFlag
 	);
@@ -45,15 +50,6 @@ const RequestBids = () => {
 	);
 
 	let bidResponse = null;
-
-	const [viewHeight, setViewHeight] = useState(
-		// Dimensions.get("screen").height * 0.5
-		400
-	);
-	const [buttonPosition, setButtonPosition] = useState(
-		// Dimensions.get("screen").height * 0.8
-		400
-	);
 
 	const [bidData, setBidData] = useState([]);
 	const [checkedStatus, setCheckedStatus] = useState(false);
@@ -155,7 +151,6 @@ const RequestBids = () => {
 			"Cancel Awarded Bid",
 			"Are you sure you want to cancel the Award? This cannot be reversed!",
 			[
-				{ text: "No", style: "cancel", onPress: () => {} },
 				{
 					text: "Yes",
 					style: "destructive",
@@ -168,6 +163,7 @@ const RequestBids = () => {
 						// console.log("Selected Bid Will Be Canceled: ", selectedBid);
 					},
 				},
+				{ text: "No", style: "cancel", onPress: () => {} },
 			]
 		);
 	};
@@ -177,7 +173,6 @@ const ProcessAwardedBid = (selectedBid) => {
 		"Select Bid",
 		"Are you sure you want to select this bid?",
 		[
-			{ text: "No", style: "cancel", onPress: () => {} },
 			{
 				text: "Yes",
 				style: "destructive",
@@ -194,6 +189,7 @@ const ProcessAwardedBid = (selectedBid) => {
 					});
 				},
 			},
+			{ text: "No", style: "cancel", onPress: () => {} },
 		]
 	);
 };
@@ -240,14 +236,21 @@ const renderItemAccessory = (props) => {
 			currentStatus= true;
 		}
 
+		useEffect(() => {
+			console.log(`Post Passcode: ${validatedFlag}`);
+			console.log(`Passcode Requested: ${passcodeRequested}`);
+		}, [validatedFlag]);
+
 		return (
 			<Pressable
 				onPress={() => {
 					// If checkedStatus === false, and currentStatus === false then set the status to SELECTED
 					// And set checkedStatus to true
 					if( bidAwardedFlag === true) {
-			  		setSelectedBid(props.selectedItem);	
-						ProcessCanceledBid(props.selectedItem)
+						navigation.navigate("PasscodeScreen");
+						// handlePasscodePress();
+			  		// setSelectedBid(props.selectedItem);	
+						// ProcessCanceledBid(props.selectedItem)
 					}
 					else {
 						setSelectedBid(props.selectedItem);	
@@ -531,6 +534,7 @@ const renderItemAccessory = (props) => {
 			</View>
 				) : ( "" )}
 			</View>
+
 			<Modal
 				onBackdropPress={() => setModalVisible(!modalVisible)}
 				swipeDirection={["up", "down"]}
@@ -552,7 +556,7 @@ const renderItemAccessory = (props) => {
             status: bid.requestbids.status,
             supplierid: bid.requestbids.supplierid,
             supplier: supplierName, */}
-
+{/* // TODO Add Estimated Cost */}
 				<ModalContent style={{ width: "100%", height: 400 }}>
 					{/* /////////////////////////////////////////////////////////// */}
 					{/* Output Header */}
@@ -657,5 +661,6 @@ const renderItemAccessory = (props) => {
 		</>
 	);
 };
+
 
 export default RequestBids;

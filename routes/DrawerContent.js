@@ -112,7 +112,8 @@ export function DrawerContent(props) {
                 <IonIcon name="settings" color={color} size={size} />
               )}
               label="Settings"
-              onPress={() => { ShowSettingsMessage();	}}
+              onPress={() => { props.navigation.navigate("Settings");
+              }}
             />
           </Drawer.Section>
           {/* <Drawer.Section title="Preferences">

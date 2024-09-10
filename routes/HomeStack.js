@@ -6,6 +6,7 @@ import RequestDetails from "../screens/RequestDetails";
 import ActiveRequests from "../screens/ActiveRequests";
 import SelectProject from "../screens/SelectProject";
 import RequestBids from "../screens/RequestBids";
+import PasscodeScreen from "../screens/PasscodeScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
@@ -153,6 +154,13 @@ const HomeStackScreen = ({ navigation }) => (
             </TouchableOpacity>
           </View>
         ),
+      }}
+    />
+    <HomeStack.Screen
+      name="PasscodeScreen"
+      component={PasscodeScreen}
+      options={{
+        title: "WORKSIDE Confirmation",
       }}
     />
   </HomeStack.Navigator>
