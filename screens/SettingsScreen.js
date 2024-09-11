@@ -8,6 +8,7 @@ import {
 	TouchableOpacity,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import Toast from "react-native-toast-message";
 import { FloatingLabelInput } from "react-native-floating-label-input";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import useUserStore from "../src/stores/UserStore";
@@ -27,6 +28,11 @@ const SettingsScreen = () => {
 	const [showCode, setShowCode] = useState(false);
 	const [showConfirmCode, setShowConfirmCode] = useState(false);
 
+  useEffect(() => {
+    setUserPassword("");
+    setPasscode("");
+    setConfirmPasscode("");
+  }, []);  
 
 	const SaveChanges = async () => {
     // Validate Data
@@ -47,10 +53,31 @@ const SettingsScreen = () => {
 		// Save Data
     await AsyncStorage.setItem("passcode", passcode);
     // Show Success Message
-    Alert.alert("Success", "Passcode has been updated");
+    Toast.show({
+      type: "success",
+      text1: "Workside Software",
+      text2: "Passcode has been updated",
+      visibilityTime: 5000,
+      autoHide: true,
+    });	
     // Redirect to Home
     navigation.goBack();
 	};
+
+  const ClearPasscode = async () => {
+    // Clear Passcode
+    await AsyncStorage.removeItem("passcode");
+    // Show Success Message
+    Toast.show({
+      type: "success",
+      text1: "Workside Software",
+      text2: "Passcode has been cleared",
+      visibilityTime: 5000,
+      autoHide: true,
+    });	
+    // Redirect to Home
+    navigation.goBack();
+  };
 
   return (
     <>
@@ -105,6 +132,8 @@ const SettingsScreen = () => {
                   backgroundColor: "#fff",
                   borderColor: "black",
                   borderRadius: 8,
+                  borderRightWidth: 4,
+                  borderBottomWidth: 4,
                 }}
                 customLabelStyles={{
                   colorFocused: "red",
@@ -143,6 +172,8 @@ const SettingsScreen = () => {
                   backgroundColor: "#fff",
                   borderColor: "black",
                   borderRadius: 8,
+                  borderRightWidth: 4,
+                  borderBottomWidth: 4,
                 }}
                 customLabelStyles={{
                   colorFocused: "red",
@@ -181,6 +212,8 @@ const SettingsScreen = () => {
                   backgroundColor: "#fff",
                   borderColor: "black",
                   borderRadius: 8,
+                  borderRightWidth: 4,
+                  borderBottomWidth: 4,
                 }}
                 customLabelStyles={{
                   colorFocused: "red",
@@ -201,7 +234,7 @@ const SettingsScreen = () => {
             </View>
           </View>
         </View>
-        <View className="flex-row items-center justify-center gap-7 pt-1 pb-2">
+        <View className="flex-row items-center justify-center gap-7 pt-3 pb-2">
           <TouchableOpacity
             className={
               (userPassword.length < 5 || passcode.length < 5 || confirmPasscode.length < 5) ?
@@ -221,6 +254,17 @@ const SettingsScreen = () => {
             onPress={navigation.goBack} 
           >
             <Text className="text-base font-bold text-black">Cancel</Text>
+          </TouchableOpacity>
+        </View>
+        {/* Reset Button */}
+        <View className="flex-row items-center justify-center gap-7 pt-3 pb-2">
+          <TouchableOpacity
+            className={
+              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-36 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+            }
+            onPress={ClearPasscode} 
+          >
+            <Text className="text-base font-bold text-black">Clear Passcode</Text>
           </TouchableOpacity>
         </View>
       </View>

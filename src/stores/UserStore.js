@@ -13,6 +13,8 @@ const userStore = (set, get) => ({
   setLoggedIn: (value) => set({ loggedIn: value }),
   companyID: null,
   setCompanyID: (value) => set({ companyID: value }),
+  passcodeFlag: false,
+  setPasscodeFlag: (value) => set({ passcodeFlag: value }),
   passcode: "",
   setPasscode: (value) => set({ passcode: value }),
 });

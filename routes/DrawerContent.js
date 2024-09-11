@@ -19,6 +19,7 @@ export function DrawerContent(props) {
   const SystemLogOut = () => {
     // Need confirm logout
     Alert.alert("Logout", "Are you sure you want to logout?", [
+      { text: "OK", onPress: () => navigation.navigate("LoginScreen") },
       {
         text: "Cancel",
         onPress: () => {
@@ -31,7 +32,6 @@ export function DrawerContent(props) {
           });
         },
       },
-      { text: "OK", onPress: () => navigation.navigate("LoginScreen") },
     ]);
   };
 

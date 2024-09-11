@@ -39,6 +39,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 	const setWorksidePassword = useUserStore((state) => state.setPassword);
 	const setWorksideEmail = useUserStore((state) => state.setEmail);
 	const setWorksidePasscode = useUserStore((state) => state.setPasscode);
+	const setPasscodeFlag = useUserStore((state) => state.setPasscodeFlag);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -63,8 +64,10 @@ export default function LoginScreen({ setIsAuthenticated }) {
 			try {
 				const value = await AsyncStorage.getItem("passcode");
 				if (!value) {
+					setPasscodeFlag(false);
 					return;
 				}
+				setPasscodeFlag(true);
 				setWorksidePasscode(value);
 			} catch (error) {
 				console.error("useAsyncStorage getPasscode error:", error);
@@ -161,7 +164,27 @@ export default function LoginScreen({ setIsAuthenticated }) {
 				setWorksideUsername(response.user.user);
 				setWorksidePassword(response.user.password);
 				setWorksideEmail(response.user.email);
-			
+			// Check to see if Passcode Exists and Set Global State
+			try {
+				const value = await AsyncStorage.getItem("passcode");
+				if (!value) {
+					setPasscodeFlag(false);
+					Toast.show({
+						type: "error",
+						text1: "Workside Software",
+						text2: "Passcode Required!\nPlease Set Passcode in Settings.",
+						visibilityTime: 5000,
+						autoHide: true,
+					});	
+				}
+				else	{
+					setPasscodeFlag(true);
+					setWorksidePasscode(value);
+				}
+			} catch (error) {
+					console.error("useAsyncStorage getPasscode error:", error);
+			}
+	
 				// localStorage.setItem(
 				//   process.env.REACT_APP_LOCALHOST_KEY,
 				//   JSON.stringify(data.user)

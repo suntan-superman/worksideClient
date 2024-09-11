@@ -1,14 +1,17 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import useDataStore from "../src/stores/DataStore";
-import usePasscodeStore from "../src/stores/PasscodeStore";
+import useUserStore from "../src/stores/UserStore";
 import {
 	Alert,
+	Keyboard,
+	Pressable,
+	StyleSheet,
 	Text,
 	TextInput,
-	View,
-	Pressable,
 	TouchableOpacity,
+	TouchableWithoutFeedback,
+	View,
 } from "react-native";
 import { CheckBox, List, ListItem } from "@ui-kitten/components";
 import { format, set } from "date-fns";
@@ -16,11 +19,37 @@ import { useStateContext } from "../src/contexts/ContextProvider";
 import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Modal, SlideAnimation, ModalContent } from "react-native-modals";
+import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
 // import { authenticateAsync } from "expo-local-authentication";
 import Toast from "react-native-toast-message";
 import { logTransaction } from "../src/helperFunction";
 
 ////////////////////////////////////////////////////////////////////////////
+// Passcode Modal
+import {
+	Dimensions,
+	FlatList,
+} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import Animated, {
+	useAnimatedStyle,
+	useSharedValue,
+	withRepeat,
+	withSequence,
+	withTiming,
+} from "react-native-reanimated";
+const { width, height } = Dimensions.get("window");
+const OFFSET = 20;
+const TIMING = 80;
+
+const dialPad = [1, 2, 3, 4, 5, 6, 7, 8, 9, "", 0, "del"];
+const dialPadSize = width * 0.125;
+const dialPadHeight = height * 0.125;
+const pinLength = 6;
+let numOfAttempts = 0;
+
+
+// End of Passcode Modal
 
 let currentStatus = false;
 let bidArray = [];
@@ -40,14 +69,19 @@ const RequestBids = () => {
 	const [confirmationMsg, setConfirmationMsg] = useState("");
 	const [confirmationFlag, setConfirmationFlag] = useState(false);
 	const modifyRequestFlag = useDataStore((state) => state.modifyRequestFlag);
-	const validatedFlag = usePasscodeStore((state) => state.validated);
-	const passcodeRequested = usePasscodeStore((state) => state.passcodeRequested);
 	const setModifyRequestFlag = useDataStore(
 		(state) => state.setModifyRequestFlag
 	);
 	const setModifyRequestBidFlag = useDataStore(
 		(state) => state.setModifyRequestBidFlag
 	);
+
+	const worksidePasscode = useUserStore((state) => state.passcode);
+	const passcodeModalRef = useRef(null);
+  const [pinCode, setPinCode] = useState([]);
+  const snapPoints = useMemo(() => ["25%", "50%", "75%", "90%"], []);
+	const [worksideValidatedFlag, setWorksideValidatedFlag] = useState(false);
+	const [awardBidFlag, setAwardBidFlag] = useState(false);
 
 	let bidResponse = null;
 
@@ -147,6 +181,7 @@ const RequestBids = () => {
 	};
 
 	const ProcessCanceledBid = (selectedBid) => {
+		// TODO - Add Passcode Verification
 		Alert.alert(
 			"Cancel Awarded Bid",
 			"Are you sure you want to cancel the Award? This cannot be reversed!",
@@ -177,22 +212,37 @@ const ProcessAwardedBid = (selectedBid) => {
 				text: "Yes",
 				style: "destructive",
 				onPress: () => {
-					// Set Other Bids To DECLINED
-					UpdateRequestBidsStatus(reqID, "DECLINED");
+					handlePasscodePress();
+					setAwardBidFlag(true);
 
-					console.log("Selected Bid: ", selectedBid);
-					selectedBid.status = "AWARDED-A";
-					setBidAwardedFlag(true);
-					AwardRequestBid(selectedBid).then(() => {
-						UpdateRequestStatus("AWARDED-A");
-						console.log("Selected Bid Will Be Awarded: ", selectedBid);
-					});
+					// Set Other Bids To DECLINED
+					// TODO Update All Bids to DECLINED
+					// UpdateRequestBidsStatus(reqID, "DECLINED");
+
+					// console.log("Selected Bid: ", selectedBid);
+					// selectedBid.status = "AWARDED-A";
+					// setBidAwardedFlag(true);
+					// AwardRequestBid(selectedBid).then(() => {
+					// 	UpdateRequestStatus("AWARDED-A");
+					// 	console.log("Selected Bid Will Be Awarded: ", selectedBid);
+					// });
 				},
 			},
 			{ text: "No", style: "cancel", onPress: () => {} },
 		]
 	);
 };
+
+useEffect(() => {
+	// console.log("Postponed Request Flag: ", awardBidFlag);
+	// console.log("Validation Flag: ", worksideValidatedFlag);
+
+	if (awardBidFlag === true && worksideValidatedFlag === true) {
+		console.log("Validated Awarded Bid Flag: ", awardBidFlag);
+		console.log("Validation Flag: ", worksideValidatedFlag);
+		setAwardBidFlag(false);
+	}
+}, [awardBidFlag, worksideValidatedFlag]);
 
 const UpdateRequestBidsStatus = async (reqID, status) => {
 	const strAPI = `${apiURL}/api/requestbid/updateall`;
@@ -236,18 +286,12 @@ const renderItemAccessory = (props) => {
 			currentStatus= true;
 		}
 
-		useEffect(() => {
-			console.log(`Post Passcode: ${validatedFlag}`);
-			console.log(`Passcode Requested: ${passcodeRequested}`);
-		}, [validatedFlag]);
-
 		return (
 			<Pressable
 				onPress={() => {
 					// If checkedStatus === false, and currentStatus === false then set the status to SELECTED
 					// And set checkedStatus to true
 					if( bidAwardedFlag === true) {
-						navigation.navigate("PasscodeScreen");
 						// handlePasscodePress();
 			  		// setSelectedBid(props.selectedItem);	
 						// ProcessCanceledBid(props.selectedItem)
@@ -489,6 +533,222 @@ const renderItemAccessory = (props) => {
 		);
 	};
 
+  useEffect(() => {
+    // console.log("Postponed Request Flag: ", postponedRequestFlag);
+    // console.log("Validation Flag: ", worksideValidatedFlag);
+
+    if (awardBidFlag === true && worksideValidatedFlag === true) {
+      console.log("Validated Award Bid Flag: ", awardBidFlag);
+      console.log("Validation Flag: ", worksideValidatedFlag);
+      setAwardBidFlag(false);
+    }
+  }, [awardBidFlag, worksideValidatedFlag]);
+
+// Passcode Modal
+const handlePasscodePress = () => {
+  setWorksideValidatedFlag(false);
+  passcodeModalRef.current?.present();
+};
+
+const handlePasscodeClose = () => {
+  numOfAttempts = 0;
+  setPinCode([]);
+  // setWorksideValidatedFlag(false);
+  passcodeModalRef.current?.dismiss();
+};
+
+const handleSavePasscodeModalChanges = () => {
+  // Save Data
+  // console.log("Request Details Passcode: ", pinCode.join(""));
+  // console.log("Request Details Workside Passcode: ", worksidePasscode);
+  // worksidePasscode === pinCode.join("") ? setWorksideValidatedFlag(true) : setWorksideValidatedFlag(false);
+  passcodeModalRef.current?.dismiss();
+};
+
+  const renderPasscodeModal = () => {
+  
+    // const [pinCode, setPinCode] = useState([]);
+    const codeLength = Array(6).fill(0);
+    const offset = useSharedValue(0);
+    const style = useAnimatedStyle(() => {
+      return {
+        transform: [{ translateX: offset.value }],
+      };
+    });
+  
+    useEffect(() => {
+      numOfAttempts = 0;
+      setPinCode([]);
+    }, []);
+  
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+    useEffect(() => {
+      if (numOfAttempts === 3) {
+        Alert.alert("Error", "Too many attempts");
+        setPinCode([]);
+        // Navigate to home screen
+      }
+    }, [numOfAttempts]);
+  
+    useEffect(() => {
+      if (pinCode.length === pinLength) {
+        numOfAttempts += 1;
+        console.log("Number of Attempts: ", numOfAttempts);
+        // Validate passcode and re-route to home screen
+        // console.log("Request Details Passcode: ", pinCode.join(""));
+        // console.log("Request Details Workside Passcode: ", worksidePasscode);
+        // worksidePasscode === pinCode.join("") ? setWorksideValidatedFlag(true) : setWorksideValidatedFlag(false);
+      
+        if (pinCode.join("") !== worksidePasscode) {
+            offset.value = withSequence(
+            withTiming(-OFFSET, { duration: TIMING }),
+            withRepeat(withTiming(OFFSET, { duration: TIMING }), 4, true),
+            withTiming(0, { duration: TIMING }),
+          );
+  
+          setPinCode([]);
+          if(numOfAttempts === 3) {
+            Alert.alert("Error", "Too many attempts");
+            handlePasscodeClose();
+            // setValidatedFlag(false);
+            // setPasscodeRequested(true);
+            // navigation.goBack();
+            return;
+          }
+          return;
+        }
+  
+        numOfAttempts = 0;
+        setPinCode([]);
+        // setValidatedFlag(true);
+        // setPasscodeRequested(true);
+        setWorksideValidatedFlag(true);
+        handlePasscodeClose();
+        // navigation.goBack();
+      }
+    }, [pinCode]);
+  
+    const DialPad = ({ onPress }) => {
+      return (
+        <>
+        {/* <View className="flex-1 pt-2"> */}
+        <View className="flex-1 pt-2">
+          <FlatList
+            data={dialPad}
+            numColumns={3}
+            style={{ flexGrow: 1 }}
+            keyExtractor={(_, index) => index.toString()}
+            scrollEnabled={false}
+            columnWrapperStyle={{ gap: 20 }}
+            contentContainerStyle={{ gap: 20 }}
+            renderItem={({ item }) => {
+              return (
+                <TouchableOpacity
+                  onPress={() => onPress(item)}
+                  disabled={item === ""}
+                >
+                  <View
+                    style={{
+                      width: dialPadSize,
+                      height: dialPadSize,
+                      borderRadius: dialPadSize / 2,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {item === "del" ? (
+                      <Ionicons
+                        name="backspace-outline"
+                        size={dialPadSize / 2}
+                        color="black"
+                      />
+                    ) : item === "" ? (
+                      <Ionicons
+                        name="finger-print"
+                        size={dialPadSize / 2}
+                        color="black"
+                      />
+                    ) : (
+                      <Text className="text-green-500 text-3xl font-bold">
+                        {item}
+                      </Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        </View>
+        </>
+      );
+    };
+		return (
+      <>
+      <View className="flex-1 bg-white items-center">
+        <View className="items-center pb-2 pt-2">
+          <Text>
+            <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+            <Text className="text-black text-2xl font-bold">SIDE</Text>
+          </Text>
+        </View>
+  
+        <Text className="text-xl font-bold text-center mb-2 text-black">
+          Confirm with Passcode
+        </Text>
+        <Text className="text-xs font-bold text-center mb-2 text-black">
+            After 3 Failed Attempts, You Will Be Locked Out
+          </Text>
+          {numOfAttempts > 0 ? (
+          <View>
+            <Text className="text-xs font-bold text-center text-red-500">
+              {`Invalid passcode. Attempts Left: ${3 - numOfAttempts}`}
+            </Text>
+          </View>
+        ) : null}
+        <Animated.View style={[styles.codeView, style]}>
+          {codeLength.map((_, index) => (
+            <View
+              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+              key={index}
+              style={[
+                styles.codeEmpty,
+                {
+                  backgroundColor: pinCode[index] ? "black" : "transparent",
+                },
+              ]}
+            />
+          ))}
+        </Animated.View>
+        <DialPad
+          onPress={(item) => {
+            if (item === "del") {
+              setPinCode((prevCode) => prevCode.slice(0, prevCode.length - 1));
+            } else if (typeof item === "number") {
+              setPinCode((prevCode) => [...prevCode, item]);
+            }
+          }}
+        />
+        {/* {numOfAttempts > 0 ? (
+          <View>
+            <Text className="text-sm font-bold text-center text-red-500">
+              {`Invalid passcode. Attempts Left: ${3 - numOfAttempts}`}
+            </Text>
+          </View>
+        ) : null} */}
+        <View>
+          <Text className="text-sm font-bold text-center mb-2 text-red">
+            After Three Failed Attempts, You Will Be Locked Out
+          </Text>
+          <Text className="text-sm font-bold text-center mb-2 text-black">
+            Workside Software Copyright 2024
+          </Text>
+        </View>
+      </View>
+      </>
+    );
+  };
+// End of Passcode Modal
+
 	return (
 		<>
 		<View className="flex-1">
@@ -534,6 +794,20 @@ const renderItemAccessory = (props) => {
 			</View>
 				) : ( "" )}
 			</View>
+        {/* Passcode Modal */}
+        <BottomSheetModal
+          ref={passcodeModalRef}
+          index={2}
+          snapPoints={snapPoints}
+          onDismiss={handlePasscodeClose}
+        // onDismiss={handleCloseDateTimeModal}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+            <BottomSheetView style={styles.contentContainer}>
+              {renderPasscodeModal()}
+            </BottomSheetView>
+          </TouchableWithoutFeedback>
+        </BottomSheetModal>
 
 			<Modal
 				onBackdropPress={() => setModalVisible(!modalVisible)}
@@ -661,6 +935,40 @@ const renderItemAccessory = (props) => {
 		</>
 	);
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    height: "50%", // 50%
+    justifyContent: "center",
+    backgroundColor: "white",
+  },
+  contentContainer: {
+    flex: 1,
+    height: "50%", // 50%
+    padding: 12,
+    // width: "90%",
+    alignSelf: "center",
+    alignItems: "center",
+    backgroundColor: "#D4D4D4",
+  },
+  // Passcode Modal styles
+  codeView: {
+		flexDirection: "row",
+		justifyContent: "center",
+		alignItems: "center",
+		gap: 20,
+		marginVertical: 20,
+    backgroundColor: "white",
+	},
+	codeEmpty: {
+		width: 20,
+		height: 20,
+		borderRadius: 10,
+		borderWidth: 2,
+	},
+});
 
 
 export default RequestBids;

@@ -19,6 +19,7 @@ import { useStateContext } from "../src/contexts/ContextProvider";
 import { format, set } from "date-fns";
 import useDataStore from "../src/stores/DataStore";
 import useRequestStore from "../src/stores/RequestStore";
+import useUserStore from "../src/stores/UserStore";
 import { logTransaction } from "../src/helperFunction";
 import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
 import DateTimePickerModal from "@react-native-community/datetimepicker";
@@ -37,7 +38,6 @@ import Animated, {
 	withSequence,
 	withTiming,
 } from "react-native-reanimated";
-import usePasscodeStore from "../src/stores/PasscodeStore";
 const { width, height } = Dimensions.get("window");
 const OFFSET = 20;
 const TIMING = 80;
@@ -62,6 +62,7 @@ const RequestDetails = () => {
 	const { apiURL, currentUserID } = useStateContext();
   // const worksideModifyFlag = useDataStore((state) => state.worksideModifyFlag);
 	const setWorksideModifyFlag = useDataStore((state) => state.setWorksideModifyFlag);
+	const worksidePasscode = useUserStore((state) => state.passcode);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   // const [isDatePickerVisible, setDatePickerVisible] = useState(false);
@@ -234,6 +235,7 @@ const RequestDetails = () => {
   }, []);
 
   const SaveModifiedData = async () => {
+		// TODO - Add Passcode Verification
     Alert.alert(
       "Save Changes?",
       "Are you sure you want to save changes?",
@@ -485,6 +487,8 @@ const RequestDetails = () => {
   }, [postponedRequestFlag, worksideValidatedFlag]);
 
   const ProcessCanceledRequest = (requestId) => {
+ 		// TODO - Add Passcode Verification
+
     Alert.alert(
       "Cancel Request",
       "Are you sure you want to CANCEL the Request? This cannot be reversed!",
@@ -787,6 +791,7 @@ const RequestDetails = () => {
       </>
     );
   };
+
 // Passcode Modal
 const handlePasscodePress = () => {
   setWorksideValidatedFlag(false);
@@ -802,6 +807,9 @@ const handlePasscodeClose = () => {
 
 const handleSavePasscodeModalChanges = () => {
   // Save Data
+  // console.log("Request Details Passcode: ", pinCode.join(""));
+  // console.log("Request Details Workside Passcode: ", worksidePasscode);
+  // worksidePasscode === pinCode.join("") ? setWorksideValidatedFlag(true) : setWorksideValidatedFlag(false);
   passcodeModalRef.current?.dismiss();
 };
 
@@ -833,9 +841,14 @@ const handleSavePasscodeModalChanges = () => {
     useEffect(() => {
       if (pinCode.length === pinLength) {
         numOfAttempts += 1;
+        console.log("Number of Attempts: ", numOfAttempts);
         // Validate passcode and re-route to home screen
-        if (pinCode.join("") !== "123456") {
-          offset.value = withSequence(
+        // console.log("Request Details Passcode: ", pinCode.join(""));
+        // console.log("Request Details Workside Passcode: ", worksidePasscode);
+        // worksidePasscode === pinCode.join("") ? setWorksideValidatedFlag(true) : setWorksideValidatedFlag(false);
+      
+        if (pinCode.join("") !== worksidePasscode) {
+            offset.value = withSequence(
             withTiming(-OFFSET, { duration: TIMING }),
             withRepeat(withTiming(OFFSET, { duration: TIMING }), 4, true),
             withTiming(0, { duration: TIMING }),
@@ -857,7 +870,6 @@ const handleSavePasscodeModalChanges = () => {
         setPinCode([]);
         // setValidatedFlag(true);
         // setPasscodeRequested(true);
-        console.log("Passcode validated");
         setWorksideValidatedFlag(true);
         handlePasscodeClose();
         // navigation.goBack();
@@ -973,7 +985,7 @@ const handleSavePasscodeModalChanges = () => {
           </View>
         ) : null} */}
         <View>
-          <Text className="text-sm font-bold text-center mb-2 text-black">
+          <Text className="text-sm font-bold text-center mb-2 text-red">
             After Three Failed Attempts, You Will Be Locked Out
           </Text>
           <Text className="text-sm font-bold text-center mb-2 text-black">
