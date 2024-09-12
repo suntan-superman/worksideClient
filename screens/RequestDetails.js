@@ -1000,7 +1000,7 @@ const handleSavePasscodeModalChanges = () => {
   
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View>
+      <View className="bg-white w-[100%]">
         <View className="items-center mb-0">
           {/* <Text>
             <Text className="text-green-500 text-xl font-bold">WORK</Text>
@@ -1013,7 +1013,9 @@ const handleSavePasscodeModalChanges = () => {
             {reqData.rigcompany}
           </Text>
         </View>
-        <View
+        {/* <View className="flex-row items-center justify-between w-[100%] pt-1 pb-2"> */}
+        <View className="flex-row justify-around items-center w-full pt-2 pb-2">
+{/*         
           style={{
             flexDirection: "row",
             alignContent: "space-around",
@@ -1023,7 +1025,7 @@ const handleSavePasscodeModalChanges = () => {
             alignItems: "center",
             width: "100%",
           }}
-        >
+        > */}
           <View className="items-start">
             <Text>
               <Text className="text-black text-sm font-bold">STATUS: </Text>
@@ -1054,11 +1056,12 @@ const handleSavePasscodeModalChanges = () => {
         {/* ***************************************************************************** */}
         {/* Request Data Field */}
         {/* ***************************************************************************** */}
-        <View
+        <View className="flex-start justify-center items-center">
+        <View 
           style={{
             justifyContent: "flex-start",
             paddingTop: 0,
-            left: 15,
+            // left: 15,
             width: "90%",
           }}
         >
@@ -1073,186 +1076,187 @@ const handleSavePasscodeModalChanges = () => {
             editable={editFlag}
           ></TextInput>
         </View>
+        </View>
         {/* ***************************************************************************** */}
         {/* Quantity Data Field */}
         {/* ***************************************************************************** */}
-        <View
-          style={{
-            justifyContent: "flex-start",
-            paddingTop: 0,
-            left: 15,
-            width: "90%",
-          }}
-        >
-          <Text className="text-black text-base font-bold">Quantity</Text>
-          <TextInput
-            // Changed 2024-07-04
-            // value={String(reqData.quantity)}
-            value={requestQty}
-            className={
-              editFlag === true
-                ? "bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
-                : "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
-            }
-            editable={editFlag}
-            keyboardType="numeric"
-            onChangeText={(text) => updateRequestQuantity(text)}
-          />
-        </View>
-
-        {/* ***************************************************************************** */}
-        {/* ***************************************************************************** */}
-        {/* Comments Data Field */}
-        {/* ***************************************************************************** */}
-        <View
-          style={{
-            justifyContent: "flex-start",
-            paddingTop: 0,
-            left: 15,
-            width: "90%",
-            // height: 110,
-          }}
-        >
-          <TextInput
-            value={requestComment}
-            className={
-              editFlag === true
-                ? "bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
-                : "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
-            }
-            editable={editFlag}
-            keyboardType="default"
-            multiline={true}
-            numberOfLines={3}
-            onChangeText={(text) => updateRequestComment(text)}
-          />
-        </View>
-
-        {/* ***************************************************************************** */}
-        {/* Preferred Vendor Data Field */}
-        {/* ***************************************************************************** */}
-        <View
-          style={{
-            justifyContent: "flex-start",
-            paddingTop: 0,
-            left: 15,
-            width: "90%",
-          }}
-        >
-          {editFlag === false ? (
-            <><Text className="text-black text-base font-bold">Vendor</Text>
-              <TextInput
-                defaultValue="Request"
-                value={reqData.vendortype}
-                className=
-                "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
-                editable={editFlag}
-                onChangeText={(text) => setRequestVendor(text)} /></>
-          ) : (
-            <><Text className="text-black text-base font-bold">Vendor</Text>
-              <TouchableOpacity
-                className="bg-green-300 hover:drop-shadow-xl hover:bg-light-gray mb-2 pl-3 pr-3 w-full flex-row justify-between items-center border-2 border-solid border-black border-r-4 border-b-4"
-                onPress={handleVendorPress}
-              >
-                <Text className="text-base font-bold text-black align-middle">
-                  {reqData.vendortype}
-                </Text>
-                <Icon name="chevron-down" size={25} />
-              </TouchableOpacity>
-            </>)}
-        </View>
-
-        {/* ***************************************************************************** */}
-        {/********************************************************** */}
-        {/* Date/Time Required Field */}
-        {/********************************************************** */}
-        <View
-          style={{
-            justifyContent: "flex-start",
-            paddingTop: 0,
-            left: 15,
-            width: "90%",
-          }}
-        >
-          <Text className="text-black text-base font-bold">
-            Date/Time Required
-          </Text>
-          {editFlag === false ? (
+        <View className="flex-start justify-center items-center">
+          <View
+            style={{
+              justifyContent: "flex-start",
+              paddingTop: 0,
+              width: "90%",
+            }}
+          >
+            <Text className="text-black text-base font-bold">Quantity</Text>
             <TextInput
-              value={format(dateTimeRequested, "MM/dd/yyyy HH:mm")}
-              className="bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
-              editable={false}
-            />
-          ) : (
-            <TouchableOpacity
-              className="bg-green-300 hover:drop-shadow-xl hover:bg-light-gray mb-2 pl-3 pr-3 w-full flex-row justify-between items-center border-2 border-solid border-black border-r-4 border-b-4"
-              onPress={handleDateTimePress}
-            >
-              <Text className="text-base font-bold text-black align-middle">
-                {format(dateTimeRequested, "MM/dd/yyyy HH:mm")}
-              </Text>
-              <Icon name="chevron-down" size={25} />
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/********************************************************** */}
-        <View
-          style={{
-            justifyContent: "flex-start",
-            paddingTop: 0,
-            left: 15,
-            width: "90%",
-          }}
-        >
-          <Text className="text-black text-base font-bold">Link To</Text>
-          {editFlag === false ? (
-            // biome-ignore lint/style/useSelfClosingElements: <explanation>
-            <TextInput
-              defaultValue="Link To Other Request"
+              // Changed 2024-07-04
+              // value={String(reqData.quantity)}
+              value={requestQty}
               className={
                 editFlag === true
                   ? "bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
                   : "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
               }
               editable={editFlag}
-            ></TextInput>
-          ) : (
-            <Select
-              style={{
-                width: "100%",
-                height: 45,
-                borderRadius: 5,
-                borderWidth: 1,
-                fontWeight: "700",
-                borderColor: "lightgray",
-                backgroundColor: Color.silver_200,
-              }}
-              placeholder={"Link To Other Request"}
-              selectedIndex={selectedIndex}
-              value={requestLinkTo}
-              onSelect={(index) => {
-                setSelectedIndex(index);
-                setRequestLinkTo(index);
-                modifyDialogFlag = true;
-              }}
-            >
-              {reqList.map((item) => {
-                return (
-                  <SelectItem
-                    key={item}
-                    title={item}
-                    onPress={() => {
-                      setRequestLinkTo(item);
-                      modifyDialogFlag = true;
-                    }}
-                  />
-                );
-              })}
-            </Select>
-          )}
+              keyboardType="numeric"
+              onChangeText={(text) => updateRequestQuantity(text)}
+            />
+          </View>
         </View>
-
+        {/* ***************************************************************************** */}
+        {/* ***************************************************************************** */}
+        {/* Comments Data Field */}
+        {/* ***************************************************************************** */}
+        <View className="flex-start justify-center items-center">
+          <View
+            style={{
+              justifyContent: "flex-start",
+              paddingTop: 0,
+              width: "90%",
+              // height: 110,
+            }}
+          >
+            <TextInput
+              value={requestComment}
+              className={
+                editFlag === true
+                  ? "bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
+                  : "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
+              }
+              editable={editFlag}
+              keyboardType="default"
+              multiline={true}
+              numberOfLines={3}
+              onChangeText={(text) => updateRequestComment(text)}
+            />
+          </View>
+        </View>
+        {/* ***************************************************************************** */}
+        {/* Preferred Vendor Data Field */}
+        {/* ***************************************************************************** */}
+        <View className="flex-start justify-center items-center">
+          <View
+            style={{
+              justifyContent: "flex-start",
+              paddingTop: 0,
+              width: "90%",
+            }}
+          >
+            {editFlag === false ? (
+              <><Text className="text-black text-base font-bold">Vendor</Text>
+                <TextInput
+                  defaultValue="Request"
+                  value={reqData.vendortype}
+                  className=
+                  "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
+                  editable={editFlag}
+                  onChangeText={(text) => setRequestVendor(text)} /></>
+            ) : (
+              <><Text className="text-black text-base font-bold">Vendor</Text>
+                <TouchableOpacity
+                  className="bg-green-300 hover:drop-shadow-xl hover:bg-light-gray mb-2 pl-3 pr-3 w-full flex-row justify-between items-center border-2 border-solid border-black border-r-4 border-b-4"
+                  onPress={handleVendorPress}
+                >
+                  <Text className="text-base font-bold text-black align-middle">
+                    {reqData.vendortype}
+                  </Text>
+                  <Icon name="chevron-down" size={25} />
+                </TouchableOpacity>
+              </>)}
+          </View>
+        </View>
+        {/* ***************************************************************************** */}
+        {/********************************************************** */}
+        {/* Date/Time Required Field */}
+        {/********************************************************** */}
+        <View className="flex-start justify-center items-center">
+          <View
+            style={{
+              justifyContent: "flex-start",
+              paddingTop: 0,
+              width: "90%",
+            }}
+          >
+            <Text className="text-black text-base font-bold">
+              Date/Time Required
+            </Text>
+            {editFlag === false ? (
+              <TextInput
+                value={format(dateTimeRequested, "MM/dd/yyyy HH:mm")}
+                className="bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
+                editable={false}
+              />
+            ) : (
+              <TouchableOpacity
+                className="bg-green-300 hover:drop-shadow-xl hover:bg-light-gray mb-2 pl-3 pr-3 w-full flex-row justify-between items-center border-2 border-solid border-black border-r-4 border-b-4"
+                onPress={handleDateTimePress}
+              >
+                <Text className="text-base font-bold text-black align-middle">
+                  {format(dateTimeRequested, "MM/dd/yyyy HH:mm")}
+                </Text>
+                <Icon name="chevron-down" size={25} />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+        {/********************************************************** */}
+        <View className="flex-start justify-center items-center">
+          <View
+            style={{
+              justifyContent: "flex-start",
+              paddingTop: 0,
+              width: "90%",
+            }}
+          >
+            <Text className="text-black text-base font-bold">Link To</Text>
+            {editFlag === false ? (
+              // biome-ignore lint/style/useSelfClosingElements: <explanation>
+              <TextInput
+                defaultValue="Link To Other Request"
+                className={
+                  editFlag === true
+                    ? "bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
+                    : "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
+                }
+                editable={editFlag}
+              ></TextInput>
+            ) : (
+              <Select
+                style={{
+                  width: "100%",
+                  height: 45,
+                  borderRadius: 5,
+                  borderWidth: 1,
+                  fontWeight: "700",
+                  borderColor: "lightgray",
+                  backgroundColor: Color.silver_200,
+                }}
+                placeholder={"Link To Other Request"}
+                selectedIndex={selectedIndex}
+                value={requestLinkTo}
+                onSelect={(index) => {
+                  setSelectedIndex(index);
+                  setRequestLinkTo(index);
+                  modifyDialogFlag = true;
+                }}
+              >
+                {reqList.map((item) => {
+                  return (
+                    <SelectItem
+                      key={item}
+                      title={item}
+                      onPress={() => {
+                        setRequestLinkTo(item);
+                        modifyDialogFlag = true;
+                      }}
+                    />
+                  );
+                })}
+              </Select>
+            )}
+          </View>
+        </View>
         {/********************************************************** */}
         {/* Form Buttons */}
         {/********************************************************** */}
@@ -1414,15 +1418,19 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "white",
   },
-  contentContainer: {
-    flex: 1,
-    height: "50%", // 50%
-    padding: 12,
-    // width: "90%",
-    alignSelf: "center",
-    alignItems: "center",
-    backgroundColor: "#D4D4D4",
-  },
+	contentContainer: {
+		flex: 1,
+		height: "50%", // 50%
+		paddingTop: 12,
+		width: "100%",
+		alignSelf: "center",
+		alignItems: "center",
+		borderWidth: 3,
+		borderColor: "black",
+		borderRadius: 10,
+    // backgroundColor: "#D4D4D8",
+    backgroundColor: "white",
+	},
   button: {
     alignItems: "center",
     justifyContent: "center",

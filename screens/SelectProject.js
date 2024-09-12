@@ -162,7 +162,7 @@ const SelectProject = () => {
 
   return (
     <>
-		<View className="flex-1">
+		<View className="flex-1 bg-white">
     <View className="items-center">
           <Text>
             <Text className="text-green-500 text-2xl font-bold">WORK</Text>

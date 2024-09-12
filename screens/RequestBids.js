@@ -292,13 +292,19 @@ const renderItemAccessory = (props) => {
 					// If checkedStatus === false, and currentStatus === false then set the status to SELECTED
 					// And set checkedStatus to true
 					if( bidAwardedFlag === true) {
-						// handlePasscodePress();
+						// TODO - Add Passcode Verification and Cancel Bid if needed
+						handlePasscodePress();
 			  		// setSelectedBid(props.selectedItem);	
 						// ProcessCanceledBid(props.selectedItem)
 					}
 					else {
-						setSelectedBid(props.selectedItem);	
-						ProcessAwardedBid(props.selectedItem);
+						if( props.selectedItem.status === "POSTPONED" ) {
+							Alert.alert("Postponed Request", 
+								"This request has been postponed and cannot be awarded at this time!");
+						} else {
+							setSelectedBid(props.selectedItem);
+							ProcessAwardedBid(props.selectedItem);
+						}
 					}
 				}}
 				disabled={!currentStatus}
@@ -751,7 +757,7 @@ const handleSavePasscodeModalChanges = () => {
 
 	return (
 		<>
-		<View className="flex-1">
+		<View className="flex-1 bg-white">
 			<View className="items-center">
 					{/* <Text>
 						<Text className="text-green-500 text-2xl font-bold">WORK</Text>
@@ -773,7 +779,7 @@ const handleSavePasscodeModalChanges = () => {
 				)}
 				{bidData.length  ? (
 
-			<View className="items-center justify-between gap-3 pr-3 pl-3 pb-3">
+			<View className="items-center justify-between gap-3 pr-3 pl-3 pb-4">
 				<TouchableOpacity
 						disabled={!updateFlag}
 						className={
@@ -944,15 +950,28 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "white",
   },
-  contentContainer: {
-    flex: 1,
-    height: "50%", // 50%
-    padding: 12,
-    // width: "90%",
-    alignSelf: "center",
-    alignItems: "center",
-    backgroundColor: "#D4D4D4",
-  },
+	contentContainer: {
+		flex: 1,
+		height: "50%", // 50%
+		paddingTop: 12,
+		width: "100%",
+		alignSelf: "center",
+		alignItems: "center",
+		borderWidth: 3,
+		borderColor: "black",
+		borderRadius: 10,
+    // backgroundColor: "#D4D4D8",
+    backgroundColor: "white",
+	},
+  // contentContainer: {
+  //   flex: 1,
+  //   height: "50%", // 50%
+  //   padding: 12,
+  //   // width: "90%",
+  //   alignSelf: "center",
+  //   alignItems: "center",
+  //   backgroundColor: "#D4D4D4",
+  // },
   // Passcode Modal styles
   codeView: {
 		flexDirection: "row",

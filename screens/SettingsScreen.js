@@ -3,10 +3,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
 	Alert,
+  Keyboard,
+  KeyboardAvoidingView,
 	View,
+  StyleSheet,
 	Text,
 	TouchableOpacity,
 } from "react-native";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Toast from "react-native-toast-message";
 import { FloatingLabelInput } from "react-native-floating-label-input";
@@ -79,10 +83,17 @@ const SettingsScreen = () => {
     navigation.goBack();
   };
 
+  const DismissKeyboard = ({ children }) => (
+    <TouchableWithoutFeedback 
+    onPress={() => Keyboard.dismiss()}> 
+      {children}
+    </TouchableWithoutFeedback>
+    );
+
   return (
     <>
       {/* Output Header */}
-      <View className="flex-1">
+      <View className="flex-1 bg-white">
         <View className="flex-row justify-center items-center p-1">
           <View className="flex-1">
             <Text className="text-center">
@@ -98,21 +109,17 @@ const SettingsScreen = () => {
           /> */}
         </View>
         <View className="flex-start justify-center items-center">
-          {/* <Text>
-            <Text className="text-green-500 text-2xl font-bold">WORK</Text>
-            <Text className="text-black text-2xl font-bold">SIDE</Text>
-          </Text> */}
-          <Text className="text-black text-xl font-bold">Set/Change Passcode</Text>
-        </View>
-        <View className="flex-row items-center justify-between w-[100%] pt-1 pb-4">
-          <View className="h-2 bg-green-300 flex-grow w-1/2" />
+          <View className="flex-row items-center justify-between w-[100%] pt-1 pb-4">
+            <View className="h-2 bg-green-300 flex-grow w-1/2" />
+          </View>
+            <Text className="text-black text-xl font-bold pb-4">Set/Change Passcode</Text>
         </View>
         <View className="w-[100%] justify-center items-center">
           <View className="w-[80%]">
-
             <View className="pb-3">
-              <FloatingLabelInput
-                label="Password"
+            {/* <DismissKeyboard> */}
+            <FloatingLabelInput
+                label="User Password"
                 staticLabel
                 value={userPassword}
                 isPassword
@@ -125,33 +132,14 @@ const SettingsScreen = () => {
                 onChangeText={(value) => {
                   setUserPassword(value);
                 }}
-                containerStyles={{
-                  height: 50,
-                  borderWidth: 2,
-                  paddingHorizontal: 10,
-                  backgroundColor: "#fff",
-                  borderColor: "black",
-                  borderRadius: 8,
-                  borderRightWidth: 4,
-                  borderBottomWidth: 4,
-                }}
-                customLabelStyles={{
-                  colorFocused: "red",
-                  fontSizeFocused: 12,
-                }}
-                labelStyles={{
-                  fontSize: 16,
-                  fontWeight: "bold",
-                  backgroundColor: "#fff",
-                  paddingHorizontal: 10,
-                }}
-                inputStyles={{
-                  fontSize: 16,
-                  color: "black",
-                  paddingHorizontal: 10,
-                }}
+                containerStyles={styles.containerStyles}
+                customLabelStyles={styles.customLabelStyles}
+                labelStyles={styles.labelStyles}
+                inputStyles={styles.inputStyles}
               />
+            {/* </DismissKeyboard> */}
             </View>
+            {/* <DismissKeyboard> */}
             <View className="pb-3">
               <FloatingLabelInput
                 label="Passcode"
@@ -165,33 +153,14 @@ const SettingsScreen = () => {
                 onChangeText={(value) => {
                   setPasscode(value);
                 }}
-                containerStyles={{
-                  height: 50,
-                  borderWidth: 2,
-                  paddingHorizontal: 10,
-                  backgroundColor: "#fff",
-                  borderColor: "black",
-                  borderRadius: 8,
-                  borderRightWidth: 4,
-                  borderBottomWidth: 4,
-                }}
-                customLabelStyles={{
-                  colorFocused: "red",
-                  fontSizeFocused: 12,
-                }}
-                labelStyles={{
-                  fontSize: 16,
-                  fontWeight: "bold",
-                  backgroundColor: "#fff",
-                  paddingHorizontal: 10,
-                }}
-                inputStyles={{
-                  fontSize: 16,
-                  color: "black",
-                  paddingHorizontal: 10,
-                }}
+                containerStyles={styles.containerStyles}
+                customLabelStyles={styles.customLabelStyles}
+                labelStyles={styles.labelStyles}
+                inputStyles={styles.inputStyles}
               />
             </View>
+            {/* </DismissKeyboard> */}
+            {/* <DismissKeyboard> */}
             <View className="pb-3">
               <FloatingLabelInput
                 label="Confirm Passcode"
@@ -205,71 +174,83 @@ const SettingsScreen = () => {
                 onChangeText={(value) => {
                   setConfirmPasscode(value);
                 }}
-                containerStyles={{
-                  height: 50,
-                  borderWidth: 2,
-                  paddingHorizontal: 10,
-                  backgroundColor: "#fff",
-                  borderColor: "black",
-                  borderRadius: 8,
-                  borderRightWidth: 4,
-                  borderBottomWidth: 4,
-                }}
-                customLabelStyles={{
-                  colorFocused: "red",
-                  fontSizeFocused: 12,
-                }}
-                labelStyles={{
-                  fontSize: 16,
-                  fontWeight: "bold",
-                  backgroundColor: "#fff",
-                  paddingHorizontal: 10,
-                }}
-                inputStyles={{
-                  fontSize: 16,
-                  color: "black",
-                  paddingHorizontal: 10,
-                }}
+                containerStyles={styles.containerStyles}
+                customLabelStyles={styles.customLabelStyles}
+                labelStyles={styles.labelStyles}
+                inputStyles={styles.inputStyles}
               />
             </View>
+            {/* </DismissKeyboard> */}
+            </View>
+          </View>
+        <View className="flex-1 items-center">
+        {/* <View className="flex-1 justify-end items-center"> */}
+          <View className="flex-row items-center justify-center gap-7 pt-3 pb-2">
+            <TouchableOpacity
+              className={
+                (userPassword.length < 5 || passcode.length < 5 || confirmPasscode.length < 5) ?
+                "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-24 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+                : "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-24 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+              }
+              disabled={userPassword.length < 5 || passcode.length < 5 || confirmPasscode.length < 5}
+              onPress={SaveChanges}
+            >
+              <Text className="text-base font-bold text-black">Save</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className={
+                "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-24 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+              }
+              onPress={navigation.goBack} 
+            >
+              <Text className="text-base font-bold text-black">Cancel</Text>
+            </TouchableOpacity>
+          </View>
+          {/* Reset Button */}
+          <View className="flex-row items-center justify-center gap-7 pt-3 pb-2">
+            <TouchableOpacity
+              className={
+                "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-36 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+              }
+              onPress={ClearPasscode} 
+            >
+              <Text className="text-base font-bold text-black">Clear Passcode</Text>
+            </TouchableOpacity>
           </View>
         </View>
-        <View className="flex-row items-center justify-center gap-7 pt-3 pb-2">
-          <TouchableOpacity
-            className={
-              (userPassword.length < 5 || passcode.length < 5 || confirmPasscode.length < 5) ?
-              "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-24 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-              : "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-24 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-            }
-            disabled={userPassword.length < 5 || passcode.length < 5 || confirmPasscode.length < 5}
-            onPress={SaveChanges}
-          >
-            <Text className="text-base font-bold text-black">Save</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className={
-              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-24 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-            }
-            onPress={navigation.goBack} 
-          >
-            <Text className="text-base font-bold text-black">Cancel</Text>
-          </TouchableOpacity>
-        </View>
-        {/* Reset Button */}
-        <View className="flex-row items-center justify-center gap-7 pt-3 pb-2">
-          <TouchableOpacity
-            className={
-              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-36 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-            }
-            onPress={ClearPasscode} 
-          >
-            <Text className="text-base font-bold text-black">Clear Passcode</Text>
-          </TouchableOpacity>
-        </View>
       </View>
-    </>
+      </>
   );
 }
+
+const styles = StyleSheet.create({
+  containerStyles:{
+    height: 50,
+    borderWidth: 2,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
+    borderColor: "black",
+    borderRadius: 8,
+    borderRightWidth: 4,
+    borderBottomWidth: 4,
+  },
+  customLabelStyles: {
+    colorBlurred: "black", 
+    colorFocused: "green",
+    fontSizeFocused: 12,
+  },
+  labelStyles: {
+    fontSize: 16,
+    fontWeight: "bold",
+    backgroundColor: "#fff",
+    paddingHorizontal: 10,
+  },
+  inputStyles:{
+    fontSize: 16,
+    color: "black",
+    paddingHorizontal: 10,
+  },
+});
 
 export default SettingsScreen

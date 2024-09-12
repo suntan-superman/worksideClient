@@ -132,7 +132,8 @@ const ActiveRequests = () => {
 		let textFormat = null;
 		let textColor = "text-black";
 		let buttonText= null;
-
+		
+		// TODO - Need to validate proper status codes being returned
 		if( props.selectedItem.status === "OPEN")
 		{
 			buttonColor = "bg-green-300";
@@ -181,7 +182,7 @@ const ActiveRequests = () => {
 			textColor= "text-white";
 			buttonText = "COMPLETED";
 		}
-		buttonFormat = `${buttonColor} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`;
+		buttonFormat = `${buttonColor} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`;
 		textFormat = `${textColor} text-sm font-semibold`;
 
 		return (
@@ -253,9 +254,10 @@ const ActiveRequests = () => {
 			description={`${format(item.datetimerequested, "MM/dd/yyyy")} ${
 				item.status
 			}`}
-			accessoryLeft={(props) =>
-				renderItemIcon({ ...{ selectedItem: item, ...props } })
-			}
+			// TODO - Do we need an icon on the left and if so what should it be?
+			// accessoryLeft={(props) =>
+			// 	renderItemIcon({ ...{ selectedItem: item, ...props } })
+			// }
 			accessoryRight={(props) =>
 				renderItemAccessory({ ...{ selectedItem: item, ...props } })
 			}
@@ -343,7 +345,7 @@ const ActiveRequests = () => {
 	};
 
 	return (
-		<View className="flex-1">
+		<View className="flex-1 bg-white">
 		<View className="items-center">
 				{/* <Text>
 					<Text className="text-green-500 text-2xl font-bold">WORK</Text>
@@ -410,6 +412,7 @@ const ActiveRequests = () => {
 					<Text className="text-lg font-bold text-black">New Request</Text>
 				</TouchableOpacity>
 				{/* Date/Time Modal */}
+				<View>
 				<BottomSheetModal
 					ref={filterSheetModalRef}
 					index={1}
@@ -422,6 +425,7 @@ const ActiveRequests = () => {
 						</BottomSheetView>
 					</TouchableWithoutFeedback>
 				</BottomSheetModal>
+				</View>
 			</View>
 			{/* //////////////////////////////////////////////////////////////////// */}
 		</View>
@@ -439,12 +443,15 @@ const styles = StyleSheet.create({
 	contentContainer: {
 		flex: 1,
 		height: "50%", // 50%
-		padding: 12,
-		// width: "90%",
+		paddingTop: 12,
+		width: "100%",
 		alignSelf: "center",
 		alignItems: "center",
+		borderWidth: 3,
+		borderColor: "black",
+		borderRadius: 10,
     // backgroundColor: "#D4D4D8",
-    backgroundColor: "#CBD5E1",
+    backgroundColor: "white",
 	},
 	button: {
 		alignItems: "center",
