@@ -51,19 +51,10 @@ export function DrawerContent(props) {
         <View style={styles.drawerContent}>
           <View style={styles.userInfoSection}>
             <View style={{ flexDirection: "row", marginTop: 15 }}>
-              {/* <Text>
-        				<Text style={styles.title}>WORKSIDE</Text>
-      			</Text> */}
-              {/* <Avatar.Image
-                source={{
-                  uri: "https://api.adorable.io/avatars/50/abott@adorable.png",
-                }}
-                size={50}
-              /> */}
               <View style={{ marginLeft: 15, flexDirection: "column" }}>
-              <Text>
-        				<Text style={styles.header}>WORKSIDE CLIENT</Text>
-      			</Text>
+                <Text>
+                  <Text style={styles.header}>WORKSIDE CLIENT</Text>
+                </Text>
                 <Title style={styles.title}>{userName}</Title>
                 <Caption style={styles.caption}>{email}</Caption>
               </View>
@@ -90,15 +81,6 @@ export function DrawerContent(props) {
                 props.navigation.navigate("Select Project");
               }}
             />
-            {/* <DrawerItem
-              icon={({ color, size }) => (
-                <Icon name="atom" color={color} size={size} />
-              )}
-              label="Active Projects"
-              onPress={() => {
-                props.navigation.navigate("Active Projects");
-              }}
-            /> */}
             <DrawerItem
               icon={({ color, size }) => (
                 <Icon name="pause-circle" color={color} size={size} />

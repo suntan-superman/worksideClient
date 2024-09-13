@@ -23,6 +23,7 @@ import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
 // import { authenticateAsync } from "expo-local-authentication";
 import Toast from "react-native-toast-message";
 import { logTransaction } from "../src/helperFunction";
+import { encrypt, decrypt } from "../src/utils/aes";
 
 ////////////////////////////////////////////////////////////////////////////
 // Passcode Modal
@@ -152,6 +153,18 @@ const RequestBids = () => {
 					if( bid.requestbids.status === "AWARDED-A" ) setBidAwardedFlag(true);
 					if( bid.requestbids.status === "AWARDED-P" ) setBidAwardedFlag(true);
 					if( bid.requestbids.status === "AWARDED-WOA" ) setBidAwardedFlag(true);
+					// Decrypt Estimated Cost
+					let estimatedCost= "0.00";
+					// console.log("Result Estimated Cost: ", response.data.estimatedcost);
+					// console.log("Result: ", JSON.stringify(bid.requestbids));
+					if(bid.requestbids.estimatedcost!==null && bid.requestbids.estimatedcost!==undefined) {
+						// console.log("Encrypted Value: ", bid.requestbids.estimatedcost);
+						const encryptedValue = bid.requestbids.estimatedcost;
+					// 	// const encryptedValue = response.data.estimatedcost.toString();
+						estimatedCost = decrypt(encryptedValue, "this-is-a-secret-key");
+					}
+					// console.log("Estimated Cost: ", estimatedCost);
+					//////////////////////////////////////////////////////
 					bidSupplierArray.push({
 						_id: bid._id,
 						projectname: bid.requests.projectname,
@@ -164,6 +177,7 @@ const RequestBids = () => {
 						status: bid.requestbids.status,
 						supplierid: bid.requestbids.supplierid,
 						supplier: supplierName,
+						bidEstimatedCost: estimatedCost,
 					});
 					setBidData(bidSupplierArray);
 				});
@@ -527,6 +541,11 @@ const renderItemAccessory = (props) => {
 	};
 
 	const renderBids = ({ item }) => {
+		let description = "";
+		description = (Number.parseFloat(item.bidEstimatedCost) > 0) ? 
+			`${item.deliverydate} ${"\n"} ${item.supplier} ${"\n"} ${item.bidEstimatedCost}`:
+			`${item.deliverydate} ${"\n"} ${item.supplier}`;
+
 		return (
 			<ListItem
 				textStyle={{ fontSize: 28, fontWeight: "bold" }}
@@ -536,7 +555,7 @@ const renderItemAccessory = (props) => {
 					fontWeight: "bold",
 				}}
 				title={`${item.projectname} ${item.rigcompany} ${item.requestname}`}
-				description={`${item.deliverydate} ${"\n"} ${item.supplier}`}
+				description={description}
 				// accessoryLeft={(props) =>
 				// 	renderItemCheckBox({ ...{ selectedItem: item, ...props } })
 				// }
@@ -779,7 +798,7 @@ const handleSavePasscodeModalChanges = () => {
 					</Text> */}
 					<Text className="text-black text-lg font-bold">{projectName}</Text>
 					<Text className="text-black text-lg font-bold">{projectRig}</Text>
-				</View>
+			</View>
 				{bidData.length < 1 ? (
 					<View className="items-center p-2">
 						<Text className="text-red-500 text-lg font-bold">NO BIDS</Text>
@@ -792,26 +811,25 @@ const handleSavePasscodeModalChanges = () => {
 						/>
 				)}
 				{bidData.length  ? (
-
-			<View className="items-center justify-between gap-3 pr-3 pl-3 pb-4">
-				<TouchableOpacity
-						disabled={!updateFlag}
-						className={
-							// checkedStatus === false
-							updateFlag === false
-								? "bg-gray-300 p-0 rounded-lg w-48 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-								: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-48 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-						}
-						onPress={() => {
-							setConfirmationText("");
-							// ProcessSelectedBid(selectedBid);
-							// console.log("Selected Item: ", selectedBid);
-							// navigation.navigate("ActiveRequests");
-						}}
-					>
-						<Text className="text-base font-bold text-black">Save Changes</Text>
-				</TouchableOpacity>
-			</View>
+				<View className="items-center justify-between gap-3 pr-3 pl-3 pb-4">
+					<TouchableOpacity
+							disabled={!updateFlag}
+							className={
+								// checkedStatus === false
+								updateFlag === false
+									? "bg-gray-300 p-0 rounded-lg w-48 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+									: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-48 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							}
+							onPress={() => {
+								setConfirmationText("");
+								// ProcessSelectedBid(selectedBid);
+								// console.log("Selected Item: ", selectedBid);
+								// navigation.navigate("ActiveRequests");
+							}}
+						>
+							<Text className="text-base font-bold text-black">Save Changes</Text>
+					</TouchableOpacity>
+				</View>
 				) : ( "" )}
 			</View>
         {/* Passcode Modal */}

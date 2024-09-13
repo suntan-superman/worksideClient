@@ -43,7 +43,7 @@
         "googleMapsApiKey": "AIzaSyBsK1utYDK9o1MR2RsnTobmJW7PVLHp6B4"
       },
       "bundleIdentifier": "com.sjroy5.worksideclient",
-      "buildNumber": "1.1.83"
+      "buildNumber": "1.1.84"
     },
     "android": {
       "adaptiveIcon": {
@@ -61,7 +61,7 @@
         "ACCESS_BACKGROUND_LOCATION"
       ],
       "package": "com.sjroy5.worksideclient",
-      "versionCode": 33
+      "versionCode": 34
     },
     "web": {
       "favicon": "./assets/favicon.png"
