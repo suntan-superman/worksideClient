@@ -78,6 +78,7 @@ export function DrawerContent(props) {
               label="Home"
               onPress={() => {
                 props.navigation.navigate("ActiveRequests");
+                // props.navigation.goBack();
               }}
             />
             <DrawerItem

@@ -229,84 +229,71 @@ const RequestMapping = () => {
     setAlertReqTeamFlag(alertTeamFlag);
 
     // TODO Save Alert Flags to Database
+    // TODO Process Alert Flags
 
     setAlertModifyFlag(false);
   };
 
+  const ContactSupplier = () => {
+    // TODO Contact Supplier
+    Alert.alert("Contact Supplier");
+  }
   return (
-    <>
-      <View className="justify-center items-center">
-        {/* <ActivityIndicator
-        size="large"
-        color={Color.activityIndicatorColor}
-        animating={animating}
-      /> */}
-        <View className="items-center">
+    <View className="flex-1 bg-white items-center">
+      <View className="items-center pb-3">
+        {/* <Text>
+          <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+          <Text className="text-black text-2xl font-bold">SIDE</Text>
+        </Text> */}
+        {currentSupplier !== null && (
           <Text>
-            <Text className="text-green-500 text-2xl font-bold">WORK</Text>
-            <Text className="text-black text-2xl font-bold">SIDE</Text>
-          </Text>
-          {currentSupplier !== null && (
-            <Text>
-              <Text className="text-green-500 text-xl font-bold">
-                {currentSupplier}
-              </Text>
-            </Text>
-          )}
-          <Text>
-            <Text className="text-green-500 text-xl font-bold">
-              {currentRequestName}
+            <Text className="text-black text-2xl font-bold">
+              {currentSupplier}
             </Text>
           </Text>
-          <Text>
-            <Text className="text-black text-lg font-bold">
-              {`Status: ${reqStatus}`}
-            </Text>
+        )}
+        <Text>
+          <Text className="text-green-500 text-xl font-bold">
+            {currentRequestName}
           </Text>
+        </Text>
+        <Text>
+          <Text className="text-black text-lg font-bold">
+            {`Status: ${reqStatus}`}
+          </Text>
+        </Text>
+      </View>
+      {/* Output Map Component */}
+      <View className="w-[100%] items-center pb-3">
+        <View className="w-[100%] items-center pb-6">
+          <MapView
+            provider={MapView.PROVIDER_GOOGLE}
+            style={styles.requestMapView}
+            onRegionChange={onRegionChange}
+            initialRegion={{
+              latitude: 35.411544488071556,
+              latitudeDelta: 0.7141989335803416,
+              longitude: -119.09790278932303,
+              longitudeDelta: 0.9062909038644165,
+            }}
+            apiKey="AIzaSyDyhqHd1Zk266sB-HNeBXlO2dUs0XQuUxQ"
+          >
+            {ShowLocations()}
+          </MapView>
         </View>
-
-        {/* <MapView
-        style={{ width: 300, height: 300 }}
-        provider={MapView.PROVIDER_GOOGLE}
-        apiKey="AIzaSyBsK1utYDK9o1MR2RsnTobmJW7PVLHp6B4"
-      /> */}
-        <MapView
-          provider={MapView.PROVIDER_GOOGLE}
-          style={styles.requestMapView}
-          onRegionChange={onRegionChange}
-          initialRegion={{
-            latitude: 35.411544488071556,
-            latitudeDelta: 0.7141989335803416,
-            longitude: -119.09790278932303,
-            longitudeDelta: 0.9062909038644165,
-          }}
-          apiKey="AIzaSyDyhqHd1Zk266sB-HNeBXlO2dUs0XQuUxQ"
-        >
-          {ShowLocations()}
-        </MapView>
-
-        <View
-          style={{
-            flexDirection: "row",
-            alignContent: "space-around",
-            justifyContent: "space-evenly",
-            paddingTop: 450,
-            gap: 20,
-            alignItems: "center",
-            width: "100%",
-          }}
-        >
+        {/* Output Buttons */}
+        <View className="flex flex-row items-center justify-evenly content-around gap-5 w-full">
           <TouchableOpacity
             className={
               "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
             }
             onPress={() => {
-              Alert.alert("Contact Supplier");
+              ContactSupplier();
             }}
-        >
-            <Text className="text-base font-bold text-black">
-              Contact Supplier
-            </Text>
+          >
+              <Text className="text-base font-bold text-black">
+                Contact Supplier
+              </Text>
           </TouchableOpacity>
           <TouchableOpacity
             className={
@@ -317,17 +304,7 @@ const RequestMapping = () => {
             <Text className="text-base font-bold text-black">Alerts</Text>
           </TouchableOpacity>
         </View>
-        <View
-          style={{
-            // flexDirection: "row",
-            justifyContent: "space-evenly",
-            paddingTop: 10,
-            left: 0,
-            gap: 10,
-            alignItems: "center",
-            width: "100%",
-          }}
-        >
+        <View className="flex items-center justify-evenly gap-2.5 pt-2.5 left-0 w-full">
           <Text className="text-black text-base font-bold">
           {`Scheduled Arrival: ${format(reqArrivalTime, "MM/dd/yyyy HH:mm")}`}
           </Text>
@@ -336,6 +313,7 @@ const RequestMapping = () => {
           </Text>
         </View>
       </View>
+      {/* Output Modal */}
       <BottomModal
         onBackdropPress={() => setModalVisible(!modalVisible)}
         swipeDirection={["up", "down"]}
@@ -474,17 +452,15 @@ const RequestMapping = () => {
           </View>
         </ModalContent>
       </BottomModal>
-    </>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   requestMapView: {
-    // top: 85,
     left: 0,
     width: "100%",
-    height: 350,
-    position: "absolute",
+    height: 400,
   },
   checkboxTextStyle: {
     color: "#010101",

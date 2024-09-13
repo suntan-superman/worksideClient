@@ -73,10 +73,21 @@ const HomeStackScreen = ({ navigation }) => (
       name="SelectProject"
       component={SelectProject}
       options={{
-        title: "WORKSIDE",
+        title: "Projects",
+        headerStyle: {
+          // backgroundColor: '#4ADE80',
+          backgroundColor: '#D1D5DB',
+          
+        },
+        headerTintColor: 'black',
+        headerTitleStyle: {
+          color: 'black',
+          fontSize: 24,  
+          fontWeight: 'bold',
+        },
         headerRight: () => (
           <View>
-            <TouchableOpacity style={{ marginLeft: 15 }}>
+            <TouchableOpacity style={{ marginLeft: 15, marginRight: 10 }}>
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
@@ -87,10 +98,21 @@ const HomeStackScreen = ({ navigation }) => (
       name="ActiveRequests"
       component={ActiveRequests}
       options={{
-        title: "WORKSIDE Requests",
+        title: "Requests",
+        headerStyle: {
+          backgroundColor: '#D1D5DB',
+          
+        },
+        headerTintColor: 'black',
+        // headerTintColor: '#fff',
+        headerTitleStyle: {
+          color: 'black',
+          fontSize: 24,  
+          fontWeight: 'bold',
+        },
         headerRight: () => (
           <View>
-            <TouchableOpacity style={{ marginLeft: 15 }}>
+            <TouchableOpacity style={{ marginLeft: 15, marginRight: 10 }}>
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
@@ -101,10 +123,21 @@ const HomeStackScreen = ({ navigation }) => (
       name="RequestDetails"
       component={RequestDetails}
       options={{
-        title: "WORKSIDE Details",
+        title: "Request Details",
+        headerStyle: {
+          backgroundColor: '#D1D5DB',
+          
+        },
+        headerTintColor: 'black',
+        // headerTintColor: '#fff',
+        headerTitleStyle: {
+          color: 'black',
+          fontSize: 24,  
+          fontWeight: 'bold',
+        },
         headerRight: () => (
           <View>
-            <TouchableOpacity style={{ marginLeft: 15 }}>
+            <TouchableOpacity style={{ marginLeft: 15, marginRight: 10 }}>
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
@@ -115,10 +148,21 @@ const HomeStackScreen = ({ navigation }) => (
       name="RequestBids"
       component={RequestBids}
       options={{
-        title: "WORKSIDE Request Bids",
+        title: "Request Bids",
+        headerStyle: {
+          backgroundColor: '#D1D5DB',
+          
+        },
+        headerTintColor: 'black',
+        // headerTintColor: '#fff',
+        headerTitleStyle: {
+          color: 'black',
+          fontSize: 24,  
+          fontWeight: 'bold',
+        },
         headerRight: () => (
           <View>
-            <TouchableOpacity style={{ marginLeft: 15 }}>
+            <TouchableOpacity style={{ marginLeft: 15, marginRight: 10 }}>
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
@@ -130,10 +174,21 @@ const HomeStackScreen = ({ navigation }) => (
       name="NewRequest"
       component={NewRequest}
       options={{
-        title: "WORKSIDE New Request",
+        title: "New Request",
+        headerStyle: {
+          backgroundColor: '#D1D5DB',
+          
+        },
+        headerTintColor: 'black',
+        // headerTintColor: '#fff',
+        headerTitleStyle: {
+          color: 'black',
+          fontSize: 24,  
+          fontWeight: 'bold',
+        },
         headerRight: () => (
           <View>
-            <TouchableOpacity style={{ marginLeft: 15 }}>
+            <TouchableOpacity style={{ marginLeft: 15, marginRight: 10 }}>
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>
@@ -146,10 +201,21 @@ const HomeStackScreen = ({ navigation }) => (
       name="RequestMapping"
       component={RequestMapping}
       options={{
-        title: "WORKSIDE Tracking",
+        title: "Tracking",
+        headerStyle: {
+          backgroundColor: '#D1D5DB',
+          
+        },
+        headerTintColor: 'black',
+        // headerTintColor: '#fff',
+        headerTitleStyle: {
+          color: 'black',
+          fontSize: 24,  
+          fontWeight: 'bold',
+        },
         headerRight: () => (
           <View>
-            <TouchableOpacity style={{ marginLeft: 15 }}>
+            <TouchableOpacity style={{ marginLeft: 15, marginRight: 10 }}>
               <Icon name="alarm" size={28} onPress={alarmSelected} />
             </TouchableOpacity>
           </View>

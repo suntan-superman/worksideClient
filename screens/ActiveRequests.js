@@ -182,8 +182,8 @@ const ActiveRequests = () => {
 			textColor= "text-white";
 			buttonText = "COMPLETED";
 		}
-		buttonFormat = `${buttonColor} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`;
-		textFormat = `${textColor} text-sm font-semibold`;
+		buttonFormat = `${buttonColor} hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`;
+		textFormat = `${textColor} text-xs font-semibold`;
 
 		return (
 			<Pressable

@@ -293,14 +293,28 @@ const renderItemAccessory = (props) => {
 					// And set checkedStatus to true
 					if( bidAwardedFlag === true) {
 						// TODO - Add Passcode Verification and Cancel Bid if needed
-						handlePasscodePress();
+						Alert.alert(
+							"Bid Awarded",
+							"Would you like to CANCEL this Request?",
+							[
+								{
+									text: "Yes",
+									style: "destructive",
+									onPress: () => {
+										handlePasscodePress();
+									},
+								},
+								{ text: "No", style: "cancel", onPress: () => {} },
+							]
+						);
 			  		// setSelectedBid(props.selectedItem);	
 						// ProcessCanceledBid(props.selectedItem)
 					}
 					else {
+						// TODO Add Option to Change status to OPEN or CANCEL
 						if( props.selectedItem.status === "POSTPONED" ) {
 							Alert.alert("Postponed Request", 
-								"This request has been postponed and cannot be awarded at this time!");
+								"This request has been postponed. Will Need option to OPEN or CANCEL!");
 						} else {
 							setSelectedBid(props.selectedItem);
 							ProcessAwardedBid(props.selectedItem);
@@ -308,14 +322,14 @@ const renderItemAccessory = (props) => {
 					}
 				}}
 				disabled={!currentStatus}
-				size="small"
+				size="small"		
 				className={
 					currentStatus=== true ?
-					"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-40 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-					: "bg-gray-300 p-1 rounded-lg w-40 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+					"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+					: "bg-gray-300 p-1 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
 				}
 			>
-				<Text className="text-sm font-semibold">
+				<Text className="text-xs font-semibold">
 					{props.selectedItem.status}
 				</Text>
 			</Pressable>
@@ -991,3 +1005,5 @@ const styles = StyleSheet.create({
 
 
 export default RequestBids;
+
+

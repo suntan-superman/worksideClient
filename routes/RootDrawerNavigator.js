@@ -78,7 +78,7 @@ const RootDrawerNavigator = () => {
     <DrawerNavigator.Navigator
       drawerContent={(props) => <DrawerContent {...props} />}
     >
-      <DrawerNavigator.Screen name="Home" component={HomeStackScreen} />
+      <DrawerNavigator.Screen name="WORKSIDE" component={HomeStackScreen}/>
 
       <DrawerNavigator.Screen
         name="Select Project"

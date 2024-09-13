@@ -472,11 +472,11 @@ const NewRequest = () => {
 	);
 
 	return (
-		<View>
-			<View className="items-center">
+		<View className="flex-1 bg-white">
+			<View className="items-center ">
 				<Text>
-					<Text className="text-green-500 text-2xl font-bold">WORK</Text>
-					<Text className="text-black text-2xl font-bold">SIDE</Text>
+					{/* <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+					<Text className="text-black text-2xl font-bold">SIDE</Text> */}
 				</Text>
 				<Text className="text-black text-xl font-bold">{projectName}</Text>
 				<Text className="text-black text-xl font-bold">{projectRig}</Text>
