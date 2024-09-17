@@ -141,7 +141,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 				Toast.show({
 					type: "error",
 					text1: "Workside Software",
-					text2: response.msg,
+					text2: "Invalid Email or Password",
 					visibilityTime: 5000,
 					autoHide: true,
 				});

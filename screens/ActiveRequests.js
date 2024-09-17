@@ -12,7 +12,6 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
-import { FontFamily, FontSize, Color, Padding } from "../GlobalStyles";
 import { useStateContext } from "../src/contexts/ContextProvider";
 import { Icon, List, ListItem, IndexPath,	Radio, RadioGroup } from "@ui-kitten/components";
 import MaterialIcon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -20,6 +19,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import axios from "axios";
 import { format, set } from "date-fns";
+
+let ganttRequests = [];
 
 const ActiveRequests = () => {
 	const navigation = useNavigation();
@@ -344,16 +345,91 @@ const ActiveRequests = () => {
 		);
 	};
 
+const addDays = (date, days) => {
+		const copy = new Date(date.getTime());
+		copy.setDate(copy.getDate() + days);
+		return copy;
+};	
+
+const getGanttColor = (status) => {
+	if( status === "OPEN")
+		{
+			return "#FDE047";
+		}
+ if( status === "NOT-AWARDED" )
+		{
+			return "#FDE047";
+		}
+	if( status === "AWARDED-WOA" )
+		{
+			return "#22C55E";
+		}
+	if( status === "AWARDED-A" ) {
+		return "#22C55E";
+	}
+	if( status === "AWARDED-P" )
+		{
+			return "#22C55E";
+		}
+	if( status === "IN-PROGRESS" )
+		{
+			return "#22C55E";
+		}
+	if( status === "CANCELED" )
+		{
+			return "#FDE047";
+		}
+	if( status === "POSTPONED" )
+			{
+				return "#FDE047";
+			}
+	// COMPLETED
+	return "#FDE047";
+};
+
+const handleGanttChartPress = () => {
+	let count = 1;
+	const minDays=10;
+	ganttRequests = [];
+
+	 for (const currentRequests of requestData) {
+		const startDate = new Date(currentRequests.datetimerequested);
+
+		const details = `Request: ${currentRequests.requestname}\nStatus: ${currentRequests.status}\nDate: ${format(startDate, "yyyy/MM/dd")}`;	
+		const endDate = addDays(startDate, minDays);
+		const maxDate = addDays(endDate, 10);
+
+		ganttRequests.push({
+				id: count++,
+				name: currentRequests.requestname,
+				details: details,				
+				// details: currentRequests.requestname,				
+				status: currentRequests.status,
+				start: format(	startDate, "yyyy-MM-dd"),
+				end: format(endDate, "yyyy-MM-dd"),
+				maxdate: format(maxDate, "yyyy-MM-dd"),
+				color: getGanttColor(currentRequests.status),	
+			});
+	};
+
+	// console.log("Gantt Chart Data: ", ganttRequests);
+	navigation.navigate("GanttChart", { requests: ganttRequests });
+};
+
 	return (
 		<View className="flex-1 bg-white">
-		<View className="items-center">
+			<View className="items-center">
 				{/* <Text>
 					<Text className="text-green-500 text-2xl font-bold">WORK</Text>
 					<Text className="text-black text-2xl font-bold">SIDE</Text>
 				</Text> */}
-				<Text className="text-black text-xl font-bold">
-					{projectID === null ? "No Project Selected" : projectName}
-				</Text>
+				<View className="flex justify-between items-center w-full">
+					<View>
+					<Text className="text-black text-xl font-bold">
+						{projectID === null ? "No Project Selected" : projectName}
+					</Text>
+					</View>
+				</View>
 				<Text className="text-black text-xl font-bold">{projectRig}</Text>
 			</View>
 			{requestData.length === 0 ? (
@@ -363,36 +439,40 @@ const ActiveRequests = () => {
 					</Text>
 				</View>
 			) : (
-				<><View className="flex-row justify-items-end justify-between gap-5 pr-2 pl-2 pt-1">
-				<Text>
-					<Text className="text-black text-sm font-bold">Filter Setting: </Text>
-					<Text className="text-red-500 text-sm font-bold">{filterLabel}</Text>
-				</Text>
-						<TouchableOpacity
-							onPress={() => {
-								handlePresentFilterModalPress();
-							} }
-						>
-							<MaterialIcon
-								name="filter-variant"
-								size={30} />
-						</TouchableOpacity>
-					</View><List
-							contentContainerStyle className="flex-grow"
-							// style={{ maxHeight: 500 }}
-							data={requestData}
-							renderItem={renderRequests} /></>
+				<>
+				<View className="flex-row justify-items-end justify-between gap-5 pr-2 pl-2 pt-1">
+					<Text>
+						<Text className="text-black text-sm font-bold">Filter Setting: </Text>
+						<Text className="text-red-500 text-sm font-bold">{filterLabel}</Text>
+					</Text>
+					<TouchableOpacity
+						onPress={() => {
+							handlePresentFilterModalPress();
+						} }
+					>
+						<MaterialIcon
+							name="filter-variant"
+							size={30} />
+					</TouchableOpacity>
+				</View>
+					<List
+						contentContainerStyle className="flex-grow"
+						// style={{ maxHeight: 500 }}
+						data={requestData}
+						renderItem={renderRequests} />
+					</>
 			)}
 			{/* //////////////////////////////////////////////////////////////////// */}
 			{/* Format View for Buttons */}
 			{/* //////////////////////////////////////////////////////////////////// */}
-			<View className="flex-row items-center justify-between gap-3 pr-3 pl-3 pb-4">
+			<View className="flex-row justify-center gap-2.5 pb-4">
+			{/* <View className="flex-row items-center justify-between gap-3 pr-3 pl-3 pb-4"> */}
 				<TouchableOpacity
 					disabled={disabledFlag}
 					className={
 						disabledFlag
-							? "bg-gray-300 p-0 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-							: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							? "bg-gray-300 p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
 					}
 					onPress={() => (
 						// console.log("Request ID:", selectedIndex),
@@ -400,19 +480,38 @@ const ActiveRequests = () => {
 					)}
 				>
 					<Text className="text-lg font-bold text-black">
-						Request Details
+						Details
 					</Text>
 				</TouchableOpacity>
 				<TouchableOpacity
 					className={
-						"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+						"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
 					}
 					onPress={() => navigation.navigate("NewRequest")}
 				>
-					<Text className="text-lg font-bold text-black">New Request</Text>
+					<Text className="text-lg font-bold text-black">New</Text>
 				</TouchableOpacity>
+				<TouchableOpacity
+					disabled={requestData.length === 0}
+					className={
+						requestData.length === 0
+							? "bg-gray-300 p-0 rounded-lg items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+					}
+					// 	className={
+					// 		"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+					// }
+						onPress={() => {
+							handleGanttChartPress();
+						} }
+					>
+						<MaterialIcon
+							name="chart-gantt"
+							size={30} />
+					</TouchableOpacity>
 				{/* Date/Time Modal */}
-				<View>
+			<View>
+			
 				<BottomSheetModal
 					ref={filterSheetModalRef}
 					index={1}
