@@ -97,12 +97,24 @@ const GanttChartEnhanced = ({ requests }) => {
 
 						{/* Draw requests */}
 						{requests.map((request, index) => {
-							if (filter === 1 && request.status !== "AWARDED") {
+							// "OPEN"
+							// "NOT-AWARDED"
+
+							// "AWARDED-WOA"
+							// "AWARDED-A"
+							// "AWARDED-P"
+							// "IN-PROGRESS"
+
+							// "CANCELED"
+							// "POSTPONED"
+							// "COMPLETED"
+							if (filter === 1 && request.status !== "AWARDED-WOA" && request.status !== "AWARDED-A" && request.status !== "AWARDED-P" && request.status !== "IN-PROGRESS") {
 								return null;
 							}
-							if (filter === 2 && request.status !== "OPEN") {
+							if (filter === 2 && request.status !== "OPEN" && request.status !== "NOT-AWARDED") {
 								return null;
 							}
+
 							const startX =
 								((new Date(request.start).getTime() - startDate) / dateRange) *
 								chartWidth;
@@ -240,3 +252,4 @@ const styles = StyleSheet.create({
 });
 
 export default GanttChartEnhanced;
+
