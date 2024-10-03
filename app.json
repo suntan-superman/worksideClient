@@ -19,11 +19,11 @@
     ],
     "plugins": [
       [
-        "expo-location",
+        "expo-build-properties",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Workside to use your location.",
-          "isAndroidForegroundServiceEnabled": true,
-          "isAndroidBackgroundLocationEnabled": true
+          "ios": {
+            "useFrameworks": "static"
+          }
         }
       ]
     ],
@@ -43,7 +43,7 @@
         "googleMapsApiKey": "AIzaSyBsK1utYDK9o1MR2RsnTobmJW7PVLHp6B4"
       },
       "bundleIdentifier": "com.sjroy5.worksideclient",
-      "buildNumber": "1.1.87"
+      "buildNumber": "1.1.89"
     },
     "android": {
       "adaptiveIcon": {
@@ -61,7 +61,7 @@
         "ACCESS_BACKGROUND_LOCATION"
       ],
       "package": "com.sjroy5.worksideclient",
-      "versionCode": 35
+      "versionCode": 36
     },
     "web": {
       "favicon": "./assets/favicon.png"

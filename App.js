@@ -12,6 +12,8 @@ import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
 import { ModalPortal } from "react-native-modals";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { AuthContextProvider } from "./src/contexts/authContext";
+import { MenuProvider } from "react-native-popup-menu";
 
 import { createStackNavigator } from "@react-navigation/stack";
 import { StyleSheet } from "react-native";
@@ -215,15 +217,19 @@ const AppWrapper = () => {
       <IconRegistry icons={[MaterialIconsPack]} />
       <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <ContextProvider>
-            <BottomSheetModalProvider>
-              <App />
-              <Toast config={toastConfig} />
-            </BottomSheetModalProvider>
-            {/* <EventListener /> */}
-            <ModalPortal />
-          </ContextProvider>
-        </GestureHandlerRootView>
+          <MenuProvider>
+            <AuthContextProvider>
+              <ContextProvider>
+                <BottomSheetModalProvider>
+                  <App />
+                  <Toast config={toastConfig} />
+                </BottomSheetModalProvider>
+                {/* <EventListener /> */}
+                <ModalPortal />
+              </ContextProvider>
+          </AuthContextProvider>
+        </MenuProvider>
+       </GestureHandlerRootView>
       </ApplicationProvider>
     </>
   );

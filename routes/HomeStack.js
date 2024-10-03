@@ -83,7 +83,7 @@ const HomeStackScreen = ({ navigation }) => (
         headerTintColor: 'black',
         headerTitleStyle: {
           color: 'black',
-          fontSize: 24,  
+          fontSize: 18,  
           fontWeight: 'bold',
         },
         headerRight: () => (
@@ -108,7 +108,7 @@ const HomeStackScreen = ({ navigation }) => (
         // headerTintColor: '#fff',
         headerTitleStyle: {
           color: 'black',
-          fontSize: 24,  
+          fontSize: 18,  
           fontWeight: 'bold',
         },
         headerRight: () => (
@@ -133,7 +133,7 @@ const HomeStackScreen = ({ navigation }) => (
         // headerTintColor: '#fff',
         headerTitleStyle: {
           color: 'black',
-          fontSize: 24,  
+          fontSize: 18,  
           fontWeight: 'bold',
         },
         headerRight: () => (
@@ -158,7 +158,7 @@ const HomeStackScreen = ({ navigation }) => (
         // headerTintColor: '#fff',
         headerTitleStyle: {
           color: 'black',
-          fontSize: 24,  
+          fontSize: 18,  
           fontWeight: 'bold',
         },
         headerRight: () => (
@@ -184,7 +184,7 @@ const HomeStackScreen = ({ navigation }) => (
         // headerTintColor: '#fff',
         headerTitleStyle: {
           color: 'black',
-          fontSize: 24,  
+          fontSize: 18,  
           fontWeight: 'bold',
         },
         headerRight: () => (
@@ -211,7 +211,7 @@ const HomeStackScreen = ({ navigation }) => (
         // headerTintColor: '#fff',
         headerTitleStyle: {
           color: 'black',
-          fontSize: 24,  
+          fontSize: 18,  
           fontWeight: 'bold',
         },
         headerRight: () => (
@@ -236,7 +236,7 @@ const HomeStackScreen = ({ navigation }) => (
         // headerTintColor: '#fff',
         headerTitleStyle: {
           color: 'black',
-          fontSize: 24,  
+          fontSize: 18,  
           fontWeight: 'bold',
         },
         headerRight: () => (

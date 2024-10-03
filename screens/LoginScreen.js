@@ -7,22 +7,26 @@ import {
 	View,
 	Text,
 	TextInput,
-	Button,
 	StatusBar,
-	StyleSheet,
 	TouchableOpacity,
 	KeyboardAvoidingView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
-// import { Platform } from "react-native";
 import Toast from "react-native-toast-message";
-// import axios from "axios";
 import { useStateContext } from "../src/contexts/ContextProvider";
 import useUserStore from "../src/stores/UserStore";
+////////////////////////////////////////////////////////////////////////
+import { FIREBASE_AUTH, FIREBASE_DB } from "../FirebaseConfig";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import Loading from "../components/Loading";
+import {
+	widthPercentageToDP as wp,
+	heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
-// import { FontFamily, FontSize, Color, Padding, Border } from "../GlobalStyles";
-// import { set } from "date-fns";
+////////////////////////////////////////////////////////////////////////
 
 export default function LoginScreen({ setIsAuthenticated }) {
 	const navigation = useNavigation();
@@ -40,6 +44,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 	const setWorksideEmail = useUserStore((state) => state.setEmail);
 	const setWorksidePasscode = useUserStore((state) => state.setPasscode);
 	const setPasscodeFlag = useUserStore((state) => state.setPasscodeFlag);
+	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -164,6 +169,60 @@ export default function LoginScreen({ setIsAuthenticated }) {
 				setWorksideUsername(response.user.user);
 				setWorksidePassword(response.user.password);
 				setWorksideEmail(response.user.email);
+
+				setLoading(true);
+
+				const userName = response.user.user;
+				const phone = "123-456-7890";
+
+				const email = response.user.email;
+				const password= response.user.password;
+				const mongoDbId = response.user.userId;
+				//TODO - Add User to Firebase Auth If he Doesn't Exist
+				// User Email
+				// User Password
+				// User ID
+				try {
+					const response = await createUserWithEmailAndPassword(
+						FIREBASE_AUTH,
+						email,
+						password,
+					);
+					console.log("Create User response message: ", response.message);
+					// let msg = response.message;
+					// if (msg.includes("(auth/invalid-email)")) msg = "Invalid email";
+					// if (msg.includes("(auth/email-already-in-use)"))
+					// 	msg = "This email is already in use";
+		
+					const userId = response.user.uid;
+						// TODO- Add User Details to Firebase Firestore
+					// User Name
+					// User Email
+					// User Company Name
+					// User Telephone Number
+					// Firebase User ID
+					// User MongoDB ID
+					await setDoc(doc(FIREBASE_DB, "users", userId), {
+						username: userName,
+						email: email,
+						company: "Workside Software",
+						profileUrl: "privateURL",
+						phone: phone,
+						uid: userId,
+						mongoDbId: mongoDbId,
+					});
+					setLoading(false);
+
+				} catch (error) {
+					let msg = error.message;
+					if (msg.includes("(auth/invalid-email)")) msg = "Invalid email";
+					if (msg.includes("(auth/email-already-in-use)"))
+						msg = "This email is already in use";
+						console.log("Error: ", msg);
+				// Alert.alert("Create User", response.msg);
+				setLoading(false);
+			}
+	
 			// Check to see if Passcode Exists and Set Global State
 			try {
 				const value = await AsyncStorage.getItem("passcode");
@@ -294,14 +353,20 @@ export default function LoginScreen({ setIsAuthenticated }) {
 				/>
 			</View>
 			<View className="mt-5 justify-center items-center" />
-			<TouchableOpacity
-				className="bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-				onPress={handleLogin}
-				ref={focusRef}
-				autoFocus
-			>
-			<Text className="text-2xl font-bold text-black">Login</Text>
-			</TouchableOpacity>
+			{loading ? (
+				<View className="flex-row justify-center">
+					<Loading size={hp(6.5)} />
+				</View>
+							) : (
+				<TouchableOpacity
+						className="bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+						onPress={handleLogin}
+						ref={focusRef}
+						autoFocus
+					>
+						<Text className="text-2xl font-bold text-black">Login</Text>
+					</TouchableOpacity>
+				)}
 				<View className="flex-1">
 		        <View className="flex-1 justify-end items-center">
 						<Text className="text-gray-500 text-center text-sm font-bold mb-2">
