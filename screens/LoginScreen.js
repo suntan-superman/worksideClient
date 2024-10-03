@@ -40,6 +40,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 	const focusRef = useRef(null);
 	const setLoggedInState = useUserStore((state) => state.setLoggedIn);
 	const setWorksideUsername = useUserStore((state) => state.setUsername);
+	const setWorksideUserId = useUserStore((state) => state.setUserID);
 	const setWorksidePassword = useUserStore((state) => state.setPassword);
 	const setWorksideEmail = useUserStore((state) => state.setEmail);
 	const setWorksidePasscode = useUserStore((state) => state.setPasscode);
@@ -165,6 +166,7 @@ export default function LoginScreen({ setIsAuthenticated }) {
 					// Context Problem
 					// SetContextUserID(response.user.userId);
 					setCurrentUserID(response.user.userId);
+					setWorksideUserId(response.user.userId);
 				}
 				setWorksideUsername(response.user.user);
 				setWorksidePassword(response.user.password);

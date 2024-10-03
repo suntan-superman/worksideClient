@@ -16,6 +16,9 @@ import useDataStore from "../src/stores/DataStore";
 import { BottomModal, SlideAnimation, ModalContent } from "react-native-modals";
 import useRequestStore from "../src/stores/RequestStore";
 import { format } from "date-fns";
+import { useStateContext } from "../src/contexts/ContextProvider";
+import axios from "axios";
+import Toast from "react-native-toast-message";
 
 
 const LOCATION_TASK_NAME = "background-location-task";
@@ -58,6 +61,9 @@ const RequestMapping = () => {
   const [departureTime, setDepartureTime] = useState("07:00");
   const [arrivalTime, setArrivalTime] = useState(Date.now());
   const [animating, setAnimating] = useState(true);
+  const { apiURL } = useStateContext();
+  const [daAssigned, setDaAssigned] = useState(false);
+
   //////////////////////////////////////////////////////////////////
   const currentSupplier = useDataStore((state) => state.currentSupplier);
   const setCurrentSupplier = useDataStore((state) => state.setCurrentSupplier);
@@ -65,6 +71,8 @@ const RequestMapping = () => {
   const setCurrentRequestName = useDataStore(
     (state) => state.setCurrentRequestName
   );
+  const [supplierName, setSupplierName] = useState("");
+  const [supplierUserId, setSupplierUserId] = useState("");
   /////////////////////////////////////////////////////////////////////
   // Global Alert Flags
   const departureAlertFlag = useDataStore((state) => state.departureAlertFlag);
@@ -115,6 +123,10 @@ const RequestMapping = () => {
   const [alertTeamFlag, setAlertTeamFlag] = useState(alertReqTeamFlag);
 
   /////////////////////////////////////////////////////////////////////
+  useEffect(() => {
+    getProgressData();
+  }, []);
+
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       // Prevent Default Behavior if modifyFlag === true
@@ -234,9 +246,49 @@ const RequestMapping = () => {
     setAlertModifyFlag(false);
   };
 
+	const getProgressData = async () => {
+		const reqURL = `${apiURL}/api/progresstracker/${currentRequestId}`;
+		try {
+			const response = await axios.get(reqURL);
+      if(response.data !== null) {
+        console.log("Supplier Assigned");
+        setDaAssigned(true);
+        setSupplierUserId(response?.data?.supplierid);
+        setSupplierName("Mike Hunt");
+      }
+      else {
+        setDaAssigned(false);
+        // Toast
+        Toast.show({
+          type: "info",
+          text1: "Workside Software",
+          text2: "No Delivery Associate Assigned!",
+          visibilityTime: 3000,
+          autoHide: true,
+        });
+            }
+			// let i = 0;
+			// while (i < 5) {
+			// 	if (response.data.step[i].date === null) stepData[i].date = "";
+			// 	else {
+			// 		stepData[i].date = response.data.step[i].date;
+			// 		setActiveStep(i + 1);
+			// 	}
+			// 	i++;
+			// }
+		} catch (error) {
+			console.error("Error fetching progress data: ", error);
+      return false;
+		}
+		return true;
+	};
+
   const ContactSupplier = () => {
     // TODO Contact Supplier
-    Alert.alert("Contact Supplier");
+    console.log("SupplierName: ", supplierName);
+    console.log("SupplierUserId: ", supplierUserId);
+		navigation.navigate("ChatRoomScreen", { supplierName, supplierUserId });
+    // Alert.alert("Contact Supplier");
   }
   return (
     <View className="flex-1 bg-white items-center">
@@ -285,8 +337,11 @@ const RequestMapping = () => {
         <View className="flex flex-row items-center justify-evenly content-around gap-5 w-full">
           <TouchableOpacity
             className={
-              "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+              daAssigned === false
+                ? "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+                : "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
             }
+            disabled={daAssigned === false}
             onPress={() => {
               ContactSupplier();
             }}

@@ -7,6 +7,7 @@ import ActiveRequests from "../screens/ActiveRequests";
 import SelectProject from "../screens/SelectProject";
 import RequestBids from "../screens/RequestBids";
 import GanttScreenEnhanced from "../screens/GanttScreenEnhanced";
+import ChatRoomScreen from "../screens/ChatRoomScreen";
 // import PasscodeScreen from "../screens/PasscodeScreen";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import * as Notifications from "expo-notifications";
@@ -228,6 +229,31 @@ const HomeStackScreen = ({ navigation }) => (
       component={GanttScreenEnhanced}
       options={{
         title: "Requests",
+        headerStyle: {
+          backgroundColor: '#D1D5DB',
+          
+        },
+        headerTintColor: 'black',
+        // headerTintColor: '#fff',
+        headerTitleStyle: {
+          color: 'black',
+          fontSize: 18,  
+          fontWeight: 'bold',
+        },
+        headerRight: () => (
+          <View>
+            <TouchableOpacity style={{ marginLeft: 15, marginRight: 10 }}>
+              <Icon name="alarm" size={28} onPress={alarmSelected} />
+            </TouchableOpacity>
+          </View>
+        ),
+      }}
+    />
+     <HomeStack.Screen
+      name="ChatRoomScreen"
+      component={ChatRoomScreen}
+      options={{
+        title: "Chat Room",
         headerStyle: {
           backgroundColor: '#D1D5DB',
           
