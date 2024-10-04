@@ -126,7 +126,7 @@ const RequestMapping = () => {
   /////////////////////////////////////////////////////////////////////
   useEffect(() => {
     // Temporary Code to Get Chat ID
-    GetChatId("123456");
+    // GetChatId("123456");
     getProgressData();
   }, []);
 
@@ -305,6 +305,7 @@ const RequestMapping = () => {
 		navigation.navigate("ChatRoomScreen", { supplierUserName: supplierUserName, supplierUserId: supplierUserId, supplier: currentSupplier, requestId: currentRequestId });
     // Alert.alert("Contact Supplier");
   }
+  
   return (
     <View className="flex-1 bg-white items-center">
       <View className="items-center pb-3">

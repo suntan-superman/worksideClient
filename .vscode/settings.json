@@ -47,6 +47,7 @@
 		"REQUESTEMAIL",
 		"requestid",
 		"requestname",
+		"requestorid",
 		"rigcompany",
 		"rigcompanycontact",
 		"statusdate",

@@ -18,6 +18,7 @@ import { Select, SelectItem, IndexPath } from "@ui-kitten/components";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
+import useUserStore from "../src/stores/UserStore";
 
 import axios from "axios";
 import { useStateContext } from "../src/contexts/ContextProvider";
@@ -46,6 +47,7 @@ const NewRequest = () => {
 	const setWorksideModifyFlag = useDataStore(
 		(state) => state.setWorksideModifyFlag
 	);
+	const userId = useUserStore((state) => state.userID);
 
 	//////////////////////////////////////////////////////////////
 
@@ -370,6 +372,7 @@ const NewRequest = () => {
 			return false;
 		}
 		const reqData = {
+			requestorid: userId,
 			projectname: projectName,
 			customername: customerName,
 			customercontact: "Customer Contact",

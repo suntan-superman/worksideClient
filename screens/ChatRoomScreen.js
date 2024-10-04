@@ -86,12 +86,12 @@ export default function ChatRoomScreen() {
             if(inputRef) inputRef?.current?.clear();
             const newDoc = await addDoc(messagesRef, {
                 userId: clientUserId,
+                requestId: requestId,
                 text: message,
                 // profileUrl: user?.profileUrl,
-                senderName: clientUserName,
+                senderName: clientName,
                 createdAt: Timestamp.fromDate(new Date())
             });
-
 
             // console.log('new message id: ', newDoc.id);
         }catch(err){
@@ -110,7 +110,7 @@ export default function ChatRoomScreen() {
             <View className="flex-1">
                 <MessageList scrollViewRef={scrollViewRef} messages={messages} currentUser={clientName} />
             </View>
-                <View className="flex-row mx-3 justify-between bg-white border p-2 border-neutral-300 rounded-full pl-5">
+                <View className="flex-row mx-3 justify-between bg-white border p-2 border-neutral-300 rounded-full pl-5 pb-2">
                     <TextInput 
                         ref={inputRef}
                         onChangeText={value=> textRef.current = value}
