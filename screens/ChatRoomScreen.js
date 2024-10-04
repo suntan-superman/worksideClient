@@ -10,15 +10,18 @@ import { getRoomId } from '../src/utils/common';
 import { Timestamp, addDoc, collection, doc, onSnapshot, orderBy, query, setDoc } from 'firebase/firestore';
 import { FIREBASE_DB } from '../FirebaseConfig';
 import useUserStore from "../src/stores/UserStore";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 
-export default function ChatRoomScreen( { supplierName, supplierUserId } ) {
-    // Need UserId and Supplier UserId
+export default function ChatRoomScreen() {
+    const route = useRoute();
+    const supplierUserName = route.params.supplierUserName;
+    const supplierUserId = route.params.supplierUserId;
+    const requestId = route.params.requestId;
+    const supplier = route.params.supplier;
+      // Need UserId and Supplier UserId
     const clientUserId = useUserStore((state) => state.userID);
     const clientName = useUserStore((state) => state.username);
-
-console.log('supplierUserId: ', supplierUserId);
-console.log('supplierName: ', supplierName);
 
     const [messages, setMessages] = useState([]);
     const textRef = useRef('');

@@ -19,7 +19,8 @@ import { format } from "date-fns";
 import { useStateContext } from "../src/contexts/ContextProvider";
 import axios from "axios";
 import Toast from "react-native-toast-message";
-
+import { FIREBASE_DB } from '../FirebaseConfig';
+import { collection, query, where, getDocs, doc } from "firebase/firestore";
 
 const LOCATION_TASK_NAME = "background-location-task";
 
@@ -71,7 +72,7 @@ const RequestMapping = () => {
   const setCurrentRequestName = useDataStore(
     (state) => state.setCurrentRequestName
   );
-  const [supplierName, setSupplierName] = useState("");
+  const [supplierUserName, setSupplierUserName] = useState("");
   const [supplierUserId, setSupplierUserId] = useState("");
   /////////////////////////////////////////////////////////////////////
   // Global Alert Flags
@@ -124,6 +125,8 @@ const RequestMapping = () => {
 
   /////////////////////////////////////////////////////////////////////
   useEffect(() => {
+    // Temporary Code to Get Chat ID
+    GetChatId("123456");
     getProgressData();
   }, []);
 
@@ -191,7 +194,6 @@ const RequestMapping = () => {
 
   const getPermissionsAsync = async () => {
     const permission = await Location.getForegroundPermissionsAsync();
-    // console.log("Permission: " + permission.status);
     if (permission.status !== "granted") {
       const { fgGranted } = await Location.requestForegroundPermissionsAsync();
     }
@@ -246,15 +248,31 @@ const RequestMapping = () => {
     setAlertModifyFlag(false);
   };
 
+  const GetChatId = async (supplierId) => {
+    // TODO Get Chat ID from Supplier
+    let chatId = "";
+    const email = "sroy@workside.com";
+
+    const q = query(collection(FIREBASE_DB, "users"), where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    for (const doc of querySnapshot.docs) {
+      // doc.data() is never undefined for query doc snapshots
+      chatId = doc.data()["mongoDbId"];
+    }
+    return chatId;
+  };
+
 	const getProgressData = async () => {
 		const reqURL = `${apiURL}/api/progresstracker/${currentRequestId}`;
 		try {
 			const response = await axios.get(reqURL);
       if(response.data !== null) {
-        console.log("Supplier Assigned");
         setDaAssigned(true);
-        setSupplierUserId(response?.data?.supplierid);
-        setSupplierName("Mike Hunt");
+        // setSupplierUserId(GetChatId(response?.data?.supplierid));
+        setSupplierUserId(response?.data?.daid);
+        setSupplierUserName(response?.data?.daname);
+        setCurrentSupplier(response?.data?.supplier);
       }
       else {
         setDaAssigned(false);
@@ -266,7 +284,7 @@ const RequestMapping = () => {
           visibilityTime: 3000,
           autoHide: true,
         });
-            }
+      }
 			// let i = 0;
 			// while (i < 5) {
 			// 	if (response.data.step[i].date === null) stepData[i].date = "";
@@ -284,10 +302,7 @@ const RequestMapping = () => {
 	};
 
   const ContactSupplier = () => {
-    // TODO Contact Supplier
-    console.log("SupplierName: ", supplierName);
-    console.log("SupplierUserId: ", supplierUserId);
-		navigation.navigate("ChatRoomScreen", { supplierName, supplierUserId });
+		navigation.navigate("ChatRoomScreen", { supplierUserName: supplierUserName, supplierUserId: supplierUserId, supplier: currentSupplier, requestId: currentRequestId });
     // Alert.alert("Contact Supplier");
   }
   return (
@@ -341,7 +356,8 @@ const RequestMapping = () => {
                 ? "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
                 : "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
             }
-            disabled={daAssigned === false}
+            // TODO Change Back
+            // disabled={daAssigned === false}
             onPress={() => {
               ContactSupplier();
             }}
