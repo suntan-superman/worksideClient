@@ -20,7 +20,11 @@ import { useStateContext } from "../src/contexts/ContextProvider";
 import axios from "axios";
 import Toast from "react-native-toast-message";
 import { FIREBASE_DB } from '../FirebaseConfig';
-import { collection, query, where, getDocs, doc } from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import {
+	widthPercentageToDP as wp,
+	heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const LOCATION_TASK_NAME = "background-location-task";
 
@@ -305,7 +309,7 @@ const RequestMapping = () => {
 		navigation.navigate("ChatRoomScreen", { supplierUserName: supplierUserName, supplierUserId: supplierUserId, supplier: currentSupplier, requestId: currentRequestId });
     // Alert.alert("Contact Supplier");
   }
-  
+
   return (
     <View className="flex-1 bg-white items-center">
       <View className="items-center pb-3">
@@ -357,8 +361,7 @@ const RequestMapping = () => {
                 ? "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
                 : "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
             }
-            // TODO Change Back
-            // disabled={daAssigned === false}
+            disabled={daAssigned === false}
             onPress={() => {
               ContactSupplier();
             }}
@@ -538,6 +541,20 @@ const styles = StyleSheet.create({
     color: "#010101",
     fontWeight: "600",
   },
+  labelTextStyle: {
+		fontSize: hp(1.4),
+		color: "black",
+	},
+	buttonTextStyle: {
+		color: "black",
+		fontSize: hp(1.2),
+		fontWeight: "bold",
+	},
+	buttonLabelStyle: {
+		color: "black",
+		fontSize: hp(1.0),
+		fontWeight: "bold",
+	},
 });
 
 export default RequestMapping;

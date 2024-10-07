@@ -1,30 +1,58 @@
-import { View, Text } from 'react-native'
+import { View, Text, StyleSheet } from 'react-native'
 import React from 'react'
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 
-export default function MessageItem({message, currentUser}) {
-  if(currentUser?.userId==message?.userId){
-    // my message
-    return (
-        <View className="flex-row justify-end mb-3 mr-3">
-            <View style={{width: wp(80)}}>
-                <View className="flex self-end p-3 rounded-2xl px-4 bg-white border border-neutral-200">
-                    <Text style={{fontSize: hp(1.9)}}>
-                        {message?.text}
-                    </Text>
-                </View>
-            </View>
-        </View>
-    )
-  }else{
-    return (
-        <View style={{width: wp(80)}} className="ml-3 mb-3">
-            <View className="flex self-start p-3 px-4 rounded-2xl bg-indigo-100 border border-indigo-200">
-                <Text style={{fontSize: hp(1.9)}}>
-                    {message?.text}
-                </Text>
-            </View>
-        </View>
-    )
-  }
+export default function MessageItem({ message, currentUserId }) {
+	if (currentUserId === message?.userId) {
+		return (
+			<View style={styles.container}>
+				<Text style={styles.rightAlignedTimeStamp}>
+					{message?.createdAt.toDate().toLocaleString()}
+				</Text>
+				<Text style={styles.rightAlignedText}>{message?.text}</Text>
+			</View>
+		);
+	}
+	return (
+		<View style={styles.container}>
+			<Text style={styles.leftAlignedTimeStamp}>
+				{message?.createdAt.toDate().toLocaleString()}
+			</Text>
+			<Text style={styles.leftAlignedText}>{message?.text}</Text>
+		</View>
+	);
 }
+
+const styles = StyleSheet.create({
+	container: {
+		flex: 1, // Ensures the view takes up the full height of the screen
+		justifyContent: "center", // Centers the content vertically
+		padding: 4, // Adds padding to the view
+		marginRight: 4,
+		marginLeft: 4,
+	},
+	rightAlignedText: {
+		color: "green",
+		fontSize: hp(1.9),
+		textAlign: "right", // Aligns the text to the right
+		width: "100%", // Ensures the text spans the full width of the container
+	},
+	rightAlignedTimeStamp: {
+		fontSize: hp(1.0),
+		fontWeight: "600",
+		textAlign: "right", // Aligns the text to the right
+		width: "100%", // Ensures the text spans the full width of the container
+	},
+	leftAlignedText: {
+		color: "red",
+		fontSize: hp(1.9),
+		textAlign: "left", // Aligns the text to the right
+		width: "100%", // Ensures the text spans the full width of the container
+	},
+	leftAlignedTimeStamp: {
+		fontSize: hp(1.0),
+		fontWeight: "600",
+		textAlign: "left", // Aligns the text to the right
+		width: "100%", // Ensures the text spans the full width of the container
+	},
+});

@@ -4,7 +4,7 @@
     "slug": "worksideclient",
     "version": "1.1.10",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/worksideIcon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -25,6 +25,12 @@
             "useFrameworks": "static"
           }
         }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Workside Software to use Face ID."
+        }
       ]
     ],
     "ios": {
@@ -37,13 +43,14 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Workside requires geolocation to improve the quality of the service",
         "NSLocationAlwaysUsageDescription": "Workside requires geolocation to improve the quality of the service",
         "NSLocationWhenInUseUsageDescription": "Workside requires geolocation to improve the quality of the service",
-        "NSCameraUsageDescription": "The picture will be used to inform the state of the products during delivery"
+        "NSCameraUsageDescription": "The picture will be used to inform the state of the products during delivery",
+        "NSFaceIDUsageDescription": "Face ID is used to authenticate the user."
       },
       "config": {
         "googleMapsApiKey": "AIzaSyBsK1utYDK9o1MR2RsnTobmJW7PVLHp6B4"
       },
       "bundleIdentifier": "com.sjroy5.worksideclient",
-      "buildNumber": "1.1.89"
+      "buildNumber": "1.1.91"
     },
     "android": {
       "adaptiveIcon": {
@@ -61,7 +68,7 @@
         "ACCESS_BACKGROUND_LOCATION"
       ],
       "package": "com.sjroy5.worksideclient",
-      "versionCode": 36
+      "versionCode": 37
     },
     "web": {
       "favicon": "./assets/favicon.png"

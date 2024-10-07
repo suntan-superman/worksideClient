@@ -1,7 +1,7 @@
 import { View, Text, TextInput, TouchableOpacity, Alert, Keyboard } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { StatusBar } from 'expo-status-bar';
-// import ChatRoomHeader from '../components/ChatRoomHeader';
+import ChatRoomHeader from '../components/ChatRoomHeader';
 import MessageList from '../components/MessageList';
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import { Feather } from '@expo/vector-icons';
@@ -103,14 +103,13 @@ export default function ChatRoomScreen() {
     <CustomKeyboardView inChat={true}>
         <View className="flex-1 bg-white">
             <StatusBar style="dark" />
-            {/* <ChatRoomHeader user={item} router={router} /> */}
-            {/* <ChatRoomHeader  /> */}
+            <ChatRoomHeader clientName={clientName} supplierName={supplierUserName} />
             <View className="h-3 border-b border-neutral-300" />
             <View className="flex-1 justify-between bg-neutral-100 overflow-visible">
             <View className="flex-1">
-                <MessageList scrollViewRef={scrollViewRef} messages={messages} currentUser={clientName} />
+                <MessageList scrollViewRef={scrollViewRef} messages={messages} currentUserId={clientUserId} />
             </View>
-                <View className="flex-row mx-3 justify-between bg-white border p-2 border-neutral-300 rounded-full pl-5 pb-2">
+                <View className="flex-row mx-3 justify-between bg-white border p-2 border-neutral-300 rounded-full pl-5 pb-2 mb-2">
                     <TextInput 
                         ref={inputRef}
                         onChangeText={value=> textRef.current = value}

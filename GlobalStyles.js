@@ -1,3 +1,9 @@
+import { StyleSheet } from "react-native";
+import {
+	widthPercentageToDP as wp,
+	heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
+
 /* fonts */
 export const FontFamily = {
   header2: "Work Sans_bold",
@@ -80,3 +86,58 @@ export const Border = {
   br_xl: 22 /* 22 */,
   br_2xl: 26 /* 26 */,
 };
+
+export const GlobalStyles = StyleSheet.create({
+	mapView: {
+		top: 0,
+		left: 0,
+		width: "100%",
+		height: 300,
+	},
+	wsButtonLabelStyle: {
+		color: "black",
+		fontSize: hp(1.5),
+		fontWeight: "bold",
+	},
+	listButtonTextStyle: {
+		color: "black",
+		fontSize: hp(1.25),
+		fontWeight: "bold",
+	},
+	progressButtonStyle: {
+		color: "black",
+		fontSize: hp(1.5),
+		fontWeight: "bold",
+	},
+	labelTextStyle: {
+		fontSize: hp(1.4),
+		color: "black",
+	},
+	buttonTextStyle: {
+		color: "black",
+		fontSize: hp(1.2),
+		fontWeight: "bold",
+	},
+	buttonLabelStyle: {
+		color: "black",
+		fontSize: hp(1.0),
+		fontWeight: "bold",
+	},
+	copyrightTextStyle: {
+		fontSize: hp(1.3),
+	},
+  projectDetailsButtonLabelStyle: {
+    color: "black",
+    fontSize: hp(1.5),
+    fontWeight: "bold",
+  },
+  activeRequestsDetailsButtonLabelStyle: {
+    fontSize: hp(1.25),
+    fontWeight: "bold",
+  },
+  projectButtonLabelStyle: {
+    color: "black",
+    fontSize: hp(2.0),
+    fontWeight: "bold",
+  },
+});

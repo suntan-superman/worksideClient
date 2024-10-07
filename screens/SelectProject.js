@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
+import { GlobalStyles } from "../GlobalStyles";
 import { useNavigation } from "@react-navigation/native";
 import { FontFamily, FontSize, Color } from "../GlobalStyles";
 import { Select, SelectItem, IndexPath } from "@ui-kitten/components";
@@ -129,7 +130,9 @@ const SelectProject = () => {
         "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-28 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
       }
     >
-      <Text className="text-base font-semibold">Details</Text>
+      <Text 
+        style={GlobalStyles.projectDetailsButtonLabelStyle}
+        className="font-semibold">Details</Text>
     </Pressable>
   );
 
@@ -169,11 +172,9 @@ const SelectProject = () => {
             <Text className="text-black text-2xl font-bold">SIDE</Text>
             {/* <Text className="text-black text-xl font-bold"> Projects</Text> */}
             </Text>
-          {/* <Text className="text-black text-xl font-bold">Projects</Text> */}
         </View>
         <List
           contentContainerStyle className="flex-grow"
-          // style={{ maxHeight: listHeight }}
           data={activeProjects}
           renderItem={renderProjects}
         />

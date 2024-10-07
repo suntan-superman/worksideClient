@@ -1,42 +1,54 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import React from 'react'
-// import { Stack } from 'expo-router'
-import { Entypo, Ionicons } from '@expo/vector-icons'
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
-import { Image } from 'expo-image';
+import Toast from "react-native-toast-message";
 
-export default function ChatRoomHeader() {
-    // export default function ChatRoomHeader({user, router}) {
+function CallSupplier() {
+    Toast.show({
+        type: "info",
+        text1: "Workside Software",
+        text2: "Call Supplier!",
+        visibilityTime: 5000,
+        autoHide: true,
+    });
+};
+
+export default function ChatRoomHeader({clientName, supplierName}) {
    return (
-    <Stack.Screen
-        options={{
-            title: '',
-            headerShadowVisible: false,
-            headerLeft: ()=>(
-                <View className="flex-row items-center gap-4">
-                    {/* <TouchableOpacity onPress={()=> router.back()}> */}
-                    <TouchableOpacity >
-                        <Entypo name="chevron-left" size={hp(4)} color="#737373" />
-                    </TouchableOpacity>
-                    <View className="flex-row items-center gap-3">
-                        {/* <Image 
-                            source={user?.profileUrl}
-                            style={{height: hp(4.5), aspectRatio: 1, borderRadius: 100}}
-                        /> */}
-                        <Text style={{fontSize: hp(2.5)}} className="text-neutral-700 font-medium">
-                            My Name
-                            {/* {user?.username} */}
-                        </Text>
-                    </View>
-                </View>
-            ),
-            headerRight: ()=>(
-                <View className="flex-row items-center gap-8">
-                    <Ionicons name="call" size={hp(2.8)} color={'#737373'} />
-                    <Ionicons name="videocam" size={hp(2.8)} color={'#737373'} />
-                </View>
-            )
-        }}
-    />
+        <View style={styles.container}>
+            <Text style={styles.leftText}>{supplierName}</Text>
+            <TouchableOpacity onPress={CallSupplier}>
+                <Text style={styles.centerText}>Call</Text>
+            </TouchableOpacity>
+            {/* <Text style={styles.centerText}>Call</Text> */}
+            <Text style={styles.rightText}>{clientName}</Text>
+        </View>    
   )
-}
+};
+
+const styles = StyleSheet.create({
+    container: {
+         height: hp(3), // Set the height of the container
+        flexDirection: 'row', // Align items in a row
+        justifyContent: 'space-between', // Distribute space between the items
+        paddingTop: 2, // Add padding for layout spacing
+        paddingLeft: 4, // Add padding for layout spacing
+        paddingRight: 4, // Add padding for layout spacing
+        width: '100%', // Make sure the container takes the full width
+    },
+    leftText: {
+		color: "red",
+		fontSize: hp(1.9),
+        textAlign: 'left', // Align the text to the left
+    },
+    rightText: {
+		color: "green",
+		fontSize: hp(1.9),
+        textAlign: 'right', // Align the text to the right
+    },
+    centerText: {
+		color: "black",
+		fontSize: hp(1.9),
+        textAlign: 'center', // Align the text to the left
+    },
+  });

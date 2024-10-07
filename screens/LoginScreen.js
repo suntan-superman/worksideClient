@@ -11,6 +11,8 @@ import {
 	TouchableOpacity,
 	KeyboardAvoidingView,
 } from "react-native";
+import { GlobalStyles } from "../GlobalStyles";
+
 import { useNavigation } from "@react-navigation/native";
 import { MaterialIcons, AntDesign } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
@@ -25,6 +27,7 @@ import {
 	widthPercentageToDP as wp,
 	heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import * as LocalAuthentication from 'expo-local-authentication';
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -264,7 +267,28 @@ export default function LoginScreen({ setIsAuthenticated }) {
 		}
 	};
 
-	return (
+	const handleBiometric = (event) => {
+		event.preventDefault();
+		const auth = LocalAuthentication.authenticateAsync({
+			promptMessage: 'Authenticate',
+			fallbackLabel: 'Enter Password',
+		});
+		auth.then(result => {
+			setIsAuthenticated(result.success);
+			Toast.show({
+				type: "success",
+				text1: "Workside Software",
+				text2: `Biometrics Result: ${result.success}`,
+				visibilityTime: 5000,
+				autoHide: true,
+			});
+				return result.success;
+		}
+		);
+		return false;
+};
+
+return (
 		<KeyboardAvoidingView
 			// behavior={Platform.OS === "ios" ? "padding" : "null"}
 			// keyboardVerticalOffset={Platform.OS === "ios" ? "100" : 0}
@@ -359,31 +383,34 @@ export default function LoginScreen({ setIsAuthenticated }) {
 				<View className="flex-row justify-center">
 					<Loading size={hp(6.5)} />
 				</View>
-							) : (
-				<TouchableOpacity
-						className="bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-						onPress={handleLogin}
-						ref={focusRef}
-						autoFocus
-					>
-						<Text className="text-2xl font-bold text-black">Login</Text>
-					</TouchableOpacity>
+				) : (
+				<View className="gap-2">
+					<TouchableOpacity
+							className="bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							onPress={handleLogin}
+							ref={focusRef}
+							autoFocus
+						>
+							<Text className="text-xl font-bold text-black">Login</Text>
+						</TouchableOpacity>
+					</View>
 				)}
 				<View className="flex-1">
 		        <View className="flex-1 justify-end items-center">
-						<Text className="text-gray-500 text-center text-sm font-bold mb-2">
+						<Text 
+							style={GlobalStyles.copyrightTextStyle}
+							className="text-gray-500 text-center font-bold mb-1"
+						>
 							By logging into Workside, you agree to our Terms of Service and
 							Privacy Policy. By using Workside, you acknowledge and accept the
 							potential risks involved.
 						</Text>
 		        </View>
       		</View>
-			  {/* <View className="absolute  m-2 w-full h-[800px]">
-		        <View className="absolute left-0 right-0 bottom-0 justify-self-center text-center">
-		          <Text className="text-black text-base font-bold pl-1 pr-1">By logging into Workside, you agree to our Terms of Service and Privacy Policy. By using Workside, you acknowledge and accept the potential risks involved.</Text>
-		        </View>
-      		</View> */}
-			<Text className="text-black text-sm font-bold pt-2">
+			<Text
+				style={GlobalStyles.copyrightTextStyle}
+				className="text-black font-bold pt-1 mb-2"
+			>
 				Workside Copyright 2024
 			</Text>
 		</KeyboardAvoidingView>

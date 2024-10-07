@@ -14,6 +14,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { AuthContextProvider } from "./src/contexts/authContext";
 import { MenuProvider } from "react-native-popup-menu";
+import { isBiometricSupported, onAuthenticate }from "./components/BiometricAuth";
+import * as LocalAuthentication from 'expo-local-authentication';
 
 import { createStackNavigator } from "@react-navigation/stack";
 import { StyleSheet } from "react-native";
@@ -118,14 +120,30 @@ const toastConfig = {
 
 const App = () => {
   const [hideSplashScreen, setHideSplashScreen] = React.useState(false);
-  const [isBiometricSupported, setIsBiometricSupported] = useState(false);
+  const [biometricSupported, setBiometricSupported] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setTimeout(() => {
       setHideSplashScreen(true);
     }, 1000);
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      const compatible = await LocalAuthentication.hasHardwareAsync();
+      console.log("Compatible: ", compatible);
+      setBiometricSupported(compatible);
+    })();
+  });
+
+  // useEffect( async () => {
+  //   console.log("Biometric Supported in useEffect");
+  //   await isBiometricSupported().then((result) => {
+  //     setBiometricSupported(result);
+  //   });
+  // }
+  // , []);
 
   return (
     <>
@@ -211,7 +229,7 @@ const AppWrapper = () => {
   if (!fontsLoaded && !error) {
     return null;
   }
-
+  
   return (
     <>
       <IconRegistry icons={[MaterialIconsPack]} />

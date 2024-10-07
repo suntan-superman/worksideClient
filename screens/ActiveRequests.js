@@ -10,6 +10,7 @@ import {
 	TouchableWithoutFeedback,
 	Keyboard,
 } from "react-native";
+import { GlobalStyles } from "../GlobalStyles";
 import { useNavigation } from "@react-navigation/native";
 import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
 import { useStateContext } from "../src/contexts/ContextProvider";
@@ -184,7 +185,8 @@ const ActiveRequests = () => {
 			buttonText = "COMPLETED";
 		}
 		buttonFormat = `${buttonColor} hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`;
-		textFormat = `${textColor} text-xs font-semibold`;
+		// textFormat = `${textColor} text-xs font-semibold`;
+		textFormat = `${textColor}`;
 
 		return (
 			<Pressable
@@ -197,7 +199,9 @@ const ActiveRequests = () => {
 				}
 				className={ buttonFormat }
 			>
-				<Text className={textFormat}>
+				<Text 
+        style={GlobalStyles.activeRequestsDetailsButtonLabelStyle}
+				className={textFormat}>
 					{/* {props.selectedItem.status === "AWARDED" ? "AWARDED" : "OPEN"} */}
 					{buttonText}
 				</Text>
@@ -479,7 +483,9 @@ const handleGanttChartPress = () => {
 						navigation.navigate("RequestDetails", { reqID: selectedIndex })
 					)}
 				>
-					<Text className="text-lg font-bold text-black">
+					<Text
+		        style={GlobalStyles.projectButtonLabelStyle}
+						>
 						Details
 					</Text>
 				</TouchableOpacity>
@@ -489,7 +495,11 @@ const handleGanttChartPress = () => {
 					}
 					onPress={() => navigation.navigate("NewRequest")}
 				>
-					<Text className="text-lg font-bold text-black">New</Text>
+					<Text 
+					style={GlobalStyles.projectButtonLabelStyle}
+					>
+						New
+						</Text>
 				</TouchableOpacity>
 				<TouchableOpacity
 					disabled={requestData.length === 0}
