@@ -19,6 +19,10 @@ import axios from "axios";
 import { useStateContext } from "../src/contexts/ContextProvider";
 import useUserStore from "../src/stores/UserStore";
 import useDataStore from "../src/stores/DataStore";
+import {
+	widthPercentageToDP as wp,
+	heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 const SelectProject = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -215,147 +219,52 @@ const SelectProject = () => {
               <Text className="text-green-500 text-2xl font-bold">WORK</Text>
               <Text className="text-black text-2xl font-bold">SIDE</Text>
             </Text>
-            <Text className="text-green-500 text-xl font-bold">
-              Project Info
+            <Text className="text-black text-xl font-bold">
+              Project Details
             </Text>
           </View>
           {/* /////////////////////////////////////////////////////////// */}
           {/* Output Area */}
-          <View style={{ flexDirection: "row", marginBottom: 4 }}>
-            <View style={{ width: 125, backgroundColor: "white" }}>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                }}
-              >
-                Area
-              </Text>
-            </View>
-            <View style={{ width: 250, backgroundColor: "lightgray" }}>
-              <Text
-                style={{
-                  left: 10,
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                }}
-              >
-                {selectedProject?.area}
-              </Text>
+          <View className="flex-start justify-center mb-1">
+            <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Area</Text>
+            <View style={{ width: wp(90), height: hp(2.3), backgroundColor: "#E5E7EB" }}>
+               <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.area}</Text>
             </View>
           </View>
           {/* /////////////////////////////////////////////////////////// */}
           {/* /////////////////////////////////////////////////////////// */}
           {/* Output Project Name */}
-          <View style={{ flexDirection: "row", marginBottom: 4 }}>
-            <View style={{ width: 125, backgroundColor: "white" }}>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                }}
-              >
-                Project Name
-              </Text>
-            </View>
-            <View style={{ width: 250, backgroundColor: "lightgray" }}>
-              <Text
-                style={{
-                  left: 10,
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                }}
-              >
-                {selectedProject?.projectname}
-              </Text>
+          <View className="flex-start justify-center mb-1">
+            <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Project Name</Text>
+            <View style={{ width: wp(90), height: hp(2.3), backgroundColor: "#E5E7EB" }}>
+               <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.projectname}</Text>
             </View>
           </View>
           {/* /////////////////////////////////////////////////////////// */}
           {/* /////////////////////////////////////////////////////////// */}
           {/* Output Description */}
-          <View style={{ flexDirection: "row", marginBottom: 4 }}>
-            <View style={{ width: 125, backgroundColor: "white" }}>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                }}
-              >
-                Description
-              </Text>
-            </View>
-            <View style={{ width: 250, backgroundColor: "lightgray" }}>
-              <Text
-                style={{
-                  left: 10,
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                }}
-              >
-                {selectedProject?.description}
-              </Text>
+          <View className="flex-start justify-center mb-1">
+            <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Description</Text>
+            <View style={{ width: wp(90), height: hp(2.3), backgroundColor: "#E5E7EB" }}>
+               <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.description}</Text>
             </View>
           </View>
           {/* /////////////////////////////////////////////////////////// */}
           {/* /////////////////////////////////////////////////////////// */}
-          {/* Output Description */}
-          <View style={{ flexDirection: "row", marginBottom: 4 }}>
-            <View style={{ width: 125, backgroundColor: "white" }}>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                }}
-              >
-                Rig Company
-              </Text>
-            </View>
-            <View style={{ width: 250, backgroundColor: "lightgray" }}>
-              <Text
-                style={{
-                  left: 10,
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                }}
-              >
-                {selectedProject?.rigcompany}
-              </Text>
+          {/* Output Rig Company */}
+          <View className="flex-start justify-center mb-1">
+            <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Rig Company</Text>
+            <View style={{ width: wp(90), height: hp(2.3), backgroundColor: "#E5E7EB" }}>
+               <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.rigcompany}</Text>
             </View>
           </View>
           {/* /////////////////////////////////////////////////////////// */}
           {/* /////////////////////////////////////////////////////////// */}
-          {/* Contact */}
-          <View style={{ flexDirection: "row", marginBottom: 4 }}>
-            <View style={{ width: 125, backgroundColor: "white" }}>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                }}
-              >
-                Contact
-              </Text>
-            </View>
-            <View style={{ width: 250, backgroundColor: "lightgray" }}>
-              <Text
-                style={{
-                  left: 10,
-                  fontSize: 14,
-                  fontWeight: "bold",
-                  textAlign: "left",
-                }}
-              >
-                {selectedProject?.customercontact}
-              </Text>
+          {/* Output Contact */}
+          <View className="flex-start justify-center mb-1">
+            <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Contact</Text>
+            <View style={{ width: wp(90), height: hp(2.3), backgroundColor: "#E5E7EB" }}>
+               <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.customercontact}</Text>
             </View>
           </View>
           {/* /////////////////////////////////////////////////////////// */}

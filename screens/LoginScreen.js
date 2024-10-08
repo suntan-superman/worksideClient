@@ -409,7 +409,7 @@ return (
       		</View>
 			<Text
 				style={GlobalStyles.copyrightTextStyle}
-				className="text-black font-bold pt-1 mb-2"
+				className="text-black font-bold pt-1 mb-4"
 			>
 				Workside Copyright 2024
 			</Text>

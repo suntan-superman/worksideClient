@@ -50,7 +50,7 @@
         "googleMapsApiKey": "AIzaSyBsK1utYDK9o1MR2RsnTobmJW7PVLHp6B4"
       },
       "bundleIdentifier": "com.sjroy5.worksideclient",
-      "buildNumber": "1.1.91"
+      "buildNumber": "1.1.92"
     },
     "android": {
       "adaptiveIcon": {

@@ -356,11 +356,7 @@ const RequestMapping = () => {
         {/* Output Buttons */}
         <View className="flex flex-row items-center justify-evenly content-around gap-5 w-full">
           <TouchableOpacity
-            className={
-              daAssigned === false
-                ? "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-                : "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-            }
+            className={`${daAssigned === false ? "bg-gray-300" : "bg-green-300"} hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-48 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
             disabled={daAssigned === false}
             onPress={() => {
               ContactSupplier();
@@ -507,11 +503,7 @@ const RequestMapping = () => {
             </View>
             <View className="pt-5">
               <TouchableOpacity
-                className={
-                  alertModifyFlag === true
-                    ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-                    : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-                }
+                className={`${alertModifyFlag === false ? "bg-gray-300" : "bg-green-300"} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
                 /// Need to Save Any Changes Before Navigating
                 disabled={!alertModifyFlag}
                 onPress={() => {

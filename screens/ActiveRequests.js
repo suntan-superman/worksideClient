@@ -17,9 +17,13 @@ import { useStateContext } from "../src/contexts/ContextProvider";
 import { Icon, List, ListItem, IndexPath,	Radio, RadioGroup } from "@ui-kitten/components";
 import MaterialIcon from "react-native-vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+	widthPercentageToDP as wp,
+	heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 import axios from "axios";
-import { format, set } from "date-fns";
+import { format } from "date-fns";
 
 let ganttRequests = [];
 
@@ -184,7 +188,7 @@ const ActiveRequests = () => {
 			textColor= "text-white";
 			buttonText = "COMPLETED";
 		}
-		buttonFormat = `${buttonColor} hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-36 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`;
+		buttonFormat = `${buttonColor} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`;
 		// textFormat = `${textColor} text-xs font-semibold`;
 		textFormat = `${textColor}`;
 
@@ -423,18 +427,14 @@ const handleGanttChartPress = () => {
 	return (
 		<View className="flex-1 bg-white">
 			<View className="items-center">
-				{/* <Text>
-					<Text className="text-green-500 text-2xl font-bold">WORK</Text>
-					<Text className="text-black text-2xl font-bold">SIDE</Text>
-				</Text> */}
 				<View className="flex justify-between items-center w-full">
 					<View>
-					<Text className="text-black text-xl font-bold">
+					<Text style={{fontSize: hp(2)}} className="text-black font-bold">
 						{projectID === null ? "No Project Selected" : projectName}
 					</Text>
 					</View>
 				</View>
-				<Text className="text-black text-xl font-bold">{projectRig}</Text>
+				<Text style={{fontSize: hp(1.8)}} className="text-black font-bold">{projectRig}</Text>
 			</View>
 			{requestData.length === 0 ? (
 				<View className="items-center p-2">
@@ -473,11 +473,8 @@ const handleGanttChartPress = () => {
 			{/* <View className="flex-row items-center justify-between gap-3 pr-3 pl-3 pb-4"> */}
 				<TouchableOpacity
 					disabled={disabledFlag}
-					className={
-						disabledFlag
-							? "bg-gray-300 p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-							: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-					}
+					// TODO Fix all conditionals as such
+					className={`${disabledFlag ? "bg-gray-300" : "bg-green-300"} p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
 					onPress={() => (
 						// console.log("Request ID:", selectedIndex),
 						navigation.navigate("RequestDetails", { reqID: selectedIndex })
@@ -503,14 +500,7 @@ const handleGanttChartPress = () => {
 				</TouchableOpacity>
 				<TouchableOpacity
 					disabled={requestData.length === 0}
-					className={
-						requestData.length === 0
-							? "bg-gray-300 p-0 rounded-lg items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-							: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-					}
-					// 	className={
-					// 		"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-					// }
+					className={`${requestData.length === 0 ? "bg-gray-300" : "bg-green-300"} p-0 rounded-lg items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
 						onPress={() => {
 							handleGanttChartPress();
 						} }

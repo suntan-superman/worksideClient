@@ -24,6 +24,10 @@ import { logTransaction } from "../src/helperFunction";
 import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
 import DateTimePickerModal from "@react-native-community/datetimepicker";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import {
+	widthPercentageToDP as wp,
+	heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 // Passcode Modal
 import {
@@ -1028,27 +1032,21 @@ const handleSavePasscodeModalChanges = () => {
         > */}
           <View className="items-start">
             <Text>
-              <Text className="text-black text-sm font-bold">STATUS: </Text>
-              <Text className="text-green-500 text-sm font-bold">{reqData.status}</Text>
+              <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Status: </Text>
+              <Text style={{fontSize: hp(1.5)}} className="text-green-500 font-bold">{reqData.status}</Text>
             </Text>
           </View>
           <View className="items-end">
             <TouchableOpacity
-              className={
-                bidAwardedFlag === false
-                  ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 right-5 rounded-lg w-32 h-8 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-                  : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 right-5 rounded-lg w-32 h-8 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-              }
+							className={`${bidAwardedFlag === false ? "bg-green-300" : "bg-gray-300"} hover:drop-shadow-xl hover:bg-light-gray p-1 right-5 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
               disabled={!allowEditFlag}
               onPress={() => setEditFlag(!editFlag)}
             >
               {!editFlag && (
-                <Text className="text-black text-sm font-bold">Edit Mode</Text>
+                <Text style={{fontSize: hp(1.25)}} className="text-black font-bold">Edit Mode</Text>
               )}
               {editFlag && (
-                <Text className="text-black text-sm font-bold">
-                  Cancel Edit
-                </Text>
+                <Text style={{fontSize: hp(1.25)}} className="text-black font-bold">Cancel Edit</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -1065,7 +1063,7 @@ const handleSavePasscodeModalChanges = () => {
             width: "90%",
           }}
         >
-          <Text className="text-black text-base font-bold">Request</Text>
+          <Text style={{fontSize: hp(1.6)}} className="text-black font-bold">Request</Text>
           {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
           <TextInput
             defaultValue="Request"
@@ -1088,7 +1086,7 @@ const handleSavePasscodeModalChanges = () => {
               width: "90%",
             }}
           >
-            <Text className="text-black text-base font-bold">Quantity</Text>
+          <Text style={{fontSize: hp(1.6)}} className="text-black font-bold">Quantity</Text>
             <TextInput
               // Changed 2024-07-04
               // value={String(reqData.quantity)}
@@ -1119,11 +1117,7 @@ const handleSavePasscodeModalChanges = () => {
           >
             <TextInput
               value={requestComment}
-              className={
-                editFlag === true
-                  ? "bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
-                  : "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
-              }
+							className={`${editFlag === true ? "bg-green-300" : "bg-gray-300"} rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top`}
               editable={editFlag}
               keyboardType="default"
               multiline={true}
@@ -1144,7 +1138,8 @@ const handleSavePasscodeModalChanges = () => {
             }}
           >
             {editFlag === false ? (
-              <><Text className="text-black text-base font-bold">Vendor</Text>
+          <>
+          <Text style={{fontSize: hp(1.6)}} className="text-black font-bold">Vendor</Text>
                 <TextInput
                   defaultValue="Request"
                   value={reqData.vendortype}
@@ -1178,9 +1173,7 @@ const handleSavePasscodeModalChanges = () => {
               width: "90%",
             }}
           >
-            <Text className="text-black text-base font-bold">
-              Date/Time Required
-            </Text>
+          <Text style={{fontSize: hp(1.6)}} className="text-black font-bold">Date/Time Required</Text>
             {editFlag === false ? (
               <TextInput
                 value={format(dateTimeRequested, "MM/dd/yyyy HH:mm")}
@@ -1209,16 +1202,12 @@ const handleSavePasscodeModalChanges = () => {
               width: "90%",
             }}
           >
-            <Text className="text-black text-base font-bold">Link To</Text>
+          <Text style={{fontSize: hp(1.6)}} className="text-black font-bold">Link To</Text>
             {editFlag === false ? (
               // biome-ignore lint/style/useSelfClosingElements: <explanation>
               <TextInput
                 defaultValue="Link To Other Request"
-                className={
-                  editFlag === true
-                    ? "bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
-                    : "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
-                }
+                className={`${editFlag === true ? "bg-green-300" : "bg-gray-300"} rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm`}
                 editable={editFlag}
               ></TextInput>
             ) : (
@@ -1287,22 +1276,16 @@ const handleSavePasscodeModalChanges = () => {
               navigation.navigate("RequestMapping");
             }}
           >
-            <Text className="text-lg font-bold text-black">Progress</Text>
+            <Text className="text-base font-bold text-black">Progress</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            className={
-              disabledFlag === false
-                ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-                : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-            }
+            className={`${disabledFlag === false ? "bg-green-300" : "bg-gray-300"} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
             /// Need to Save Any Changes Before Navigating
             disabled={disabledFlag}
             onPress={() => SaveModifiedData()}
-          // onPress={() => (console.log("Save Changes"), navigation.goBack())}
-          // onPress={() => navigation.navigate("ActiveRequests")}
           >
-            <Text className="text-lg font-bold text-black">Save Changes</Text>
+            <Text className="text-base font-bold text-black">Save Changes</Text>
           </TouchableOpacity>
         </View>
         <View
@@ -1317,31 +1300,23 @@ const handleSavePasscodeModalChanges = () => {
           }}
         >
           <TouchableOpacity
-            className={
-              bidAwardedFlag === false
-                ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-                : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-            }
+            className={`${bidAwardedFlag === false ? "bg-green-300" : "bg-gray-300"} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
             disabled={bidAwardedFlag}
             onPress={() => (
               ProcessPostponedRequest((reqID))
             )}
           >
-            <Text className="text-lg font-bold text-black">Postpone</Text>
+            <Text className="text-base font-bold text-black">Postpone</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            className={
-              bidAwardedFlag === false
-                ? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-                : "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-            }
+            className={`${bidAwardedFlag === false ? "bg-green-300" : "bg-gray-300"} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
             disabled={bidAwardedFlag}
             onPress={() => (
               ProcessCanceledRequest((reqID))
             )}
           >
-            <Text className="text-lg font-bold text-black">Cancel</Text>
+            <Text className="text-base font-bold text-black">Cancel</Text>
           </TouchableOpacity>
         </View>
         {/* /////////////////////////////////////////////////////////////// */}

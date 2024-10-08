@@ -814,12 +814,7 @@ const handleSavePasscodeModalChanges = () => {
 				<View className="items-center justify-between gap-3 pr-3 pl-3 pb-4">
 					<TouchableOpacity
 							disabled={!updateFlag}
-							className={
-								// checkedStatus === false
-								updateFlag === false
-									? "bg-gray-300 p-0 rounded-lg w-48 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-									: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-48 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-							}
+							className={`${updateFlag === false ? "bg-gray-300" : "bg-green-300"} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-48 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
 							onPress={() => {
 								setConfirmationText("");
 								// ProcessSelectedBid(selectedBid);
@@ -938,11 +933,7 @@ const handleSavePasscodeModalChanges = () => {
 
 					<View style={{ alignItems: "center", paddingTop: 20 }}>
 						<TouchableOpacity
-							className={
-								confirmationText.length > 3
-									? "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-40 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-									: "bg-gray-300 hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-40 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-							}
+							className={`${confirmationText.length > 3 ? "bg-green-300" : "bg-gray-300"} hover:drop-shadow-xl hover:bg-light-gray p-0 rounded-lg w-40 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
 							disabled={confirmationText.length <= 3}
 							onPress={() => {
 								ConfirmChanges();
