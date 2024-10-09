@@ -16,17 +16,16 @@ export const isBiometricSupported = async () => {
       return false;
 };
 
-export const onAuthenticate = () => {
-      const auth = LocalAuthentication.authenticateAsync({
+export const onAuthenticate = async () => {
+      const auth = await LocalAuthentication.authenticateAsync({
         promptMessage: 'Authenticate',
         fallbackLabel: 'Enter Password',
-      });
-      auth.then(result => {
-        setIsAuthenticated(result.success);
+        }).then(result => {
+          setIsAuthenticated(result.success);
           console.log("Result: ", result);
           return result.success;
-      }
-      );
+         }
+       );
       return false;
     };
 

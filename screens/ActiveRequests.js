@@ -473,7 +473,6 @@ const handleGanttChartPress = () => {
 			{/* <View className="flex-row items-center justify-between gap-3 pr-3 pl-3 pb-4"> */}
 				<TouchableOpacity
 					disabled={disabledFlag}
-					// TODO Fix all conditionals as such
 					className={`${disabledFlag ? "bg-gray-300" : "bg-green-300"} p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
 					onPress={() => (
 						// console.log("Request ID:", selectedIndex),

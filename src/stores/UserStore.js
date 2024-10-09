@@ -17,6 +17,10 @@ const userStore = (set, get) => ({
   setPasscodeFlag: (value) => set({ passcodeFlag: value }),
   passcode: "",
   setPasscode: (value) => set({ passcode: value }),
+  biometricSupported: false,
+  setBiometricSupported: (value) => set({ biometricSupported: value }),
+  biometricEnrolled: false,
+  setBiometricEnrolled: (value) => set({ biometricEnrolled: value }),
 });
 
 const useUserStore = create(userStore);

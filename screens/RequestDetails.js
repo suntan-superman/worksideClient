@@ -24,6 +24,7 @@ import { logTransaction } from "../src/helperFunction";
 import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
 import DateTimePickerModal from "@react-native-community/datetimepicker";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import * as LocalAuthentication from 'expo-local-authentication';
 import {
 	widthPercentageToDP as wp,
 	heightPercentageToDP as hp,
@@ -490,9 +491,17 @@ const RequestDetails = () => {
     }
   }, [postponedRequestFlag, worksideValidatedFlag]);
 
-  const ProcessCanceledRequest = (requestId) => {
- 		// TODO - Add Passcode Verification
+  const BiometricConfirmation = async () => {
+    const auth = await LocalAuthentication.authenticateAsync({
+      promptMessage: "Authenticate",
+      fallbackLabel: "Enter Password",
+    }).then((result) => {
+      console.log(result);
+      return result.success;
+    });
+  };
 
+  const ProcessCanceledRequest = (requestId) => {
     Alert.alert(
       "Cancel Request",
       "Are you sure you want to CANCEL the Request? This cannot be reversed!",
@@ -501,11 +510,14 @@ const RequestDetails = () => {
           text: "Yes",
           style: "destructive",
           onPress: () => {
+						if( BiometricConfirmation() === false ) return;
             // Set Request Status to CANCELED
-            UpdateRequestStatus(requestId, "CANCELED");
+            // UpdateRequestStatus(requestId, "CANCELED");
             // Set Bid Status to CANCELED
-            UpdateRequestBidsStatus(requestId, "CANCELED");
+            // UpdateRequestBidsStatus(requestId, "CANCELED");
+            // TODO - Set Awarded Bid to FALSE
             // Set Awarded Bid to FALSE
+            // TODO - Email All Parties
             // Email All Parties
           },
         },

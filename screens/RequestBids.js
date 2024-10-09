@@ -20,7 +20,8 @@ import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Modal, SlideAnimation, ModalContent } from "react-native-modals";
 import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
-// import { authenticateAsync } from "expo-local-authentication";
+import * as LocalAuthentication from 'expo-local-authentication';
+import { onAuthenticate }from "../components/BiometricAuth";
 import Toast from "react-native-toast-message";
 import { logTransaction } from "../src/helperFunction";
 import { encrypt, decrypt } from "../src/utils/aes";
@@ -78,6 +79,9 @@ const RequestBids = () => {
 	);
 
 	const worksidePasscode = useUserStore((state) => state.passcode);
+	const biometricSupported= useUserStore((state) => state.biometricSupported);
+	const biometricEnrolled= useUserStore((state) => state.biometricEnrolled);
+
 	const passcodeModalRef = useRef(null);
   const [pinCode, setPinCode] = useState([]);
   const snapPoints = useMemo(() => ["25%", "50%", "75%", "90%"], []);
@@ -195,7 +199,6 @@ const RequestBids = () => {
 	};
 
 	const ProcessCanceledBid = (selectedBid) => {
-		// TODO - Add Passcode Verification
 		Alert.alert(
 			"Cancel Awarded Bid",
 			"Are you sure you want to cancel the Award? This cannot be reversed!",
@@ -204,12 +207,20 @@ const RequestBids = () => {
 					text: "Yes",
 					style: "destructive",
 					onPress: () => {
-						// console.log("Selected Bid: ", selectedBid);
+						bioResult= BiometricConfirmation().then((result) => {
+							Toast.show({
+								type: "success",
+								text1: "Workside Software",
+								text2: `Biometric Confirmation: ${result}`,
+								visibilityTime: 5000,
+								autoHide: true,
+							});
+						if( result !== true ) return;
 						selectedBid.status = "OPEN";
 						setBidAwardedFlag(false);
 						UpdateRequestBidStatus(selectedBid);
 						UpdateRequestStatus("OPEN");
-						// console.log("Selected Bid Will Be Canceled: ", selectedBid);
+						});
 					},
 				},
 				{ text: "No", style: "cancel", onPress: () => {} },
@@ -217,7 +228,17 @@ const RequestBids = () => {
 		);
 	};
 
-const ProcessAwardedBid = (selectedBid) => {
+const ProcessAwardedBid = async (selectedBid) => {
+	bioResult= await BiometricConfirmation().then((result) => {
+	Toast.show({
+		type: "success",
+		text1: "Workside Software",
+		text2: `Biometric Confirmation: ${result}`,
+		visibilityTime: 5000,
+		autoHide: true,
+	});
+});
+
 	Alert.alert(
 		"Select Bid",
 		"Are you sure you want to select this bid?",
@@ -306,7 +327,6 @@ const renderItemAccessory = (props) => {
 					// If checkedStatus === false, and currentStatus === false then set the status to SELECTED
 					// And set checkedStatus to true
 					if( bidAwardedFlag === true) {
-						// TODO - Add Passcode Verification and Cancel Bid if needed
 						Alert.alert(
 							"Bid Awarded",
 							"Would you like to CANCEL this Request?",
@@ -315,14 +335,14 @@ const renderItemAccessory = (props) => {
 									text: "Yes",
 									style: "destructive",
 									onPress: () => {
-										handlePasscodePress();
-									},
+										// handlePasscodePress();
+										setSelectedBid(props.selectedItem);	
+										ProcessCanceledBid(props.selectedItem)
+					},
 								},
 								{ text: "No", style: "cancel", onPress: () => {} },
 							]
 						);
-			  		// setSelectedBid(props.selectedItem);	
-						// ProcessCanceledBid(props.selectedItem)
 					}
 					else {
 						// TODO Add Option to Change status to OPEN or CANCEL
@@ -433,24 +453,33 @@ const renderItemAccessory = (props) => {
 			});
 	};
 
-	const BiometricConfirmation = async () => {
-		// const res = await authenticateAsync({
-		//   promptMessage: "Confirm Selection",
-		//   cancelLabel: "Cancel",
-		//   fallbackLabel: "Use Password",
-		// });
-		// console.log("Biometric Confirmation: ", res.success);
-		// return res.success;
-		return true;
-	};
+  const BiometricConfirmation = async () => {
+		if( biometricSupported && biometricEnrolled)
+			return await onAuthenticate();
 
-	const ConfirmChanges = () => {
+		return true;
+  };
+
+	const ConfirmChanges = async () => {
 		const cText = confirmationText.toUpperCase();
 		const sText = selectedBid.requestname.toUpperCase();
 		let result = false;
 
 		if (cText === sText) {
-			// const bioResult = BiometricConfirmation();
+			const bioResult = await BiometricConfirmation().then((result) => {
+				Toast.show({
+					type: "success",
+					text1: "Workside Software",
+					text2: `Biometric Confirmation: ${result}`,
+					visibilityTime: 5000,
+					autoHide: true,
+				});
+			});
+			if( bioResult !== true ) {
+				// setConfirmationMsg("Confirmation Failed");
+				// setConfirmationFlag(false);
+				return false;
+			};
 			setConfirmationMsg("Supplier Confirmed And Has Been Notified");
 			SendRequestEmail();
 			////////////////////////////////////////////////////////////
@@ -863,7 +892,6 @@ const handleSavePasscodeModalChanges = () => {
             status: bid.requestbids.status,
             supplierid: bid.requestbids.supplierid,
             supplier: supplierName, */}
-{/* // TODO Add Estimated Cost */}
 				<ModalContent style={{ width: "100%", height: 400 }}>
 					{/* /////////////////////////////////////////////////////////// */}
 					{/* Output Header */}
@@ -892,7 +920,7 @@ const handleSavePasscodeModalChanges = () => {
             supplier: supplierName, */}
 
 							{selectedBid !== null
-								? `${selectedBid.supplier} will provide ${selectedBid.requestname} to ${selectedBid.rigcompany} by ${selectedBid.deliverydate}`
+								? `${selectedBid.supplier} will provide ${selectedBid.requestname} to ${selectedBid.rigcompany} by ${selectedBid.deliverydate} at total cost of ${selectedBid.estimatedCost}`
 								: ""}
 						</Text>
 					</View>

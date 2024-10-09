@@ -48,6 +48,10 @@ export default function LoginScreen({ setIsAuthenticated }) {
 	const setWorksideEmail = useUserStore((state) => state.setEmail);
 	const setWorksidePasscode = useUserStore((state) => state.setPasscode);
 	const setPasscodeFlag = useUserStore((state) => state.setPasscodeFlag);
+
+	const setBiometricSupported = useUserStore((state) => state.setBiometricSupported);
+	const setBiometricEnrolled = useUserStore((state) => state.setBiometricEnrolled);
+
 	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
@@ -98,6 +102,21 @@ export default function LoginScreen({ setIsAuthenticated }) {
 			return false;
 		} 
 		return true;
+	};
+
+	const CheckBiometrics = async () => {
+		const compatible = await LocalAuthentication.hasHardwareAsync();
+		setBiometricSupported(compatible);
+		// If compatible, check if user is enrolled
+		if( compatible ) {
+			const enrolled = await LocalAuthentication.isEnrolledAsync();
+			console.log("Enrolled: ", enrolled);
+			setBiometricEnrolled(enrolled);
+			if( enrolled ) {
+				// Authenticate the user if we need to, but not necessary
+				// onAuthenticate();
+			}
+		};
 	};
 
 	// useEffect(() => {
@@ -177,16 +196,14 @@ export default function LoginScreen({ setIsAuthenticated }) {
 
 				setLoading(true);
 
+				CheckBiometrics();
+
 				const userName = response.user.user;
 				const phone = "123-456-7890";
 
 				const email = response.user.email;
 				const password= response.user.password;
 				const mongoDbId = response.user.userId;
-				//TODO - Add User to Firebase Auth If he Doesn't Exist
-				// User Email
-				// User Password
-				// User ID
 				try {
 					const response = await createUserWithEmailAndPassword(
 						FIREBASE_AUTH,
@@ -200,13 +217,6 @@ export default function LoginScreen({ setIsAuthenticated }) {
 					// 	msg = "This email is already in use";
 		
 					const userId = response.user.uid;
-						// TODO- Add User Details to Firebase Firestore
-					// User Name
-					// User Email
-					// User Company Name
-					// User Telephone Number
-					// Firebase User ID
-					// User MongoDB ID
 					await setDoc(doc(FIREBASE_DB, "users", userId), {
 						username: userName,
 						email: email,
