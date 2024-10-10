@@ -39,6 +39,7 @@
         "UIBackgroundModes": [
           "location"
         ],
+        "LSMinimumSystemVersion": "12.0",
         "ITSAppUsesNonExemptEncryption": false,
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Workside requires geolocation to improve the quality of the service",
         "NSLocationAlwaysUsageDescription": "Workside requires geolocation to improve the quality of the service",
@@ -50,7 +51,7 @@
         "googleMapsApiKey": "AIzaSyBsK1utYDK9o1MR2RsnTobmJW7PVLHp6B4"
       },
       "bundleIdentifier": "com.sjroy5.worksideclient",
-      "buildNumber": "1.1.93"
+      "buildNumber": "1.1.94"
     },
     "android": {
       "adaptiveIcon": {

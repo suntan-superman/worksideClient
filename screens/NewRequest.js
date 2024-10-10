@@ -9,9 +9,11 @@ import {
 	TouchableWithoutFeedback,
 	Keyboard,
 	Alert,
-	Platform,
-	Dimensions,
 } from "react-native";
+import {
+	widthPercentageToDP as wp,
+	heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 import { useNavigation } from "@react-navigation/native";
 import { FontFamily, Color } from "../GlobalStyles";
 import { Select, SelectItem, IndexPath } from "@ui-kitten/components";
@@ -387,6 +389,7 @@ const NewRequest = () => {
 			vendorName: selectedSupplier,
 			ssrVendorId: selectedRadio === 3 ? selectedSupplierID : null,
 			datetimerequested: reqDateTime,
+			// TODO - Need to fix	
 			// Need to fix
 			// reqlinkname: null,
 			// reqLinkId: null,
@@ -477,26 +480,18 @@ const NewRequest = () => {
 	return (
 		<View className="flex-1 bg-white">
 			<View className="items-center ">
-				<Text>
-					{/* <Text className="text-green-500 text-2xl font-bold">WORK</Text>
-					<Text className="text-black text-2xl font-bold">SIDE</Text> */}
+				<Text style={{ fontSize: hp(2) }} className="text-black font-bold">
+					{projectName}
 				</Text>
-				<Text className="text-black text-xl font-bold">{projectName}</Text>
-				<Text className="text-black text-xl font-bold">{projectRig}</Text>
+				<Text style={{ fontSize: hp(1.8) }} className="text-black font-bold">
+					{projectRig}
+				</Text>
 			</View>
 
 			{/********************************************************** */}
 			{/* Request Dropdowns */}
 			{/********************************************************** */}
-			<View
-				style={{
-					flexDirection: "row",
-					justifyContent: "space-around",
-					top: 5,
-					gap: 20,
-					width: "100%",
-				}}
-			>
+			<View className="flex-row justify-around top-1 gap-5 w-full">
 				<Text
 					className={
 						emptyFields.includes("requestcategory") === true
@@ -516,7 +511,7 @@ const NewRequest = () => {
 					Product
 				</Text>
 			</View>
-			<View
+			<View 
 				style={{
 					flexDirection: "row",
 					justifyContent: "space-evenly",
@@ -527,22 +522,14 @@ const NewRequest = () => {
 			>
 				<Select
 					style={{
-						width: 175,
+						width: 175,	// 175
 						height: 45,
 						borderRadius: 5,
-						// borderWidth:
-						//   emptyFields.includes("requestcategory") === true ? 3 : 1,
 						borderWidth: 1,
 						fontFamily: FontFamily.workSansSemibold,
 						fontWeight: "700",
 						borderColor: "lightgray",
-						// emptyFields.includes("requestcategory") === true
-						//   ? "red"
-						//   : "lightgray",
 						backgroundColor: Color.silver_200,
-						// emptyFields.includes("requestcategory") === true
-						//   ? "red"
-						//   : Color.silver_200,
 					}}
 					placeholder={"Select Category"}
 					selectedIndex={selectedCategoryIndex}
@@ -571,7 +558,7 @@ const NewRequest = () => {
 				</Select>
 				<Select
 					style={{
-						width: 175,
+						width: 175,	// 175
 						height: 45,
 						borderRadius: 5,
 						borderWidth: 1,
@@ -605,108 +592,65 @@ const NewRequest = () => {
 					})}
 				</Select>
 			</View>
-			{/********************************************************** */}
-			{/* Quantity Field */}
-			{/********************************************************** */}
-			<View
-				style={{
-					flexDirection: "row",
-					justifyContent: "flex-start",
-					paddingTop: 20,
-					left: 25,
-					gap: 20,
-					alignItems: "center",
-					width: "100%",
-				}}
-			>
-				<Text className="text-black text-base font-bold">Quantity</Text>
-				{/* <NumericFormat
-          value={123}
-          defaultValue={1}
-          displayType="input"
-          allowNegative={false}
-          decimalScale={2}
-          isAllowed={(values) => {
-            const { floatValue } = values;
-            return floatValue < 1000000;
-          }}
-        /> */}
-
-				<TextInput
-					className={
-						"bg-green-200 relative rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-[100px] h-10 border-[1px] border-solid border-black text-black text-bold p-3 my-1 border-r-4 border-b-4 text-sm"
-					}
-					type="numeric"
-					keyboardType="numeric"
-					defaultValue="1"
-					onChange={(text) => {
-					  setQuantity(text);
-					  setModifyFlag(true);
-					}}
-				/>
-
-				{/* <DismissKeyboard> */}
-			</View>
-			{/********************************************************** */}
-
-			{/********************************************************** */}
-			{/* Comments Field */}
-			{/********************************************************** */}
-			{/* <DismissKeyboard> */}
-				<View
-					style={{
-						flexDirection: "row",
-						justifyContent: "",
-						paddingTop: 5,
-						left: 40,
-						alignItems: "center",
-						width: "90%",
-					}}
-				>
-					<TextInput
-						value={comment}
-						className={
-							"bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm right-5"
-						}
-						editable={true}
-						// multiline
-						onChangeText={(newComment) => {
-							setComment(newComment);
-							setModifyFlag(true);
-						}}
-					/>
+				{/* ***************************************************************************** */}
+				{/* Quantity Data Field */}
+				{/* ***************************************************************************** */}
+				<View className="flex-start justify-center items-center">
+					<View className="justify-start pt-4 w-[90%]">
+						<Text
+							style={{ fontSize: hp(1.6) }}
+							className="text-black font-bold"
+						>
+							Quantity
+						</Text>
+						<TextInput
+							defaultValue="1"
+							// value={requestQty}
+							className="bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
+							keyboardType="numeric"
+							onChange={(text) => {
+								updateRequestQuantity(text);
+								setModifyFlag(true);
+							}}
+						/>
+					</View>
 				</View>
-			{/* </DismissKeyboard> */}
-			{/********************************************************** */}
+
+				{/* ***************************************************************************** */}
+				{/* Comments Data Field */}
+				{/* ***************************************************************************** */}
+				<View className="flex-start justify-center items-center">
+					<View className="justify-start pt-0 w-[90%]">
+						<Text
+							style={{ fontSize: hp(1.6) }}
+							className="text-black font-bold"
+						>
+							Comments
+						</Text>
+						<TextInput
+							value={comment}
+							className={
+								"bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
+							}
+							keyboardType="default"
+							multiline={true}
+							numberOfLines={3}
+							onChangeText={(newComment) => {
+								setComment(newComment);
+								setModifyFlag(true);
+							}}
+						/>
+					</View>
+				</View>
 
 			{/********************************************************** */}
 			{/* Preferred Vendor Field */}
 			{/********************************************************** */}
-			<View
-				style={{
-					flexDirection: "row",
-					justifyContent: "flex-start",
-					paddingTop: 0,
-					left: 20,
-					gap: 20,
-					alignItems: "center",
-					width: "100%",
-				}}
-			>
+			<View className="flex-row justify-start pt-0 left-5 gap-5 items-center w-full">
 				<Text className="text-black text-base font-bold">Preferred Vendor</Text>
 			</View>
 			{/* ////////////////////////////////////////////////////////////////////// */}
-			<View
-				style={{
-					flexDirection: "row",
-					justifyContent: "space-evenly",
-					paddingTop: 0,
-					// left: 20,
-					// gap: 20,
-					alignItems: "center",
-					width: "100%",
-				}}
-			>
+			<View className="flex-row justify-evenly pt-0 items-center w-full">
 				{/* MSA Radio Button */}
 				<View style={styles.main}>
 					<TouchableOpacity
@@ -763,19 +707,7 @@ const NewRequest = () => {
 			{/* ////////////////////////////////////////////////////////////////////// */}
 			{/* Show List of MSA Vendors */}
 			{selectedRadio === 3 ? (
-				<View
-					style={{
-						// // flexDirection: "row",
-						// justifyContent: "flex-start",
-						paddingTop: 5,
-						paddingBottom: 0,
-						left: 20,
-						gap: 20,
-						alignItems: "left",
-						width: "90%",
-						// width: ssrWidth,
-					}}
-				>
+				<View className="pt-1 pb-0 left-5 gap-5 items-start w-[90%]">
 					<Select
 						style={{
 							height: 45,
@@ -812,72 +744,57 @@ const NewRequest = () => {
 				</View>
 			) : null}
 			{/* ////////////////////////////////////////////////////////////////////// */}
-			{/********************************************************** */}
 
 			{/********************************************************** */}
 			{/* Date/Time Required Field */}
 			{/********************************************************** */}
-			<View
-				style={{
-					// // flexDirection: "row",
-					// justifyContent: "flex-start",
-					paddingTop: 5,
-					paddingBottom: 0,
-					left: 20,
-					gap: 20,
-					alignItems: "left",
-					width: "100%",
-				}}
-			>
-				<View
-					style={{
-						flexDirection: "row",
-						justifyContent: "flex-start",
-						// paddingBottom: 10,
-						gap: 10,
-					}}
-				>
-					<Text className="text-black text-sm font-bold p-2">
-						Date Requested
-					</Text>
-					<TouchableOpacity
-						className={
-							"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-16 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-						}
-						onPress={() => setShowDatePicker(true)}
-					>
-						<Text className="text-sm font-bold text-black">Date</Text>
-					</TouchableOpacity>
+					<View className="flex-start justify-center items-center">
+						<View className="justify-start pt-1 w-[90%]">
+							<Text
+								style={{ fontSize: hp(1.6) }}
+								className="text-black font-bold"
+							>
+								Date Requested
+							</Text>
+							<TextInput
+								value={reqDateTime.toLocaleString()}
+								style={{ fontSize: hp(1.5) }}
+								className="bg-gray-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-9 border-[1px] border-solid border-black text-black font-bold p-2 my-1 border-r-4 border-b-4"
+								editable={false}
+							/>
+						</View>
 
-					<TouchableOpacity
-						className={
-							"bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-16 h-10 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-						}
-						onPress={() => setShowTimePicker(true)}
-					>
-						<Text className="text-sm font-bold text-black">Time</Text>
-					</TouchableOpacity>
-				</View>
-				<View
-					style={{
-						flexDirection: "row",
-						justifyContent: "",
-						paddingTop: 0,
-						left: 20,
-						alignItems: "center",
-						width: "90%",
-					}}
-				>
-					<DismissKeyboard>
-						<TextInput
-							value={reqDateTime.toLocaleString()}
-							className={
-								"bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-8 border-[1px] border-solid border-black text-black font-bold my-1 border-r-4 border-b-4 text-sm right-5 pl-2 pb-1"
-							}
-							editable={false}
-						/>
-					</DismissKeyboard>
-				</View>
+						<View className="flex-row justify-center pt-0 gap-4 items-center w-9/10">
+							<TouchableOpacity
+								className={
+									"bg-green-200 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-[20%] items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+								}
+								onPress={() => setShowDatePicker(true)}
+							>
+								<Text
+									style={{ fontSize: hp(1.6) }}
+									className="text-black font-bold"
+								>
+									Date
+								</Text>
+								{/* <Text className="text-sm font-bold text-black">Date</Text> */}
+							</TouchableOpacity>
+
+							<TouchableOpacity
+								className={
+									"bg-green-200 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-[20%] items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+								}
+								onPress={() => setShowTimePicker(true)}
+							>
+								<Text
+									style={{ fontSize: hp(1.6) }}
+									className="text-black font-bold"
+								>
+									Time
+								</Text>
+								{/* <Text className="text-sm font-bold text-black">Time</Text> */}
+							</TouchableOpacity>
+						</View>
 				{showDatePicker && (
 					<DateTimePicker
 						value={reqDateTime}
@@ -900,16 +817,25 @@ const NewRequest = () => {
 			{/********************************************************** */}
 			{/* Link To Field */}
 			{/********************************************************** */}
-			<View className="items-center w-full pt-2">
-				<Select
+					<View className="flex-start justify-left items-center">
+						<View className="flex-start pt-1 w-[90%]">
+					<Text
+						style={{ fontSize: hp(1.6) }}
+						className="text-black font-bold p-1"
+					>
+						Link To
+					</Text>
+				</View>
+			<View className="items-center w-full pt-0">
+				<Select 
 					style={{
-						width: 350,
+						width: "90%",
 						height: 45,
 						borderRadius: 5,
-						borderWidth: 1,
+						borderWidth: 2,
 						fontFamily: FontFamily.workSansSemibold,
 						fontWeight: "700",
-						borderColor: "lightgray",
+						borderColor: "black",
 						backgroundColor: Color.silver_200,
 					}}
 					placeholder={"No Link"}
@@ -937,19 +863,18 @@ const NewRequest = () => {
 					})}
 				</Select>
 
-				{/* <Text className="text-black text-base font-bold">Link To</Text> */}
-				{/* </View> */}
+				</View>
 			</View>
 			{/********************************************************** */}
 			{/********************************************************** */}
 			{/* Save Changes Button */}
 			{/********************************************************** */}
-			<View style={{ alignItems: "center", paddingTop: 10 }}>
+			<View style={{ alignItems: "center", paddingTop: 15 }}>
 				<TouchableOpacity
 					className={
 						disabledFlag
-							? "bg-gray-400 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-							: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-2 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							? "bg-gray-400 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							: "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-44 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
 					}
 					disabled={disabledFlag}
 					onPress={() => SubmitNewRequest()}
@@ -965,11 +890,10 @@ const styles = StyleSheet.create({
 	main: {
 		flex: 1,
 		justifyContent: "space-around",
-		// justifyContent: "center",
 		alignItems: "center",
 	},
 	radioText: {
-		fontSize: 14,	// 16
+		fontSize: hp(1.4),	// 14
 		color: "black",
 		fontWeight: "700",
 	},
