@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import {
+  ActivityIndicator,
   Text,
   StyleSheet,
   View,
@@ -24,6 +25,8 @@ import {
 	heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 
+let projectList = null;
+
 const SelectProject = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [activeProjects, setActiveProjects] = useState([]);
@@ -37,6 +40,7 @@ const SelectProject = () => {
   const [projectRig, setProjectRig] = useState(null);
   const [disabledFlag, setDisabledFLag] = useState(true);
   const loggedInFlag = useUserStore((state) => state.loggedIn);
+  const [isLoading, setIsLoading] = useState(true);
   ////////////////////////////////////////////////////////////////////////////
   const setCurrentProjectId = useDataStore(
     (state) => state.setCurrentProjectId
@@ -59,12 +63,15 @@ const SelectProject = () => {
   const GetProjects = async () => {
     const strAPI = `${apiURL}/api/project`;
     try {
-      const response = await axios.get(strAPI);
+      await axios.get(strAPI).then((response) => {
+      projectList= response.data;
       setActiveProjects(response.data);
+      });
     } catch (error) {
       console.log("error", error);
     }
     setSelectedIndex(new IndexPath(0));
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -142,25 +149,25 @@ const SelectProject = () => {
 
   const renderItemIcon = (props) => <Icon {...props} name="flash-outline" />;
 
-  const renderProjects = ({ item }) => (
-    <ListItem
-      style={{
-        backgroundColor: item._id === selectedIndex ? "yellow" : "white",
-      }}
-      title={item.projectname}
-      description={item.projectname}
-      accessoryLeft={renderItemIcon}
-      accessoryRight={(props) =>
-        renderItemAccessory({ ...{ selectedItem: item, ...props } })
-      }
-      backgroundColor="#f9c2ff"
-      onPress={(index) => {
-        setDisabledFLag(false);
-        setSelectedIndex(item._id);
-        pressHandler(item);
-      }}
-    />
-  );
+  const renderProjects = ({ item }) => {
+    return <ListItem
+			style={{
+				backgroundColor: item._id === selectedIndex ? "yellow" : "white",
+			}}
+			title={item.projectname}
+			description={item.projectname}
+			accessoryLeft={renderItemIcon}
+			accessoryRight={(props) =>
+				renderItemAccessory({ ...{ selectedItem: item, ...props } })
+			}
+			backgroundColor="#f9c2ff"
+			onPress={(index) => {
+				setDisabledFLag(false);
+				setSelectedIndex(item._id);
+				pressHandler(item);
+			}}
+		/>;
+  };  
 
   const pressStyle = [
     styles.pressable,
@@ -169,37 +176,45 @@ const SelectProject = () => {
 
   return (
     <>
-		<View className="flex-1 bg-white">
-    <View className="items-center">
-          <Text>
-            <Text className="text-green-500 text-2xl font-bold">WORK</Text>
-            <Text className="text-black text-2xl font-bold">SIDE</Text>
-            {/* <Text className="text-black text-xl font-bold"> Projects</Text> */}
-            </Text>
-        </View>
+    <View className="flex-1 bg-white">
+      <View className="items-center">
+        <Text>
+          <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+          <Text className="text-black text-2xl font-bold">SIDE</Text>
+          {/* <Text className="text-black text-xl font-bold"> Projects</Text> */}
+          </Text>
+      </View>
+     {isLoading ? (
+        <ActivityIndicator size="large" color="#6EE7B7" />
+        ) : (
+        <>
         <List
           contentContainerStyle className="flex-grow"
-          data={activeProjects}
+          data={projectList}
+          // TODO - Change back to activeProjects
+          // data={activeProjects}
           renderItem={renderProjects}
         />
-			<View className="items-center pt-2 pb-4">
-        <TouchableOpacity
-          className={
-            disabledFlag
-              ? "bg-gray-400 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-56 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-              : "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-56 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
-          }
-          disabled={disabledFlag}
-          onPress={() => {
-            SaveProjectInfoToLocalStorage();
-          }}
-        >
-          <Text className="text-base font-bold text-black">
-            Project Requests
-          </Text>
-        </TouchableOpacity>
-        </View>
-      </View>
+    		<View className="items-center pt-2 pb-4">
+          <TouchableOpacity
+            className={
+              disabledFlag
+                ? "bg-gray-400 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-56 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+                : "bg-green-300 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-56 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+            }
+            disabled={disabledFlag}
+            onPress={() => {
+              SaveProjectInfoToLocalStorage();
+            }}
+          >
+            <Text className="text-base font-bold text-black">
+              Project Requests
+            </Text>
+          </TouchableOpacity>
+        </View> 
+      </>
+      )} 
+    </View>
       <BottomModal
         onBackdropPress={() => setModalVisible(!modalVisible)}
         swipeDirection={["up", "down"]}

@@ -630,10 +630,10 @@ const NewRequest = () => {
 						<TextInput
 							value={comment}
 							className={
-								"bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top"
+								"bg-green-200 rounded-sm shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-2 border-b-2 text-sm align-top px-1"
 							}
 							keyboardType="default"
-							multiline={true}
+							multiline={false}
 							numberOfLines={3}
 							onChangeText={(newComment) => {
 								setComment(newComment);

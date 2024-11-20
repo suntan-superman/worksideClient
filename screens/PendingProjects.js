@@ -29,19 +29,18 @@ const PendingProjects = () => {
   const GetPendingProjects = async () => {
     const strAPI = `${apiURL}/api/project`;
     try {
-      const response = await axios.get(strAPI);
-      // Filter out the pending nd postponed projects
+      await axios.get(strAPI).then((response) => {
       const projects = response.data.filter((p) => {
-        if (p.status === "PENDING" || p.status === "POSTPONED") {
+        if (p.status === "PENDING" || p.status === "POSTPONED")
           return true;
-        }
         return false;
       });
-
       setPendingProjects(projects);
+      });
     } catch (error) {
       console.log("error", error);
     }
+
     setSelectedIndex(new IndexPath(0));
   };
 

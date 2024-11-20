@@ -91,11 +91,11 @@ export default function LoginScreen({ setIsAuthenticated }) {
 	}, []);
 
 	const validateForm = () => {
-		if (username === "" || password === "") {
+		if (username.length < 6 || password.length < 6) {
 			Toast.show({
 				type: "error",
 				text1: "Workside Software",
-				text2: "Email and Password Required!",
+				text2: "Valid Email and Password Required!",
 				visibilityTime: 5000,
 				autoHide: true,
 			});
@@ -119,24 +119,9 @@ export default function LoginScreen({ setIsAuthenticated }) {
 		};
 	};
 
-	// useEffect(() => {
-	//   if (loggedIn === true) {
-	//     setIsLoggedIn(true);
-	//     setTimeout(() => {
-	//       setRootFlag(true);
-	//       console.log("IsLoggedIn: ", isLoggedIn);
-	//     }, 2000);
-	//   }
-	// }, [loggedIn, navigation]);
-
-	// useEffect(() => {
-	//   if (rootFlag === true && isLoggedIn === true)
-	//     navigation.navigate("RootDrawer");
-	// }, [rootFlag, isLoggedIn, navigation]);
-
 	const handleLogin = async (event) => {
 		const reqURL = `${apiURL}/api/user/${username}?password=${password}`;
-
+console.log("reqURL: ", reqURL);
 		event.preventDefault();
 		if (validateForm()) {
 			const response = await fetch(reqURL, {
