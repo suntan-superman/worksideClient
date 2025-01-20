@@ -279,7 +279,7 @@ const RequestDetails = () => {
 
     const newReqData = { ...reqData, 
       quantity: requestQty,
-      comments: requestComment,
+      comment: requestComment,
       vendortype: selectedVendorType,
       vendorName: selectedSupplier,
       ssrVendorId: selectedRadio === 3 ? selectedSupplierID : null,
@@ -367,7 +367,7 @@ const RequestDetails = () => {
 
     // console.log("Selected Category: ", selectedCategory);
     // console.log("Selected Product: ", selectedProduct);
-    const suppliers = await axios.post(vendorAPI, {
+    const suppliers = await axios.get(vendorAPI, {
       category: selectedCategory,
       product: selectedProduct,
     });
@@ -1005,7 +1005,7 @@ const handleSavePasscodeModalChanges = () => {
             After Three Failed Attempts, You Will Be Locked Out
           </Text>
           <Text className="text-sm font-bold text-center mb-2 text-black">
-            Workside Software Copyright 2024
+            Workside Software Copyright 2025
           </Text>
         </View>
       </View>

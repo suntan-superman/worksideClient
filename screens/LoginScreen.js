@@ -121,7 +121,6 @@ export default function LoginScreen({ setIsAuthenticated }) {
 
 	const handleLogin = async (event) => {
 		const reqURL = `${apiURL}/api/user/${username}?password=${password}`;
-console.log("reqURL: ", reqURL);
 		event.preventDefault();
 		if (validateForm()) {
 			const response = await fetch(reqURL, {
@@ -406,7 +405,7 @@ return (
 				style={GlobalStyles.copyrightTextStyle}
 				className="text-black font-bold pt-1 mb-4"
 			>
-				Workside Copyright 2024
+				Workside Copyright 2025
 			</Text>
 		</KeyboardAvoidingView>
 	);

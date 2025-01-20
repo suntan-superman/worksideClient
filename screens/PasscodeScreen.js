@@ -188,7 +188,7 @@ const PasscodeScreen = () => {
 					After Three Failed Attempts, You Will Be Locked Out
 				</Text>
 				<Text className="text-sm font-bold text-center mb-2 text-black">
-					Workside Software Copyright 2024
+					Workside Software Copyright 2025
 				</Text>
 			</View>
 		</View>

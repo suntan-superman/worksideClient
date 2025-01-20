@@ -196,7 +196,7 @@ const NewRequest = () => {
 
 		const vendorAPI = `${apiURL}/api/supplierproductsview/byproduct`;
 
-		const suppliers = await axios.post(vendorAPI, {
+		const suppliers = await axios.get(vendorAPI, {
 			category: selectedCategory,
 			product: selectedProduct,
 		});
@@ -266,12 +266,19 @@ const NewRequest = () => {
 		return `${rHr.padStart(2, "0")}:${rMin.padStart(2, "0")}`;
 	};
 
-	const SendRequestEmail = () => {
+	const SendRequestEmail = async () => {
 		// setEmailReqDateTime(reqDateTime);
 		const strAPI = `${apiURL}/api/email/${emailAddress}*${emailSubject}*${emailReqDateTime}*${emailBody}"`;
 
-		axios
-			.get(strAPI)
+		await axios
+			.post(strAPI, {
+				emailAddress: emailAddress,
+				emailSubject: emailSubject,
+				emailReqDateTime: emailReqDateTime,
+				emailMessage: emailBody,
+			})
+		// axios
+		// 	.get(strAPI)
 			.then((response) => {
 				console.log("Email Sent: ", response.data);
 			})
@@ -317,7 +324,7 @@ const NewRequest = () => {
 			requestcategory: selectedCategory,
 			requestname: selectedProduct,
 			quantity: quantity,
-			comments: comment,
+			comment: comment,
 			vendortype: selectedVendorType,
 			vendorName: selectedSupplier,
 			ssrVendorId: selectedSupplierID,
@@ -384,7 +391,7 @@ const NewRequest = () => {
 			creationdate: new Date(),
 			requestname: selectedProduct,
 			quantity: quantity,
-			comments: comment,
+			comment: comment,
 			vendortype: selectedVendorType,
 			vendorName: selectedSupplier,
 			ssrVendorId: selectedRadio === 3 ? selectedSupplierID : null,

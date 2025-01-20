@@ -23,6 +23,19 @@ import RootDrawerNavigator from "./routes/RootDrawerNavigator";
 // import { DrawerContent } from "./routes/DrawerContent";
 // import { set } from "date-fns";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+// const queryClient = new QueryClient({});
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			refetchOnWindowFocus: false,
+			staleTime: 1000 * 60 * 5, // 5 minutes
+			gcTime: 1000 * 60 * 10, // 10 minutes
+		},
+	},
+});
+
 const Stack = createStackNavigator();
 
 const toastConfig = {
@@ -215,20 +228,22 @@ const AppWrapper = () => {
     <>
       <IconRegistry icons={[MaterialIconsPack]} />
       <ApplicationProvider {...eva} theme={{ ...eva.light, ...theme }}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <MenuProvider>
-            <AuthContextProvider>
-              <ContextProvider>
-                <BottomSheetModalProvider>
-                  <App />
-                  <Toast config={toastConfig} />
-                </BottomSheetModalProvider>
-                {/* <EventListener /> */}
-                <ModalPortal />
-              </ContextProvider>
-          </AuthContextProvider>
-        </MenuProvider>
-       </GestureHandlerRootView>
+ 				<QueryClientProvider client={queryClient}>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <MenuProvider>
+              <AuthContextProvider>
+                <ContextProvider>
+                  <BottomSheetModalProvider>
+                    <App />
+                    <Toast config={toastConfig} />
+                  </BottomSheetModalProvider>
+                  {/* <EventListener /> */}
+                  <ModalPortal />
+                </ContextProvider>
+            </AuthContextProvider>
+          </MenuProvider>
+         </GestureHandlerRootView>
+        </QueryClientProvider>
       </ApplicationProvider>
     </>
   );

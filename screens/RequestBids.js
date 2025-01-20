@@ -20,11 +20,17 @@ import axios from "axios";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Modal, SlideAnimation, ModalContent } from "react-native-modals";
 import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
-import * as LocalAuthentication from 'expo-local-authentication';
 import { onAuthenticate }from "../components/BiometricAuth";
 import Toast from "react-native-toast-message";
 import { logTransaction } from "../src/helperFunction";
-import { encrypt, decrypt } from "../src/utils/aes";
+import { decrypt } from "../src/utils/aes";
+import {
+	GetRequestBids,
+	SetRequestBidsStatus,
+	SetAwardedRequestBidStatus,
+	GetSupplierInfoFromID,
+} from "../src/api/worksideAPI";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
 ////////////////////////////////////////////////////////////////////////////
 // Passcode Modal
@@ -60,6 +66,7 @@ let bidSupplierArray = [];
 const RequestBids = () => {
 	const navigation = useNavigation();
 	const route = useRoute();
+	const queryClient = useQueryClient();
 
 	const { reqID } = route.params;
 	const { apiURL, currentUserID } = useStateContext();
@@ -70,10 +77,6 @@ const RequestBids = () => {
 	const [confirmationText, setConfirmationText] = useState("");
 	const [confirmationMsg, setConfirmationMsg] = useState("");
 	const [confirmationFlag, setConfirmationFlag] = useState(false);
-	const modifyRequestFlag = useDataStore((state) => state.modifyRequestFlag);
-	const setModifyRequestFlag = useDataStore(
-		(state) => state.setModifyRequestFlag
-	);
 	const setModifyRequestBidFlag = useDataStore(
 		(state) => state.setModifyRequestBidFlag
 	);
@@ -112,13 +115,94 @@ const RequestBids = () => {
 	///////////////////////////////////////////////////////
 	const [emailAddress, setEmailAddress] = useState("sroy@prologixsa.com");
 	const [emailSubject, setEmailSubject] = useState("Workside Bid Notification");
-	const [emailReqDateTime, setEmailReqDateTime] = useState(new Date());
-	const [emailBody, setEmailBody] = useState(
-		"Please review the Workside request and respond accordingly!"
-	);
+
 	///////////////////////////////////////////////////////
 	const [bidAwardedFlag, setBidAwardedFlag] = useState(false);	// Flag to indicate if bid has been awarded
 
+			// Get the all requests
+	const { data: allRequestBidsData } = useQuery({
+		queryKey: ["allRequestBids"],
+		queryFn: () => GetRequestBids(),
+		refetchInterval: 30000,		// Refetch every 30 seconds
+		refetchOnReconnect: true,
+		refetchOnWindowFocus: true,
+		staleTime: 1000 * 60 * 10, // 10 minutes
+		retry: 3,
+	});
+
+		// Define the mutation to update request status
+	const updateRequestBidsStatusMutation = useMutation({
+		mutationFn: async (reqID, reqStatus) => {
+			await SetRequestBidsStatus(reqID, reqStatus);
+		},
+		onSuccess: () => {
+			Toast.show({
+				type: "success",
+				text1: "Workside Software",
+				text2: "Request Bids Updated Successfully",
+				visibilityTime: 3000,
+				autoHide: true,
+			});
+			queryClient.invalidateQueries("allRequestBids");
+		},
+		onError: (error) => {
+			Toast.show({
+				type: "error",
+				text1: "Workside Software",
+				text2: `Error Updating Status: ${error}`,
+				visibilityTime: 3000,
+				autoHide: true,
+			});
+		},
+	});
+
+		// Define the mutation to update request status
+	const updateRequestBidStatusMutation = useMutation({
+		mutationFn: async (reqID, reqStatus) => {
+			await SetAwardedRequestBidStatus(reqID, reqStatus);
+		},
+		onSuccess: () => {
+			Toast.show({
+				type: "success",
+				text1: "Workside Software",
+				text2: "Awarded Request Bid Updated Successfully",
+				visibilityTime: 3000,
+				autoHide: true,
+			});
+			queryClient.invalidateQueries("allRequestBids");
+		},
+		onError: (error) => {
+			Toast.show({
+				type: "error",
+				text1: "Workside Software",
+				text2: `Error Updating Status: ${error}`,
+				visibilityTime: 3000,
+				autoHide: true,
+			});
+		},
+	});
+
+		// Get Bids
+	useEffect(() => {
+		if( allRequestBidsData !== undefined && allRequestBidsData !== null ) {
+			// console.log(`All Request Bids Data: " ${JSON.stringify(allRequestBidsData[0], null, 2)}`);
+			bidArray = allRequestBidsData.data;
+			// console.log(`All Request Bids Data: ${JSON.stringify(bidArray, null, 2)}`);
+			FilterBidsByRequest(bidArray);
+		};
+	}, [ allRequestBidsData ]);
+
+	const FilterBidsByRequest = (allBids) => {
+		// console.log(`Filter Bids By Request: ${reqID}`);
+		// console.log(`Bids: ${JSON.stringify(allBids, null, 2)}`);
+		const bids = allBids?.filter(
+			(b) => b.requestbids.requestid === reqID
+		);
+		bidArray = bids;
+		// console.log(`Bid Arrays: ${JSON.stringify(bidArray, null, 2)}`);
+
+		GetSupplierInfo();
+	}
 	// Get Original Bid Array
 	const GetBids = async () => {
 		const strAPI = `${apiURL}/api/requestbidsview`;
@@ -138,9 +222,9 @@ const RequestBids = () => {
 	};
 
 	// Get Bids
-	useEffect(() => {
-		GetBids();
-	}, []);
+	// useEffect(() => {
+	// 	GetBids();
+	// }, []);
 
 	const GetSupplierInfo = async () => {
 		bidSupplierArray = [];
@@ -151,9 +235,12 @@ const RequestBids = () => {
 			if (bidArray.length === 0) return;
 			let supplierName = "";
 			for (const bid of bidArray) {
-				const strAPI = `${apiURL}/api/firm/${bid.requestbids.supplierid}`;
-				await axios.get(strAPI).then((response) => {
-					supplierName = response.data.name;
+				// console.log(`Bid: ${JSON.stringify(bid)}`);
+				// const strAPI = `${apiURL}/api/firm/${bid.requestbids.supplierid}`;
+				await GetSupplierInfoFromID(bid.requestbids.supplierid).then((response) => {
+					// console.log("Supplier Info: ", response[0]?.data);
+				// await axios.get(strAPI).then((response) => {
+					supplierName = response[0]?.data.name;
 					if( bid.requestbids.status === "AWARDED-A" ) setBidAwardedFlag(true);
 					if( bid.requestbids.status === "AWARDED-P" ) setBidAwardedFlag(true);
 					if( bid.requestbids.status === "AWARDED-WOA" ) setBidAwardedFlag(true);
@@ -230,14 +317,14 @@ const RequestBids = () => {
 
 const ProcessAwardedBid = async (selectedBid) => {
 	bioResult= await BiometricConfirmation().then((result) => {
-	Toast.show({
-		type: "success",
-		text1: "Workside Software",
-		text2: `Biometric Confirmation: ${result}`,
-		visibilityTime: 5000,
-		autoHide: true,
+		Toast.show({
+			type: "success",
+			text1: "Workside Software",
+			text2: `Biometric Confirmation: ${result}`,
+			visibilityTime: 5000,
+			autoHide: true,
+		});
 	});
-});
 
 	Alert.alert(
 		"Select Bid",
@@ -252,6 +339,7 @@ const ProcessAwardedBid = async (selectedBid) => {
 
 					// Set Other Bids To DECLINED
 					// TODO Update All Bids to DECLINED
+						updateRequestBidsStatusMutation.mutate(reqID, "DECLINED");
 					// UpdateRequestBidsStatus(reqID, "DECLINED");
 
 					// console.log("Selected Bid: ", selectedBid);
@@ -278,35 +366,6 @@ useEffect(() => {
 		setAwardBidFlag(false);
 	}
 }, [awardBidFlag, worksideValidatedFlag]);
-
-const UpdateRequestBidsStatus = async (reqID, status) => {
-	const strAPI = `${apiURL}/api/requestbid/updateall`;
-
-	// if( selectedBid === null ) return;
-
-	// console.log(
-	// 	"Update Selected Request: " + reqID + " Status: " + status
-	// );
-	await axios
-		.post(strAPI, {
-			id: reqID,
-			status: status,
-		})
-		.then((response) => {
-			// setModifyRequestBidFlag(true);
-			// logTransaction(userID, table, action, result, id);
-			logTransaction(
-				currentUserID,
-				"REQUESTBID",
-				"UPDATE",
-				reqID,
-				response.status
-			);
-		})
-		.catch((error) => {
-			console.log("Error: ", error);
-		});
-};
 
 const renderItemAccessory = (props) => {
 		currentStatus= false;
@@ -408,49 +467,11 @@ const renderItemAccessory = (props) => {
 	};
 
 	const AwardRequestBid = async (selectedBid) => {	
-		const strAPI = `${apiURL}/api/requestbid`;
-
-		await axios
-			.patch(strAPI, {
-				id: selectedBid._id,
-				status: selectedBid.status,
-			})
-			.then((response) => {
-				// logTransaction(userID, table, action, result, id);
-				logTransaction(
-					currentUserID,
-					"REQUESTBID",
-					"UPDATE",
-					selectedBid._id,
-					response.status
-				);
-			})
-			.catch((error) => {
-				console.log("Error: ", error);
-			});
+		updateRequestBidStatusMutation.mutate(selectedBid._id, selectedBid.status);
 	};
 
 	const UpdateRequestBidStatus = async (selectedBid) => {
-		const strAPI = `${apiURL}/api/requestbid`;
-
-		await axios
-			.patch(strAPI, {
-				id: selectedBid._id,
-				status: selectedBid.status,
-			})
-			.then((response) => {
-				// logTransaction(userID, table, action, result, id);
-				logTransaction(
-					currentUserID,
-					"REQUESTBID",
-					"UPDATE",
-					selectedBid._id,
-					response.status
-				);
-			})
-			.catch((error) => {
-				console.log("Error: ", error);
-			});
+		updateRequestBidStatusMutation.mutate(selectedBid._id, selectedBid.status);
 	};
 
   const BiometricConfirmation = async () => {
@@ -661,7 +682,7 @@ const handleSavePasscodeModalChanges = () => {
     useEffect(() => {
       if (pinCode.length === pinLength) {
         numOfAttempts += 1;
-        console.log("Number of Attempts: ", numOfAttempts);
+        // console.log("Number of Attempts: ", numOfAttempts);
         // Validate passcode and re-route to home screen
         // console.log("Request Details Passcode: ", pinCode.join(""));
         // console.log("Request Details Workside Passcode: ", worksidePasscode);
@@ -808,7 +829,7 @@ const handleSavePasscodeModalChanges = () => {
             After Three Failed Attempts, You Will Be Locked Out
           </Text>
           <Text className="text-sm font-bold text-center mb-2 text-black">
-            Workside Software Copyright 2024
+            Workside Software Copyright 2025
           </Text>
         </View>
       </View>

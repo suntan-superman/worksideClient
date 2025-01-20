@@ -25,6 +25,11 @@ import {
 import axios from "axios";
 import { format } from "date-fns";
 
+import {
+	GetAllRequests,
+} from "../src/api/worksideAPI";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+
 let ganttRequests = [];
 
 const ActiveRequests = () => {
@@ -71,35 +76,55 @@ const ActiveRequests = () => {
 	const [requestData, setRequestData] = useState([]);
 	const [iconName, setIconName] = useState("truck-alert");
 
-	const GetActiveRequests = async () => {
-		const strAPI = `${apiURL}/api/request`;
-
-		try {
-			const response = await axios.get(strAPI);
-			const requests = response.data.filter((r) => r.project_id === projectID);
-			setRequestData(requests);
-		} catch (error) {
-			console.log("error", error);
-		}
-	};
+		// Get the project data
+	const { data: allRequestData } = useQuery({
+		queryKey: ["allRequests"],
+		queryFn: () => GetAllRequests(),
+		refetchInterval: 10000,
+		refetchOnReconnect: true,
+		refetchOnWindowFocus: true,
+		staleTime: 1000 * 60 * 10, // 10 minutes
+		retry: 3,
+	});
 
 	useEffect(() => {
-		GetActiveRequests();
+		if( allRequestData=== undefined || allRequestData=== null) return;
+		const reqData = allRequestData[0].data;
+		if( reqData?.length === 0) return;
+		const requestData = reqData?.filter((r) => r?.project_id === projectID);
+		setRequestData(requestData);
 		GeRequestFilter();
-	}, []);
+	}, [allRequestData, filterSelectedIndex]);
 
-	useEffect(() => {
-		// console.log("ActiveRequests Modify Request Bid Flag:", modifyRequestBidFlag);
-		GetActiveRequests();
-		setModifyRequestBidFlag(false);
-		setWorksideModifyFlag(false);
-	}, [modifyRequestBidFlag === true || worksideModifyFlag === true]);
+	// const GetActiveRequests = async () => {
+	// 	const strAPI = `${apiURL}/api/request`;
 
-	useEffect(() => {
-		GetActiveRequests();
-		setDataModifiedFlag(false);
-		setWorksideModifyFlag(false);
-	}, [dataModifiedFlag || worksideModifyFlag === true]);
+	// 	try {
+	// 		const response = await axios.get(strAPI);
+	// 		const requests = response.data.filter((r) => r.project_id === projectID);
+	// 		setRequestData(requests);
+	// 	} catch (error) {
+	// 		console.log("error", error);
+	// 	}
+	// };
+
+	// useEffect(() => {
+	// 	GetActiveRequests();
+	// 	GeRequestFilter();
+	// }, []);
+
+	// useEffect(() => {
+	// 	// console.log("ActiveRequests Modify Request Bid Flag:", modifyRequestBidFlag);
+	// 	GetActiveRequests();
+	// 	setModifyRequestBidFlag(false);
+	// 	setWorksideModifyFlag(false);
+	// }, [modifyRequestBidFlag === true || worksideModifyFlag === true]);
+
+	// useEffect(() => {
+	// 	GetActiveRequests();
+	// 	setDataModifiedFlag(false);
+	// 	setWorksideModifyFlag(false);
+	// }, [dataModifiedFlag || worksideModifyFlag === true]);
 
 	const pressHandler = (item) => {
 		// setProjectID(item._id);
@@ -145,7 +170,7 @@ const ActiveRequests = () => {
 			buttonColor = "bg-green-300";
 			buttonText = "OPEN";
 		}
-		else if( props.selectedItem.status === "NOT-AWARDED" )
+		else if( props.selectedItem.status === "NOT-AWARDED" || props.selectedItem.status === "NOT AWARDED" )
 		{
 			buttonColor = "bg-yellow-300";
 			buttonText = "NOT-AWARDED";
