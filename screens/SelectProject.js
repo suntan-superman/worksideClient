@@ -24,8 +24,12 @@ import {
 	widthPercentageToDP as wp,
 	heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
+import {
+	GetAllProjects,
+} from "../src/api/worksideAPI";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-let projectList = null;
+const projectList = null;
 
 const SelectProject = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -40,7 +44,6 @@ const SelectProject = () => {
   const [projectRig, setProjectRig] = useState(null);
   const [disabledFlag, setDisabledFLag] = useState(true);
   const loggedInFlag = useUserStore((state) => state.loggedIn);
-  const [isLoading, setIsLoading] = useState(true);
   ////////////////////////////////////////////////////////////////////////////
   const setCurrentProjectId = useDataStore(
     (state) => state.setCurrentProjectId
@@ -60,28 +63,17 @@ const SelectProject = () => {
 
   const listHeight = Platform.OS === "ios" ? 400 : 400;
 
-  const GetProjects = async () => {
-    const strAPI = `${apiURL}/api/project`;
-    try {
-      await axios.get(strAPI).then((response) => {
-      projectList= response.data;
-      setActiveProjects(response.data);
-      });
-    } catch (error) {
-      console.log("error", error);
-    }
-    setSelectedIndex(new IndexPath(0));
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    GetProjects();
-  }, []);
-
-  // const UpdateCurrentUserID = async () => {
-  //   const currentUser = await AsyncStorage.getItem("userId");
-  //   setCurrentUserID(currentUser);
-  // };
+  // Get all projects
+  // TODO Get only projects by customer and/or user and status = "ACTIVE"
+	const { data: projList, isLoading, isSuccess, error, refetch } = useQuery({
+		queryKey: ["allProjects"],
+		queryFn: () => GetAllProjects(),
+		refetchInterval: 10000,
+		refetchOnReconnect: true,
+		refetchOnWindowFocus: true,
+		staleTime: 1000 * 60,	// 1 minute
+		retry: 3,
+	});
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
@@ -174,6 +166,93 @@ const SelectProject = () => {
     { backgroundColor: disabledFlag === false ? Color.lightgreen_100 : "gray" },
   ];
 
+  const ProjectInfo = () => {
+      return (
+        <BottomModal
+          onBackdropPress={() => setModalVisible(!modalVisible)}
+          swipeDirection={["up", "down"]}
+          swipeThreshold={200}
+          modalAnimation={
+            new SlideAnimation({
+              slideFrom: "bottom",
+            })
+          }
+          onHardwareBackPress={() => setModalVisible(!modalVisible)}
+          visible={modalVisible}
+          onTouchOutside={() => setModalVisible(!modalVisible)}
+        >
+          <ModalContent style={{ width: "100%", height: 400 }}>
+            <View className="flex-start justify-center items-center pb-2">
+              <Text>
+                <Text className="text-green-500 text-2xl font-bold">WORK</Text>
+                <Text className="text-black text-2xl font-bold">SIDE</Text>
+              </Text>
+              <Text className="text-black text-xl font-bold">
+                Project Details
+              </Text>
+            </View>
+            {/* /////////////////////////////////////////////////////////// */}
+            {/* Output Area */}
+            <View className="flex-start justify-center mb-1">
+              <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Area</Text>
+              <View style={styles.infoTextContainer}>
+                 <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.area}</Text>
+              </View>
+            </View>
+            {/* /////////////////////////////////////////////////////////// */}
+            {/* /////////////////////////////////////////////////////////// */}
+            {/* Output Project Name */}
+            <View className="flex-start justify-center mb-1">
+              <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Project Name</Text>
+              <View style={styles.infoTextContainer}>
+                 <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.projectname}</Text>
+              </View>
+            </View>
+            {/* /////////////////////////////////////////////////////////// */}
+            {/* /////////////////////////////////////////////////////////// */}
+            {/* Output Description */}
+            <View className="flex-start justify-center mb-1">
+              <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Description</Text>
+              <View style={styles.infoTextContainer}>
+                 <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.description}</Text>
+              </View>
+            </View>
+            {/* /////////////////////////////////////////////////////////// */}
+            {/* /////////////////////////////////////////////////////////// */}
+            {/* Output Rig Company */}
+            <View className="flex-start justify-center mb-1">
+              <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Rig Company</Text>
+              <View style={styles.infoTextContainer}>
+                 <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.rigcompany}</Text>
+              </View>
+            </View>
+            {/* /////////////////////////////////////////////////////////// */}
+            {/* /////////////////////////////////////////////////////////// */}
+            {/* Output Contact */}
+            <View className="flex-start justify-center mb-1">
+              <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Contact</Text>
+              <View style={styles.infoTextContainer}>
+                 <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.customercontact}</Text>
+              </View>
+            </View>
+            {/* /////////////////////////////////////////////////////////// */}
+            <View>
+              <Text
+                style={{
+                  fontSize: 18,
+                  fontWeight: "bold",
+                  marginTop: 20,
+                  textAlign: "center",
+                }}
+              >
+                Press Outside To Dialog Close
+              </Text>
+            </View>
+          </ModalContent>
+        </BottomModal>
+      );
+    }
+  
   return (
     <>
     <View className="flex-1 bg-white">
@@ -181,7 +260,6 @@ const SelectProject = () => {
         <Text>
           <Text className="text-green-500 text-2xl font-bold">WORK</Text>
           <Text className="text-black text-2xl font-bold">SIDE</Text>
-          {/* <Text className="text-black text-xl font-bold"> Projects</Text> */}
           </Text>
       </View>
      {isLoading ? (
@@ -190,7 +268,7 @@ const SelectProject = () => {
         <>
         <List
           contentContainerStyle className="flex-grow"
-          data={projectList}
+          data={projList.data}
           // TODO - Change back to activeProjects
           // data={activeProjects}
           renderItem={renderProjects}
@@ -215,88 +293,7 @@ const SelectProject = () => {
       </>
       )} 
     </View>
-      <BottomModal
-        onBackdropPress={() => setModalVisible(!modalVisible)}
-        swipeDirection={["up", "down"]}
-        swipeThreshold={200}
-        modalAnimation={
-          new SlideAnimation({
-            slideFrom: "bottom",
-          })
-        }
-        onHardwareBackPress={() => setModalVisible(!modalVisible)}
-        visible={modalVisible}
-        onTouchOutside={() => setModalVisible(!modalVisible)}
-      >
-        <ModalContent style={{ width: "100%", height: 400 }}>
-          <View className="flex-start justify-center items-center pb-2">
-            <Text>
-              <Text className="text-green-500 text-2xl font-bold">WORK</Text>
-              <Text className="text-black text-2xl font-bold">SIDE</Text>
-            </Text>
-            <Text className="text-black text-xl font-bold">
-              Project Details
-            </Text>
-          </View>
-          {/* /////////////////////////////////////////////////////////// */}
-          {/* Output Area */}
-          <View className="flex-start justify-center mb-1">
-            <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Area</Text>
-            <View style={{ width: wp(90), height: hp(2.3), backgroundColor: "#E5E7EB" }}>
-               <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.area}</Text>
-            </View>
-          </View>
-          {/* /////////////////////////////////////////////////////////// */}
-          {/* /////////////////////////////////////////////////////////// */}
-          {/* Output Project Name */}
-          <View className="flex-start justify-center mb-1">
-            <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Project Name</Text>
-            <View style={{ width: wp(90), height: hp(2.3), backgroundColor: "#E5E7EB" }}>
-               <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.projectname}</Text>
-            </View>
-          </View>
-          {/* /////////////////////////////////////////////////////////// */}
-          {/* /////////////////////////////////////////////////////////// */}
-          {/* Output Description */}
-          <View className="flex-start justify-center mb-1">
-            <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Description</Text>
-            <View style={{ width: wp(90), height: hp(2.3), backgroundColor: "#E5E7EB" }}>
-               <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.description}</Text>
-            </View>
-          </View>
-          {/* /////////////////////////////////////////////////////////// */}
-          {/* /////////////////////////////////////////////////////////// */}
-          {/* Output Rig Company */}
-          <View className="flex-start justify-center mb-1">
-            <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Rig Company</Text>
-            <View style={{ width: wp(90), height: hp(2.3), backgroundColor: "#E5E7EB" }}>
-               <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.rigcompany}</Text>
-            </View>
-          </View>
-          {/* /////////////////////////////////////////////////////////// */}
-          {/* /////////////////////////////////////////////////////////// */}
-          {/* Output Contact */}
-          <View className="flex-start justify-center mb-1">
-            <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Contact</Text>
-            <View style={{ width: wp(90), height: hp(2.3), backgroundColor: "#E5E7EB" }}>
-               <Text style={{fontSize: hp(1.7)}}className="text-black font-bold left-2">{selectedProject?.customercontact}</Text>
-            </View>
-          </View>
-          {/* /////////////////////////////////////////////////////////// */}
-          <View>
-            <Text
-              style={{
-                fontSize: 18,
-                fontWeight: "bold",
-                marginTop: 20,
-                textAlign: "center",
-              }}
-            >
-              Press Outside To Dialog Close
-            </Text>
-          </View>
-        </ModalContent>
-      </BottomModal>
+    <ProjectInfo />
     </>
   );
 };
@@ -304,6 +301,18 @@ const SelectProject = () => {
 export default SelectProject;
 
 const styles = StyleSheet.create({
+  infoTextContainer: {
+    width: wp(90), 
+    height: hp(3.0),
+    border: 1,
+    borderStyle: "solid",
+    borderColor: "black",
+    borderWidth: 1,
+    borderRadius: 5,
+    borderRightWidth: 4,
+    borderBottomWidth: 4,
+    backgroundColor: "#86EFAC"
+  },
   pressable: {
     padding: 10,
     borderRadius: 10,

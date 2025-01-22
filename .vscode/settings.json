@@ -1,6 +1,7 @@
 {
 	"cSpell.words": [
 		"animatable",
+		"byprojectid",
 		"categoryname",
 		"checkmark",
 		"cornflowerblue",
@@ -40,6 +41,7 @@
 		"progresstracker",
 		"projectedstartdate",
 		"projectname",
+		"reqlinkid",
 		"reqlinkname",
 		"requestbid",
 		"requestbids",
@@ -52,6 +54,7 @@
 		"rigcompany",
 		"rigcompanycontact",
 		"statusdate",
+		"suppliergroup",
 		"supplierid",
 		"supplierproductsview",
 		"tablename",

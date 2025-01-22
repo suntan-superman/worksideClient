@@ -22,11 +22,10 @@ import {
 	heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 
-import axios from "axios";
 import { format } from "date-fns";
 
 import {
-	GetAllRequests,
+	GetAllRequestsByProject,
 } from "../src/api/worksideAPI";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
@@ -77,54 +76,55 @@ const ActiveRequests = () => {
 	const [iconName, setIconName] = useState("truck-alert");
 
 		// Get the project data
-	const { data: allRequestData } = useQuery({
+	const { data: allRequestData, isLoading, isSuccess, error, refetch } = useQuery({
 		queryKey: ["allRequests"],
-		queryFn: () => GetAllRequests(),
+		queryFn: () => GetAllRequestsByProject(projectID),
 		refetchInterval: 10000,
 		refetchOnReconnect: true,
 		refetchOnWindowFocus: true,
-		staleTime: 1000 * 60 * 10, // 10 minutes
+		staleTime: 1000 * 60,	// 1 minute
 		retry: 3,
 	});
 
+	// useEffect(() => {
+	// 	console.log(`Is Success: ${isSuccess} Status: ${allRequestData?.status}`);
+	// 	// if (isSuccess && allRequestData.status === 200) {
+	// 	// 	console.log("ActiveRequests Success: ", JSON.stringify(allRequestData, null, 2));
+	// 	// }
+	// }, [isSuccess, allRequestData]);
+
 	useEffect(() => {
-		if( allRequestData=== undefined || allRequestData=== null) return;
-		const reqData = allRequestData[0].data;
-		if( reqData?.length === 0) return;
-		const requestData = reqData?.filter((r) => r?.project_id === projectID);
-		setRequestData(requestData);
+		if( isSuccess === false ) return;
+		if( allRequestData[0]?.data === undefined || allRequestData[0]?.data === null) return;
+		const reqData = allRequestData[0]?.data;
+		setRequestData(reqData);
 		GeRequestFilter();
-	}, [allRequestData, filterSelectedIndex]);
+	}, [isSuccess, allRequestData, filterSelectedIndex]);
 
-	// const GetActiveRequests = async () => {
-	// 	const strAPI = `${apiURL}/api/request`;
+	// if (isSuccess && allRequestData.status === 200) {
+	// 	console.log("ActiveRequests: ", JSON.stringify(allRequestData, null, 2));
+	// }
 
-	// 	try {
-	// 		const response = await axios.get(strAPI);
-	// 		const requests = response.data.filter((r) => r.project_id === projectID);
-	// 		setRequestData(requests);
-	// 	} catch (error) {
-	// 		console.log("error", error);
-	// 	}
-	// };
+		// Immediately executes the function and then every 10 seconds
+	useEffect(() => {
+		const unsubscribe = navigation.addListener(
+			"focus",
+			() => {
+				// This check is to prevent error on component mount. The refetch function is defined only after the query is run once
+				// It also ensures that refetch runs only when you go back and not on component mount
+				if (refetch) {
+					// This will re-run the query
+					refetch();
+				}
+			},
+			[navigation],
+		);
 
-	// useEffect(() => {
-	// 	GetActiveRequests();
-	// 	GeRequestFilter();
-	// }, []);
+		return unsubscribe;
+	}, [navigation]);
 
-	// useEffect(() => {
-	// 	// console.log("ActiveRequests Modify Request Bid Flag:", modifyRequestBidFlag);
-	// 	GetActiveRequests();
-	// 	setModifyRequestBidFlag(false);
-	// 	setWorksideModifyFlag(false);
-	// }, [modifyRequestBidFlag === true || worksideModifyFlag === true]);
-
-	// useEffect(() => {
-	// 	GetActiveRequests();
-	// 	setDataModifiedFlag(false);
-	// 	setWorksideModifyFlag(false);
-	// }, [dataModifiedFlag || worksideModifyFlag === true]);
+	if (isLoading) return <View><Text>"Loading..."</Text></View>;
+  if (error) return <View><Text>`An error has occurred: ${error.message}`</Text></View>;
 
 	const pressHandler = (item) => {
 		// setProjectID(item._id);
@@ -494,7 +494,7 @@ const handleGanttChartPress = () => {
 			{/* //////////////////////////////////////////////////////////////////// */}
 			{/* Format View for Buttons */}
 			{/* //////////////////////////////////////////////////////////////////// */}
-			<View className="flex-row justify-center gap-2.5 pb-4">
+			<View className="flex-row justify-center gap-2.5 pb-4 mt-4">
 			{/* <View className="flex-row items-center justify-between gap-3 pr-3 pl-3 pb-4"> */}
 				<TouchableOpacity
 					disabled={disabledFlag}

@@ -29,6 +29,7 @@ import {
 	SetRequestBidsStatus,
 	SetAwardedRequestBidStatus,
 	GetSupplierInfoFromID,
+	UpdateRequestStatus,
 } from "../src/api/worksideAPI";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
@@ -91,7 +92,7 @@ const RequestBids = () => {
 	const [worksideValidatedFlag, setWorksideValidatedFlag] = useState(false);
 	const [awardBidFlag, setAwardBidFlag] = useState(false);
 
-	let bidResponse = null;
+	const bidResponse = null;
 
 	const [bidData, setBidData] = useState([]);
 	const [checkedStatus, setCheckedStatus] = useState(false);
@@ -203,29 +204,6 @@ const RequestBids = () => {
 
 		GetSupplierInfo();
 	}
-	// Get Original Bid Array
-	const GetBids = async () => {
-		const strAPI = `${apiURL}/api/requestbidsview`;
-		try {
-			const response = await axios.get(strAPI).then((response) => {
-				bidResponse = response.data;
-				// Filter Bids by Request ID
-				const bids = bidResponse.filter(
-					(b) => b.requestbids.requestid === reqID
-				);
-				bidArray = bids;
-				GetSupplierInfo();
-			});
-		} catch (error) {
-			console.log("error", error);
-		}
-	};
-
-	// Get Bids
-	// useEffect(() => {
-	// 	GetBids();
-	// }, []);
-
 	const GetSupplierInfo = async () => {
 		bidSupplierArray = [];
 		try {
@@ -235,26 +213,18 @@ const RequestBids = () => {
 			if (bidArray.length === 0) return;
 			let supplierName = "";
 			for (const bid of bidArray) {
-				// console.log(`Bid: ${JSON.stringify(bid)}`);
-				// const strAPI = `${apiURL}/api/firm/${bid.requestbids.supplierid}`;
 				await GetSupplierInfoFromID(bid.requestbids.supplierid).then((response) => {
-					// console.log("Supplier Info: ", response[0]?.data);
-				// await axios.get(strAPI).then((response) => {
 					supplierName = response[0]?.data.name;
 					if( bid.requestbids.status === "AWARDED-A" ) setBidAwardedFlag(true);
 					if( bid.requestbids.status === "AWARDED-P" ) setBidAwardedFlag(true);
 					if( bid.requestbids.status === "AWARDED-WOA" ) setBidAwardedFlag(true);
 					// Decrypt Estimated Cost
 					let estimatedCost= "0.00";
-					// console.log("Result Estimated Cost: ", response.data.estimatedcost);
-					// console.log("Result: ", JSON.stringify(bid.requestbids));
 					if(bid.requestbids.estimatedcost!==null && bid.requestbids.estimatedcost!==undefined) {
-						// console.log("Encrypted Value: ", bid.requestbids.estimatedcost);
 						const encryptedValue = bid.requestbids.estimatedcost;
 					// 	// const encryptedValue = response.data.estimatedcost.toString();
 						estimatedCost = decrypt(encryptedValue, "this-is-a-secret-key");
 					}
-					// console.log("Estimated Cost: ", estimatedCost);
 					//////////////////////////////////////////////////////
 					bidSupplierArray.push({
 						_id: bid._id,
@@ -306,7 +276,7 @@ const RequestBids = () => {
 						selectedBid.status = "OPEN";
 						setBidAwardedFlag(false);
 						UpdateRequestBidStatus(selectedBid);
-						UpdateRequestStatus("OPEN");
+						UpdateReqStatus("OPEN");
 						});
 					},
 				},
@@ -441,29 +411,11 @@ const renderItemAccessory = (props) => {
 	// 	setModalVisible(true);
 	// };
 
-	const UpdateRequestStatus = async (status) => {
-		const strAPI = `${apiURL}/api/request`;
-		await axios
-			.patch(strAPI, {
-				id: reqID,
-				status: status,
-			})
-			.then((response) => {
-				setModifyRequestBidFlag(true);
-				// logTransaction(userId, table, action, result, id);
-				logTransaction(
-					currentUserID,
-					"REQUEST",
-					"UPDATE",
-					reqID,
-					response.status
-				);
-				// Notify User of Request Status Change
-				// console.log("Request Updated: ", response.data);
-			})
-			.catch((error) => {
-				console.log("Error: ", error);
-			});
+	const UpdateReqStatus = async (status) => {
+		const response = await UpdateRequestStatus({ reqID, status });
+		if( response.status === 200 ) {
+			setModifyRequestBidFlag(true);
+		}
 	};
 
 	const AwardRequestBid = async (selectedBid) => {	
@@ -506,7 +458,7 @@ const renderItemAccessory = (props) => {
 			////////////////////////////////////////////////////////////
 			// Update Request Status
 			//////////////////////////////////////////////////////////////
-			UpdateRequestStatus("AWARDED");
+			UpdateReqStatus("AWARDED");
 			// //////////////////////////////////////////////////////////////
 			// Update Request Bid Status
 			//////////////////////////////////////////////////////////////

@@ -62,16 +62,16 @@ export function DrawerContent(props) {
           </View>
 
           <Drawer.Section style={styles.drawerSection}>
-            <DrawerItem
+            {/* <DrawerItem
               icon={({ color, size }) => (
                 <Icon name="home-outline" color={color} size={size} />
               )}
               label="Home"
               onPress={() => {
                 props.navigation.navigate("ActiveRequests");
-                // props.navigation.goBack();
+                props.navigation.goBack();
               }}
-            />
+            /> */}
             <DrawerItem
               icon={({ color, size }) => (
                 <Icon name="atom" color={color} size={size} />
@@ -102,13 +102,13 @@ export function DrawerContent(props) {
           {/* <Drawer.Section title="Preferences">
           <TouchableRipple onPress={() => {toggleTheme()}}>
           <TouchableRipple>
-                        <View style={styles.preference}>
-                                <Text>Dark Theme</Text>
-                                <View pointerEvents="none">
-                                    <Switch value={paperTheme.dark}/>
-                                </View>
-                            </View>
-                        </TouchableRipple>
+            <View style={styles.preference}>
+              <Text>Dark Theme</Text>
+              <View pointerEvents="none">
+                <Switch value={paperTheme.dark}/>
+              </View>
+            </View>
+            </TouchableRipple>
           </Drawer.Section> */}
         </View>
       </DrawerContentScrollView>

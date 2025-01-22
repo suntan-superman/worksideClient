@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
 	Text,
 	TextInput,
@@ -18,38 +18,40 @@ import { useNavigation } from "@react-navigation/native";
 import { FontFamily, Color } from "../GlobalStyles";
 import { Select, SelectItem, IndexPath } from "@ui-kitten/components";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import useUserStore from "../src/stores/UserStore";
 
 import axios from "axios";
 import { useStateContext } from "../src/contexts/ContextProvider";
 import useDataStore from "../src/stores/DataStore";
-
-let newRequestData = null;
+import {
+	GetAllRequestsByProject,
+	GetProducts,
+	GetSupplierProductsByProduct,
+	SaveNewRequest,
+} from "../src/api/worksideAPI";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 
 const NewRequest = () => {
+	const queryClient = useQueryClient();
+	// TODO set disabled flag if minimum data is not provided
 	const [disabledFlag, setDisabledFLag] = useState(false);
 	//////////////////////////////////////////////////////////////
-	const [projectID, setProjectID] = useState(
+	const [projectID] = useState(
 		useDataStore((state) => state.currentProjectId)
 	);
-	const [customerName, setCustomerName] = useState(
+	const [customerName] = useState(
 		useDataStore((state) => state.currentCustomer)
 	);
-	const [projectName, setProjectName] = useState(
+	const [projectName] = useState(
 		useDataStore((state) => state.currentProject)
 	);
-	const [projectDescription, setProjectDescription] = useState(
-		useDataStore((state) => state.currentProjectDesc)
-	);
-	const [projectRig, setProjectRig] = useState(
+	const [projectRig] = useState(
 		useDataStore((state) => state.currentRigCompany)
 	);
-	const setWorksideModifyFlag = useDataStore(
-		(state) => state.setWorksideModifyFlag
-	);
 	const userId = useUserStore((state) => state.userID);
+
+	const linkedReqRef = useRef(null);
 
 	//////////////////////////////////////////////////////////////
 
@@ -76,6 +78,7 @@ const NewRequest = () => {
 	const [selectedSupplier, setSelectedSupplier] = useState("");
 	const [selectedSupplierID, setSelectedSupplierID] = useState(null);
 	const [selectedLink, setSelectedLink] = useState([]);
+	const [selectedLinkID, setSelectedLinkID] = useState(null);
 	const [selectedCategoryIndex, setSelectedCategoryIndex] = useState(
 		new IndexPath(0)
 	);
@@ -88,16 +91,12 @@ const NewRequest = () => {
 	const [selectedLinkIndex, setSelectedLinkIndex] = useState(new IndexPath(0));
 	const [supplierList, setSupplierList] = useState([]);
 	const [emptyFields, setEmptyFields] = useState([]);
-	const setModifyRequestFlag = useDataStore(
-		(state) => state.setModifyRequestFlag
-	);
-	const [reqList, setReqList] = useState([]);
 
 	const [selectedRadio, setSelectedRadio] = useState(1);
 	const [msaRequest, setMSARequest] = useState(true);
 	const [openRequest, setOpenRequest] = useState(false);
 	const [reqType, setReqType] = useState("MSA");
-	const { apiURL, worksideSocket } = useStateContext();
+	const { apiURL } = useStateContext();
 	///////////////////////////////////////////////////////
 	const [emailAddress, setEmailAddress] = useState("sroy@prologixsa.com");
 	const [emailSubject, setEmailSubject] = useState(
@@ -117,6 +116,17 @@ const NewRequest = () => {
 		if (/defaultProps/.test(args[0])) return;
 		error(...args);
 	};
+
+		// Get the project data
+	const { data: allRequestData } = useQuery({
+		queryKey: ["allRequests"],
+		queryFn: () => GetAllRequestsByProject(projectID),
+		refetchInterval: 1000 * 60,	// 1 minute
+		refetchOnReconnect: true,
+		refetchOnWindowFocus: true,
+		staleTime: 1000 * 60,	// 1 minute
+		retry: 3,
+	});
 
 	useEffect(() => {
 		const unsubscribe = navigation.addListener("beforeRemove", (e) => {
@@ -146,42 +156,17 @@ const NewRequest = () => {
 		return unsubscribe;
 	}, [navigation]);
 
-	const GetProducts = async () => {
-		const strAPI = `${apiURL}/api/product`;
+	const GetProductsAndFilter = async () => {
+		const products = await GetProducts();
 
-		try {
-			const response = await axios.get(strAPI);
-			setAllProducts(response.data);
-			const cats = [...new Set(response.data.map((p) => p.categoryname))];
-			setAllCategories(cats);
-		} catch (error) {
-			console.log("error", error);
+		if (products?.data === null) {
+			Alert.alert("No Products Found!");
+			return;
 		}
+		setAllProducts(products?.data);
+		const cats = [...new Set(products?.data.map((p) => p.categoryname))];
+		setAllCategories(cats);
 	};
-
-	// const GetCategories = () => {
-	//   const cats = [...new Set(allProducts.map((p) => p.categoryname))];
-	//   setAllCategories(cats);
-	// };
-
-	useEffect(() => {
-		const GetRequestList = async () => {
-			const strAPI = `${apiURL}/api/request`;
-
-			try {
-				const response = await axios.get(strAPI);
-				const requests = response.data.filter(
-					(r) => r.project_id === projectID
-				);
-				// console.log("Requests: ", requests);
-				setReqList(requests);
-			} catch (error) {
-				console.log("error", error);
-			}
-		};
-
-		GetRequestList();
-	}, []);
 
 	const GetSuppliers = async () => {
 		////////////////////////////////////////////////
@@ -194,15 +179,10 @@ const NewRequest = () => {
 			return;
 		}
 
-		const vendorAPI = `${apiURL}/api/supplierproductsview/byproduct`;
-
-		const suppliers = await axios.get(vendorAPI, {
-			category: selectedCategory,
-			product: selectedProduct,
-		});
-		console.log("Suppliers: ", suppliers.data);
-
-		const filteredSuppliers = suppliers.data.filter((s) => {
+		const category = selectedCategory;
+		const product = selectedProduct;
+		const suppliers = await GetSupplierProductsByProduct( category, product );
+		const filteredSuppliers = suppliers?.data.filter((s) => {
 			if (s.category === selectedCategory && s.product === selectedProduct) {
 				return true;
 			}
@@ -218,7 +198,7 @@ const NewRequest = () => {
 	};
 
 	useEffect(() => {
-		GetProducts();
+		GetProductsAndFilter();
 		// GetSuppliers();
 	}, []);
 
@@ -226,11 +206,6 @@ const NewRequest = () => {
 		const products = allProducts.filter((p) => p.categoryname === selectedItem);
 		const productList = [...new Set(products.map((p) => p.productname))];
 		setFilteredProducts(productList);
-	};
-
-	const hideDatePicker = () => {
-		setShowDatePicker(false);
-		setShowTimePicker(false);
 	};
 
 	const onChange = (e, selectedDate) => {
@@ -267,8 +242,7 @@ const NewRequest = () => {
 	};
 
 	const SendRequestEmail = async () => {
-		// setEmailReqDateTime(reqDateTime);
-		const strAPI = `${apiURL}/api/email/${emailAddress}*${emailSubject}*${emailReqDateTime}*${emailBody}"`;
+		const strAPI = `${apiURL}/api/email/`;
 
 		await axios
 			.post(strAPI, {
@@ -277,34 +251,24 @@ const NewRequest = () => {
 				emailReqDateTime: emailReqDateTime,
 				emailMessage: emailBody,
 			})
-		// axios
-		// 	.get(strAPI)
 			.then((response) => {
-				console.log("Email Sent: ", response.data);
+				Toast.show({
+					type: "success",
+					text1: "Workside Software",
+					text2: "Suppliers Notified Via Email",
+					visibilityTime: 3000,
+					autoHide: true,
+				});
 			})
 			.catch((error) => {
-				console.log("Error: ", error);
+				Toast.show({
+					type: "error",
+					text1: "Workside Software",
+					text2: `Error Sending Email:  + ${error}`,
+					visibilityTime: 3000,
+					autoHide: true,
+				});
 			});
-	};
-
-	const SendRequestMessage = async (requestID) => {
-		const strAPI = `${apiURL}/api/message/addMsg`;
-		const smsMessage = `New Workside Request: ${selectedProduct} for ${quantity} units. Please review and respond accordingly!`;
-
-		const currentUser = await AsyncStorage.getItem("userId");
-		if (!currentUser) {
-			return;
-		}
-		const targetUser = "659e0b13b8b92651f2c65fd2";
-
-		await axios.post(strAPI, {
-			from: currentUser,
-			to: targetUser,
-			message: smsMessage,
-			projectId: projectID,
-			projectName: projectName,
-			requestId: requestID,
-		});
 	};
 
 	const ValidateData = () => {
@@ -371,13 +335,18 @@ const NewRequest = () => {
 	};
 
 	const SaveData = async () => {
-		const strAPI = `${apiURL}/api/request`;
 		const selectedVendorType =
 			selectedRadio === 1 ? "MSA" : selectedRadio === 2 ? "OPEN" : "SSR";
 		const datetimerequested = new Date();
 
 		if (projectID === null) {
-			console.log("Project ID is NULL");
+				Toast.show({
+					type: "error",
+					text1: "Workside Software",
+					text2: `Invalid Project ID: ${projectID}`,
+					visibilityTime: 3000,
+					autoHide: true,
+				});
 			return false;
 		}
 		const reqData = {
@@ -396,26 +365,13 @@ const NewRequest = () => {
 			vendorName: selectedSupplier,
 			ssrVendorId: selectedRadio === 3 ? selectedSupplierID : null,
 			datetimerequested: reqDateTime,
-			// TODO - Need to fix	
-			// Need to fix
-			// reqlinkname: null,
-			// reqLinkId: null,
-			// reqlinkname:
-			// 	selectedLink !== 0 ? reqList(selectedLinkIndex).requestname : null,
-			// reqLinkId:
-			// 	selectedLinkIndex !== 0 ? reqList(selectedLinkIndex)._id : null,
+			reqlinkname: selectedLink,
+			reqlinkid: selectedLinkID,
 			//////////////////////////////}}////////////////
 			status: "OPEN",
 			statusdate: datetimerequested,
 			project_id: projectID,
 		};
-
-		// console.log(`Linked Request: ${selectedLink}` !== 0 ? selectedLink : null);
-		// console.log(
-		// 	`Linked Request ID: ${selectedLinkIndex}` !== 0
-		// 		? reqList(selectedLinkIndex)._id
-		// 		: null
-		// );
 
 		//////////////////////////////////////////////
 		// Validate Data Fields
@@ -442,24 +398,12 @@ const NewRequest = () => {
 		//   return false;
 		// }
 		// //////////////////////////////////////////////
-		// console.log("Save New Request Data: ", reqData);
-
-		const response = await fetch(strAPI, {
-			method: "POST",
-			body: JSON.stringify(reqData),
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
-
-		newRequestData = await response.json();
-		////////////////////////////////////////////////
-		SendRequestEmail();
-		if (newRequestData.data._id !== null) {
-			SendRequestMessage(newRequestData.data._id);
-		}
-		setModifyRequestFlag(true);
-		setWorksideModifyFlag(true);
+		const newRequest= await SaveNewRequest(reqData);
+	
+		if( newRequest !== null) {
+			SendRequestEmail();
+			queryClient.invalidateQueries("allRequests");
+		};
 
 		return true;
 	};
@@ -478,11 +422,11 @@ const NewRequest = () => {
 		navigation.navigate("ActiveRequests");
 	};
 
-	const DismissKeyboard = ({ children }) => (
-		<TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-			{children}
-		</TouchableWithoutFeedback>
-	);
+	// const DismissKeyboard = ({ children }) => (
+	// 	<TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+	// 		{children}
+	// 	</TouchableWithoutFeedback>
+	// );
 
 	return (
 		<View className="flex-1 bg-white">
@@ -546,7 +490,6 @@ const NewRequest = () => {
 						setSelectedCategory(index);
 						FilterProducts(index);
 						setModifyFlag(true);
-						// console.log("Selected Category Modify Flag: ", modifyFlag);
 					}}
 				>
 					{allCategories.map((item) => {
@@ -616,7 +559,7 @@ const NewRequest = () => {
 							className="bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
 							keyboardType="numeric"
 							onChange={(text) => {
-								updateRequestQuantity(text);
+								onChangeQuantity(text);
 								setModifyFlag(true);
 							}}
 						/>
@@ -636,12 +579,8 @@ const NewRequest = () => {
 						</Text>
 						<TextInput
 							value={comment}
-							className={
-								"bg-green-200 rounded-sm shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-2 border-b-2 text-sm align-top px-1"
-							}
-							keyboardType="default"
-							multiline={false}
-							numberOfLines={3}
+							className={"bg-green-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"}
+							style={{ textAlignVertical: "top" }}
 							onChangeText={(newComment) => {
 								setComment(newComment);
 								setModifyFlag(true);
@@ -784,7 +723,6 @@ const NewRequest = () => {
 								>
 									Date
 								</Text>
-								{/* <Text className="text-sm font-bold text-black">Date</Text> */}
 							</TouchableOpacity>
 
 							<TouchableOpacity
@@ -799,7 +737,6 @@ const NewRequest = () => {
 								>
 									Time
 								</Text>
-								{/* <Text className="text-sm font-bold text-black">Time</Text> */}
 							</TouchableOpacity>
 						</View>
 				{showDatePicker && (
@@ -807,7 +744,7 @@ const NewRequest = () => {
 						value={reqDateTime}
 						mode="date"
 						is24Hour={true}
-						// onChange={(onChange) => { onChange(); setModifyFlag(true); }}
+						minimumDate={new Date()}
 						onChange={onChange}
 					/>
 				)}
@@ -816,7 +753,6 @@ const NewRequest = () => {
 						value={reqDateTime}
 						mode="time"
 						is24Hour={true}
-						// onChange={() => { onChange(); setModifyFlag(true); }}
 						onChange={onChange}
 					/>
 				)}
@@ -833,16 +769,17 @@ const NewRequest = () => {
 						Link To
 					</Text>
 				</View>
-			<View className="items-center w-full pt-0">
+						<View className="flex-row justify-center pt-0 gap-4 items-center w-full">
+
 				<Select 
 					style={{
-						width: "90%",
+						width: "65%",
 						height: 45,
 						borderRadius: 5,
-						borderWidth: 2,
+						borderWidth: 1,
 						fontFamily: FontFamily.workSansSemibold,
 						fontWeight: "700",
-						borderColor: "black",
+						borderColor: "lightgray",
 						backgroundColor: Color.silver_200,
 					}}
 					placeholder={"No Link"}
@@ -852,25 +789,41 @@ const NewRequest = () => {
 					onSelect={(index) => {
 						setSelectedLinkIndex(index);
 						setModifyFlag(true);
-						console.log("Selected Link: ", index);
 					}}
+					ref= {linkedReqRef}
 				>
-					{reqList.map((item) => {
+					{ allRequestData[0].data.map((item) => {
 						return (
 							<SelectItem
 								key={item.requestname} // Replace with a unique identifier from the item object
 								title={item.requestname}
-								onPress={() => {
-									// setReqList(item.requestname);
-									// console.log("Selected Link: ", item);
-									// setModifyFlag(true);
-								}}
+                    onPress={() => {
+											linkedReqRef.current.clear();
+											setSelectedLink(item.requestname);
+											setSelectedLinkID(item._id);
+                    }}
 							/>
 						);
 					})}
 				</Select>
-
-				</View>
+						<TouchableOpacity
+							className={
+								"bg-green-200 hover:drop-shadow-xl hover:bg-light-gray p-1 rounded-lg w-[20%] items-center justify-center border-2 border-solid border-black border-r-4 border-b-4"
+							}
+							onPress={() => {
+                setSelectedLink("");
+								setSelectedLinkID(null);
+							}}
+						>
+							<Text
+								style={{ fontSize: hp(1.6) }}
+								className="text-black font-bold"
+							>
+								Clear
+							</Text>
+						</TouchableOpacity>
+					</View>
+				{/* </View> */}
 			</View>
 			{/********************************************************** */}
 			{/********************************************************** */}
@@ -886,7 +839,7 @@ const NewRequest = () => {
 					disabled={disabledFlag}
 					onPress={() => SubmitNewRequest()}
 				>
-					<Text className="text-base font-bold text-black">Save Changes</Text>
+					<Text className="text-base font-bold text-black">Save Request</Text>
 				</TouchableOpacity>
 			</View>
 		</View>

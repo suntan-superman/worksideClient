@@ -22,7 +22,7 @@ import useRequestStore from "../src/stores/RequestStore";
 import useUserStore from "../src/stores/UserStore";
 import { logTransaction } from "../src/helperFunction";
 import { BottomSheetView, BottomSheetModal } from "@gorhom/bottom-sheet";
-import DateTimePickerModal from "@react-native-community/datetimepicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import * as LocalAuthentication from 'expo-local-authentication';
 import {
@@ -53,6 +53,15 @@ const dialPadHeight = height * 0.125;
 const pinLength = 6;
 let numOfAttempts = 0;
 
+import {
+	GetAllRequestsByProject,
+  GetRequestData,
+  UpdateRequest,
+  UpdateRequestStatus,
+  SetRequestBidsStatus,
+} from "../src/api/worksideAPI";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import Toast from "react-native-toast-message";
 
 // End of Passcode Modal
 
@@ -61,16 +70,15 @@ let modifyDialogFlag = false;
 const RequestDetails = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  // const id = route.params.id;
+  const queryClient = useQueryClient();
 
   const { reqID } = route.params;
 	const { apiURL, currentUserID } = useStateContext();
-  // const worksideModifyFlag = useDataStore((state) => state.worksideModifyFlag);
 	const setWorksideModifyFlag = useDataStore((state) => state.setWorksideModifyFlag);
 	const worksidePasscode = useUserStore((state) => state.passcode);
+  const linkedReqRef = useRef(null);
 
   const [selectedDate, setSelectedDate] = useState(new Date());
-  // const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const dateTimeModalRef = useRef(null);
   const vendorModalRef = useRef(null);
   const passcodeModalRef = useRef(null);
@@ -78,19 +86,18 @@ const RequestDetails = () => {
 
   const [modifyFlag, setModifyFlag] = useState(false);
   const [modalEditFlag, setModalEditFlag] = useState(false);
-  const [requestType, setRequestType] = useState("");
-  // Changed 2024-07-04
   const [requestQty, setRequestQty] = useState("");
   const [requestComment, setRequestComment] = useState("");
   const [requestVendor, setRequestVendor] = useState("");
-  const [requestDateTime, setRequestDateTime] = useState(new Date());
   const [requestLinkTo, setRequestLinkTo] = useState("");
+  const [selectedLinkID, setSelectedLinkID] = useState(null);
   const stringDateTime = new Date().toLocaleString();
-  const [reqList, setReqList] = useState([]);
   const [editFlag, setEditFlag] = useState(false);
   const [allowEditFlag, setAllowEditFlag] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
   const [selectedSupplierIndex, setSelectedSupplierIndex] = useState(new IndexPath(0));
+
+  const [reqData, setReqData] = useState([]);
 
   const [disabledFlag, setDisabledFlag] = useState(true);
   const [dateTimeRequested, setDateTimeRequested] = useState(new Date());
@@ -99,9 +106,6 @@ const RequestDetails = () => {
   const [showTimePicker, setShowTimePicker] = useState(false);
   const snapPoints = useMemo(() => ["25%", "50%", "75%", "90%"], []);
   const [selectedRadio, setSelectedRadio] = useState(1);
-  const [msaRequest, setMSARequest] = useState(true);
-  const [openRequest, setOpenRequest] = useState(false);
-  const [reqType, setReqType] = useState("MSA");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
 	const [selectedSupplier, setSelectedSupplier] = useState("");
@@ -128,6 +132,10 @@ const RequestDetails = () => {
   const setModifyRequestBidFlag = useDataStore(
     (state) => state.setModifyRequestBidFlag
   );
+  	const [projectID] = useState(
+		useDataStore((state) => state.currentProjectId)
+	);
+
   //////////////////////////////////////////////////////////////////////
     // Global Request Data
     const setCurrentRequest = useRequestStore((state) => state.setRequest);
@@ -138,6 +146,17 @@ const RequestDetails = () => {
     const [worksideValidatedFlag, setWorksideValidatedFlag] = useState(false);
     const [postponedRequestFlag, setPostponedRequestFlag] = useState(false);
   
+        // Get the project data
+      const { data: allRequestData } = useQuery({
+        queryKey: ["allRequests"],
+        queryFn: () => GetAllRequestsByProject(projectID),
+        refetchInterval: 1000 * 60,	// 1 minute
+        refetchOnReconnect: true,
+        refetchOnWindowFocus: true,
+        staleTime: 1000 * 60 * 60,	// 60 minutes
+        retry: 3,
+      });
+    
   useEffect(() => {
     const unsubscribe = navigation.addListener("beforeRemove", (e) => {
       // Prevent Default Behavior
@@ -166,27 +185,43 @@ const RequestDetails = () => {
     return unsubscribe;
   }, [navigation]);
 
+  useEffect(() => {
+    const GetRequestDetails = async () => {
+      const response = await GetRequestData(reqID);
+      if( response.status === 200 ) {
+				setReqData(response.data);
+				setRequestQty(response.data.quantity.toLocaleString());
+				setDateTimeRequested(response.data.datetimerequested);
+        setRequestComment(response.data.comment);
+				if (
+					response.data.status === "AWARDED" ||
+					response.data.status === "AWARDED-A" ||
+					response.data.status === "AWARDED-WOA"
+				) {
+					setBidAwardedFlag(true);
+					setAllowEditFlag(false);
+				}
+				setSelectedCategory(response.data.requestcategory);
+				setSelectedProduct(response.data.requestname);
+				setSelectedSupplierID(response.data.ssrVendorId);
+				if (response.data.vendortype === "MSA") setSelectedRadio(1);
+				else if (response.data.vendortype === "OPEN") setSelectedRadio(2);
+				else setSelectedRadio(3);
+			}
+    };
+  
+    GetRequestDetails();
+  }, []);
 
-  const GetRequests = async () => {
-    const reqURL = `${apiURL}/api/request`;
-    try {
-      const response = await axios.get(reqURL);
-      const req = [...new Set(response.data.map((r) => r.requestname))];
-      setReqList(req);
-    } catch (error) {
-      console.log("error", error);
+  useEffect(() => {
+    if (modifyDialogFlag === true) {
+      console.log("Modify Dialog Flag: ", modifyDialogFlag);
+      setDisabledFlag(false);
+    } else {
+      console.log("Modify Dialog Flag: ", modifyDialogFlag);
+      setDisabledFlag(true);
     }
-  };
-
-  const [reqData, setReqData] = useState([]);
-
-  // const setDatePicker = () => {
-  //   setDatePickerVisible(true);
-  // };
-
-  // const hideDatePicker = () => {
-  //   setDatePickerVisible(false);
-  // };
+  } , [modifyDialogFlag]);
 
   const handleConfirm = (date) => {
     const currentDate = date;
@@ -202,42 +237,6 @@ const RequestDetails = () => {
     setSelectedDate(date);
     // hideDatePicker();
   };
-
-  // const showMode = (currentMode) => {
-  //   setDatePickerVisible(currentMode);
-  // };
-
-  useEffect(() => {
-    GetRequests();
-    // GetRequestDetails();
-  }, []);
-
-  useEffect(() => {
-    const GetRequestDetails = async () => {
-      const reqURL = `${apiURL}/api/request/${reqID}`;
-      try {
-        const response = await axios.get(reqURL);
-        setReqData(response.data);
-        setRequestQty(response.data.quantity.toLocaleString());
-        setDateTimeRequested(response.data.datetimerequested);
-        if (response.data.status === "AWARDED" || response.data.status === "AWARDED-A" || response.data.status === "AWARDED-WOA") {
-          setBidAwardedFlag(true);
-          setAllowEditFlag(false);
-        }
-        setSelectedCategory(response.data.requestcategory);
-        setSelectedProduct(response.data.requestname);
-        setSelectedSupplierID(response.data.ssrVendorId);
-        if(response.data.vendortype=== "MSA") setSelectedRadio(1);
-        else if(response.data.vendortype=== "OPEN") setSelectedRadio(2);
-        else setSelectedRadio(3);
-  
-      } catch (error) {
-        console.log("error", error);
-      }
-    };
-
-    GetRequestDetails();
-  }, []);
 
   const SaveModifiedData = async () => {
 		// TODO - Add Passcode Verification
@@ -258,8 +257,6 @@ const RequestDetails = () => {
   };
 
   const SaveData = async () => {
-    const strAPI = `${apiURL}/api/request/${reqID}`;
-
     if (requestQty === "" || requestQty === null || requestQty === undefined) {
       if (requestQty.toNumber() < 1) {
         alert("Quantity must be greater than 0");
@@ -287,69 +284,16 @@ const RequestDetails = () => {
       status: "OPEN",
       statusdate: statusDate,
     };
-// console.log("New Request Data: ", newReqData);
-    // const reqData = {
-    //   projectname: projectName,
-    //   customername: customerName,
-    //   customercontact: "Customer Contact",
-    //   rigcompany: projectRig,
-    //   rigcompanycontact: "Rig Contact",
-    //   requestcategory: selectedCategory,
-    //   creationdate: new Date(),
-    //   requestname: selectedProduct,
-    //   quantity: quantity,
-    //   comments: requestComment,
-    //   vendortype: selectedVendorType,
-    //   vendorName: selectedSupplier,
-    //   ssrVendorId: selectedRadio === 3 ? selectedSupplierID : null,
-    //   datetimerequested: modRequestDateTime,  // Updated Date and Time
-    //   //////////////////////////////////////////////
-    //   // Update This
-    //   // reqlinkname: selectedLink,
-    //   // reqLinkId: reqList(selectedLinkIndex)._id,
-    //   //////////////////////////////////////////////
-    //   status: "OPEN",
-    //   statusdate: statusDate,
-    //   project_id: projectID,
-    // };
 
-    // const newReqData = { ...reqData, quantity: requestQty };
+ 		const updatedRequest= await UpdateRequest({ reqID: newReqData._id, reqData: newReqData });
 
-    // console.log("Linked Request: " + selectedLink);
-    // console.log("Linked Request ID: " + reqList(selectedLinkIndex)._id);
-
-    // //////////////////////////////////////////////
-		await axios
-			.patch(strAPI, {
-        newReqData
-			})
-			.then((response) => {
-        // console.log( "Save Response: ", response.data );
+    if( updatedRequest.status === 200 ) {
         modifyDialogFlag = false;
         setWorksideModifyFlag(true);
         setEditFlag(false);
-        // setModifyRequestBidFlag(true);
-				// logTransaction(userId, table, action, result, id);
-				logTransaction(
-					currentUserID,
-					"REQUEST",
-					"UPDATE",
-					reqID,
-					response.status
-				);
-				// Notify User of Request Status Change
-				// console.log("Request Updated: ", response.data);
-			})
-			.catch((error) => {
-				console.log("Error: ", error);
-			});
-    ////////////////////////////////////////////////
-    // SendRequestEmail();
-    // if (newRequestData.data._id !== null) {
-    //   SendRequestMessage(newRequestData.data._id);
-    // }
-
-    return true;
+        return true;
+				}
+        return false;    // ////////////////////////////////////////////// 
   };
 
   const GetSuppliers = async () => {
@@ -361,97 +305,50 @@ const RequestDetails = () => {
       );
       setSelectedRadio(1);
       return;
-    }
+s    }
 
-    const vendorAPI = `${apiURL}/api/supplierproductsview/byproduct`;
-
-    // console.log("Selected Category: ", selectedCategory);
-    // console.log("Selected Product: ", selectedProduct);
-    const suppliers = await axios.get(vendorAPI, {
-      category: selectedCategory,
-      product: selectedProduct,
-    });
-    // console.log("Suppliers: ", suppliers.data);
-
-    const filteredSuppliers = suppliers.data.filter((s) => {
-      if (s.category === selectedCategory && s.product === selectedProduct) {
-        return true;
-      }
-      return false;
-    });
-
-    if (filteredSuppliers.length === 0) {
-      Alert.alert("No Sole Source Vendors/Suppliers Found!");
-      setSelectedRadio(1);
-    } else {
-      const suppliers = [...new Set(filteredSuppliers.map((s) => s.supplier))];
-      setSupplierList(suppliers);
-    }
+		const category = selectedCategory;
+		const product = selectedProduct;
+		const suppliers = await GetSupplierProductsByProduct( category, product );
+		const filteredSuppliers = suppliers?.data.filter((s) => {
+			if (s.category === selectedCategory && s.product === selectedProduct) {
+				return true;
+			}
+			return false;
+		});
+		if (filteredSuppliers.length === 0) {
+			Alert.alert("No Sole Source Vendors/Suppliers Found!");
+			setSelectedRadio(1);
+		} else {
+			const suppliers = [...new Set(filteredSuppliers.map((s) => s.supplier))];
+			setSupplierList(suppliers);
+		}
   };
 
-  const UpdateRequestStatus = async (reqID, status) => {
-    const strAPI = `${apiURL}/api/request`;
-    await axios
-      .patch(strAPI, {
-        id: reqID,
-        status: status,
-      })
-      .then((response) => {
-        setModifyRequestBidFlag(true);
-        // logTransaction(userId, table, action, result, id);
-        logTransaction(
-          currentUserID,
-          "REQUEST",
-          "UPDATE",
-          reqID,
-          response.status
-        );
-        // Notify User of Request Status Change
-        // console.log("Request Updated: ", response.data);
-      })
-      .catch((error) => {
-        console.log("Error: ", error);
-      });
+  const UpdateReqStatus = async (reqID, status) => {
+    const response = await UpdateRequestStatus({ reqID, status });
+    if( response.status === 200 ) {
+			Toast.show({
+				type: "success",
+				position: "top",
+				text1: "Request Status Updated",
+				text2: `Request Status has been updated to ${status}`,
+				visibilityTime: 3000,
+				autoHide: true,
+				topOffset: 30,
+				bottomOffset: 40,
+				onShow: () => {},
+				onHide: () => {},
+			});
+		}
   };
-
-  useEffect(() => {
-    if (modifyDialogFlag === true) {
-      // console.log("Modify Dialog Flag: ", modifyDialogFlag);
-      setDisabledFlag(false);
-    } else {
-      // console.log("Modify Dialog Flag: ", modifyDialogFlag);
-      setDisabledFlag(true);
-    }
-  } , [modifyDialogFlag]);
 
   const UpdateRequestBidsStatus = async (reqID, status) => {
-    const strAPI = `${apiURL}/api/requestbid/updateall`;
-
-    // if( selectedBid === null ) return;
-
-    // console.log(
-    // 	"Update Selected Request: " + reqID + " Status: " + status
-    // );
-    await axios
-      .post(strAPI, {
-        id: reqID,
-        status: status,
-      })
-      .then((response) => {
-        setModifyRequestBidFlag(true);
-        // logTransaction(userID, table, action, result, id);
-        logTransaction(
-          currentUserID,
-          "REQUESTBID",
-          "UPDATE",
-          reqID,
-          response.status
-        );
-      })
-      .catch((error) => {
-        console.log("Error: ", error);
-      });
-  };
+			const response = await SetRequestBidsStatus({ reqID, status });
+			if (response.status === 200) {
+				console.log("Request Bids Status Updated: ", response.data);
+			}
+	};
 
   const ProcessPostponedRequest = (requestId) => {
     setPostponedRequestFlag(false);
@@ -463,13 +360,11 @@ const RequestDetails = () => {
           text: "Yes",
           style: "destructive",
           onPress: () => {
-            handlePasscodePress();
-            setPostponedRequestFlag(true);
+            // handlePasscodePress();
+            // setPostponedRequestFlag(true);
             // Set Request Status to POSTPONED
-            // TODO Change Back
-            // UpdateRequestStatus(requestId, "POSTPONED");
+            UpdateReqStatus(requestId, "POSTPONED");
             // Set Bid Status to POSTPONED
-            // TODO Change Back
             UpdateRequestBidsStatus(requestId, "POSTPONED");
             // Set Awarded Bid to FALSE
             // Email All Parties
@@ -512,9 +407,9 @@ const RequestDetails = () => {
           onPress: () => {
 						if( BiometricConfirmation() === false ) return;
             // Set Request Status to CANCELED
-            // UpdateRequestStatus(requestId, "CANCELED");
+            UpdateReqStatus(requestId, "CANCELED");
             // Set Bid Status to CANCELED
-            // UpdateRequestBidsStatus(requestId, "CANCELED");
+            UpdateRequestBidsStatus(requestId, "CANCELED");
             // TODO - Set Awarded Bid to FALSE
             // Set Awarded Bid to FALSE
             // TODO - Email All Parties
@@ -616,8 +511,8 @@ const RequestDetails = () => {
             <Text className="text-sm font-bold text-black">Cancel</Text>
           </TouchableOpacity>
           {showDatePicker && (
-            <DateTimePickerModal
-              styles={{ width: 200, height: 200 }}
+            <DateTimePicker
+              // styles={{ width: 200, height: 200 }}
               value={modRequestDateTime}
               mode={"date"}
               is24Hour={true}
@@ -626,8 +521,8 @@ const RequestDetails = () => {
             />
           )}
           {showTimePicker && (
-            <DateTimePickerModal
-              styles={{ width: 200, height: 200 }}
+            <DateTimePicker
+              // styles={{ width: 200, height: 200 }}
               value={modRequestDateTime}
               mode={"time"}
               is24Hour={true}
@@ -1029,26 +924,14 @@ const handleSavePasscodeModalChanges = () => {
             {reqData.rigcompany}
           </Text>
         </View>
-        {/* <View className="flex-row items-center justify-between w-[100%] pt-1 pb-2"> */}
-        <View className="flex-row justify-around items-center w-full pt-2 pb-2">
-{/*         
-          style={{
-            flexDirection: "row",
-            alignContent: "space-around",
-            justifyContent: "space-evenly",
-            paddingTop: 2,
-            gap: 100,
-            alignItems: "center",
-            width: "100%",
-          }}
-        > */}
-          <View className="items-start">
+        <View className="flex-row flex justify-between items-center w-full pt-2 pb-2">
+          <View className="items-start ml-6">
             <Text>
               <Text style={{fontSize: hp(1.5)}} className="text-black font-bold">Status: </Text>
               <Text style={{fontSize: hp(1.5)}} className="text-green-500 font-bold">{reqData.status}</Text>
             </Text>
           </View>
-          <View className="items-end">
+          <View className="items-end mr-2">
             <TouchableOpacity
 							className={`${bidAwardedFlag === false ? "bg-green-300" : "bg-gray-300"} hover:drop-shadow-xl hover:bg-light-gray p-1 right-5 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
               disabled={!allowEditFlag}
@@ -1076,7 +959,6 @@ const handleSavePasscodeModalChanges = () => {
           }}
         >
           <Text style={{fontSize: hp(1.6)}} className="text-black font-bold">Request</Text>
-          {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
           <TextInput
             defaultValue="Request"
             value={reqData.requestname}
@@ -1084,7 +966,7 @@ const handleSavePasscodeModalChanges = () => {
               "bg-gray-600 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-white font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
             }
             editable={editFlag}
-          ></TextInput>
+          />
         </View>
         </View>
         {/* ***************************************************************************** */}
@@ -1099,18 +981,20 @@ const handleSavePasscodeModalChanges = () => {
             }}
           >
           <Text style={{fontSize: hp(1.6)}} className="text-black font-bold">Quantity</Text>
+
             <TextInput
-              // Changed 2024-07-04
-              // value={String(reqData.quantity)}
+              defaultValue={requestQty}
               value={requestQty}
               className={
                 editFlag === true
                   ? "bg-green-200 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
                   : "bg-gray-300 rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm"
               }
-              editable={editFlag}
               keyboardType="numeric"
-              onChangeText={(text) => updateRequestQuantity(text)}
+              onChangeText={(text) => {
+								updateRequestQuantity(text);
+                setModifyFlag(true);
+								}}
             />
           </View>
         </View>
@@ -1130,10 +1014,8 @@ const handleSavePasscodeModalChanges = () => {
             <TextInput
               value={requestComment}
 							className={`${editFlag === true ? "bg-green-300" : "bg-gray-300"} rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-20 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm align-top`}
+							style={{ textAlignVertical: "top" }}
               editable={editFlag}
-              keyboardType="default"
-              multiline={true}
-              numberOfLines={3}
               onChangeText={(text) => updateRequestComment(text)}
             />
           </View>
@@ -1168,7 +1050,9 @@ const handleSavePasscodeModalChanges = () => {
                   <Text className="text-base font-bold text-black align-middle">
                     {reqData.vendortype}
                   </Text>
-                  <Icon name="chevron-down" size={25} />
+                  <Text >
+                    ...Change
+                  </Text>
                 </TouchableOpacity>
               </>)}
           </View>
@@ -1200,7 +1084,10 @@ const handleSavePasscodeModalChanges = () => {
                 <Text className="text-base font-bold text-black align-middle">
                   {format(dateTimeRequested, "MM/dd/yyyy HH:mm")}
                 </Text>
-                <Icon name="chevron-down" size={25} />
+                  <Text >
+                    ...Change
+                  </Text>
+                {/* <Icon name="chevron-down" size={25} /> */}
               </TouchableOpacity>
             )}
           </View>
@@ -1216,12 +1103,11 @@ const handleSavePasscodeModalChanges = () => {
           >
           <Text style={{fontSize: hp(1.6)}} className="text-black font-bold">Link To</Text>
             {editFlag === false ? (
-              // biome-ignore lint/style/useSelfClosingElements: <explanation>
               <TextInput
                 defaultValue="Link To Other Request"
                 className={`${editFlag === true ? "bg-green-300" : "bg-gray-300"} rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-full h-10 border-[1px] border-solid border-black text-black font-bold p-3 my-1 border-r-4 border-b-4 text-sm`}
                 editable={editFlag}
-              ></TextInput>
+              />
             ) : (
               <Select
                 style={{
@@ -1241,8 +1127,26 @@ const handleSavePasscodeModalChanges = () => {
                   setRequestLinkTo(index);
                   modifyDialogFlag = true;
                 }}
+    					ref= {linkedReqRef}
               >
-                {reqList.map((item) => {
+          { allRequestData[0].data.map((item) => {
+            return (
+              <SelectItem
+                key={item.requestname} // Replace with a unique identifier from the item object
+                title={item.requestname}
+                    onPress={() => {
+                      linkedReqRef.current.clear();
+                        setRequestLinkTo(item.requestname);
+                      setSelectedLinkID(item._id);
+                        modifyDialogFlag = true;
+                      // setSelectedLink(item.requestname);
+                      // setSelectedLinkID(item._id);
+                    }}
+              />
+            );
+          })}
+
+                {/* {reqList.map((item) => {
                   return (
                     <SelectItem
                       key={item}
@@ -1253,7 +1157,7 @@ const handleSavePasscodeModalChanges = () => {
                       }}
                     />
                   );
-                })}
+                })} */}
               </Select>
             )}
           </View>
