@@ -189,10 +189,10 @@ const RequestDetails = () => {
     const GetRequestDetails = async () => {
       const response = await GetRequestData(reqID);
       if( response.status === 200 ) {
-				setReqData(response.data);
-				setRequestQty(response.data.quantity.toLocaleString());
-				setDateTimeRequested(response.data.datetimerequested);
-        setRequestComment(response.data.comment);
+				setReqData(response?.data);
+				setRequestQty(response?.data.quantity.toLocaleString());
+				setDateTimeRequested(response?.data.datetimerequested);
+        setRequestComment(response?.data.comment);
 				if (
 					response.data.status === "AWARDED" ||
 					response.data.status === "AWARDED-A" ||
@@ -201,11 +201,11 @@ const RequestDetails = () => {
 					setBidAwardedFlag(true);
 					setAllowEditFlag(false);
 				}
-				setSelectedCategory(response.data.requestcategory);
-				setSelectedProduct(response.data.requestname);
-				setSelectedSupplierID(response.data.ssrVendorId);
-				if (response.data.vendortype === "MSA") setSelectedRadio(1);
-				else if (response.data.vendortype === "OPEN") setSelectedRadio(2);
+				setSelectedCategory(response?.data.requestcategory);
+				setSelectedProduct(response?.data.requestname);
+				setSelectedSupplierID(response?.data.ssrVendorId);
+				if (response?.data.vendortype === "MSA") setSelectedRadio(1);
+				else if (response?.data.vendortype === "OPEN") setSelectedRadio(2);
 				else setSelectedRadio(3);
 			}
     };
@@ -215,10 +215,8 @@ const RequestDetails = () => {
 
   useEffect(() => {
     if (modifyDialogFlag === true) {
-      console.log("Modify Dialog Flag: ", modifyDialogFlag);
       setDisabledFlag(false);
     } else {
-      console.log("Modify Dialog Flag: ", modifyDialogFlag);
       setDisabledFlag(true);
     }
   } , [modifyDialogFlag]);
@@ -344,9 +342,9 @@ s    }
   };
 
   const UpdateRequestBidsStatus = async (reqID, status) => {
-			const response = await SetRequestBidsStatus({ reqID, status });
+			const response = await SetRequestBidsStatus( reqID, status );
 			if (response.status === 200) {
-				console.log("Request Bids Status Updated: ", response.data);
+				console.log("Request Bids Status Updated: ", response?.data);
 			}
 	};
 
@@ -1129,7 +1127,7 @@ const handleSavePasscodeModalChanges = () => {
                 }}
     					ref= {linkedReqRef}
               >
-          { allRequestData[0].data.map((item) => {
+          { allRequestData?.data.map((item) => {
             return (
               <SelectItem
                 key={item.requestname} // Replace with a unique identifier from the item object

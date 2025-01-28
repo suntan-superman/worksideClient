@@ -792,7 +792,7 @@ const NewRequest = () => {
 					}}
 					ref= {linkedReqRef}
 				>
-					{ allRequestData[0].data.map((item) => {
+					{ allRequestData?.data.map((item) => {
 						return (
 							<SelectItem
 								key={item.requestname} // Replace with a unique identifier from the item object

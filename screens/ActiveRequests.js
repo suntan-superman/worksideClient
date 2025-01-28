@@ -79,31 +79,20 @@ const ActiveRequests = () => {
 	const { data: allRequestData, isLoading, isSuccess, error, refetch } = useQuery({
 		queryKey: ["allRequests"],
 		queryFn: () => GetAllRequestsByProject(projectID),
-		refetchInterval: 10000,
+		refetchInterval: 1000 * 30, // 30 seconds
 		refetchOnReconnect: true,
 		refetchOnWindowFocus: true,
-		staleTime: 1000 * 60,	// 1 minute
+		staleTime: 1000 * 60 * 60,	// 1 hour
 		retry: 3,
 	});
 
-	// useEffect(() => {
-	// 	console.log(`Is Success: ${isSuccess} Status: ${allRequestData?.status}`);
-	// 	// if (isSuccess && allRequestData.status === 200) {
-	// 	// 	console.log("ActiveRequests Success: ", JSON.stringify(allRequestData, null, 2));
-	// 	// }
-	// }, [isSuccess, allRequestData]);
-
 	useEffect(() => {
 		if( isSuccess === false ) return;
-		if( allRequestData[0]?.data === undefined || allRequestData[0]?.data === null) return;
-		const reqData = allRequestData[0]?.data;
+		if( allRequestData?.data === undefined || allRequestData?.data === null) return;
+		const reqData = allRequestData?.data;
 		setRequestData(reqData);
 		GeRequestFilter();
 	}, [isSuccess, allRequestData, filterSelectedIndex]);
-
-	// if (isSuccess && allRequestData.status === 200) {
-	// 	console.log("ActiveRequests: ", JSON.stringify(allRequestData, null, 2));
-	// }
 
 		// Immediately executes the function and then every 10 seconds
 	useEffect(() => {
@@ -314,7 +303,6 @@ const ActiveRequests = () => {
 
 	const GeRequestFilter = async () => {
 		await AsyncStorage.getItem("RequestFilter").then((value) => {
-			// console.log("Get RequestFilter: ", Number.parseInt(value));
 			if (value !== null) {
 				setFilterSelectedIndex(Number.parseInt(value));
 			}
@@ -322,7 +310,6 @@ const ActiveRequests = () => {
 	};
 
 	const SaveRequestFilter = async (value) => {
-		// console.log("SaveRequestFilter: ", value);
 		await AsyncStorage.setItem("RequestFilter", value.toString());
 	};
 
@@ -363,7 +350,6 @@ const ActiveRequests = () => {
 							setFilterSelectedIndex(index);
 							SaveRequestFilter(index);
 							SetFilterLabel(index);
-							// console.log("Filter Selected Index: ", index);
 						}}
 					>
 						<Radio status="success">Show All</Radio>
@@ -445,7 +431,6 @@ const handleGanttChartPress = () => {
 			});
 	};
 
-	// console.log("Gantt Chart Data: ", ganttRequests);
 	navigation.navigate("GanttChart", { requests: ganttRequests });
 };
 
@@ -500,7 +485,6 @@ const handleGanttChartPress = () => {
 					disabled={disabledFlag}
 					className={`${disabledFlag ? "bg-gray-300" : "bg-green-300"} p-0 rounded-lg w-32 items-center justify-center border-2 border-solid border-black border-r-4 border-b-4`}
 					onPress={() => (
-						// console.log("Request ID:", selectedIndex),
 						navigation.navigate("RequestDetails", { reqID: selectedIndex })
 					)}
 				>

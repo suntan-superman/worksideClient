@@ -1,721 +1,1198 @@
 /* eslint-disable */
-
 import axios from "axios";
+import { format } from "date-fns";
 
 const apiURL = "https://workside-software.wl.r.appspot.com";
-// export function async getMemberInfo (loginInfo) 
-// {
-//     return await fetch('http:url/'+loginInfo[0].ID)
-//     .then(res => res.json())
-//     .then(json => {return json});
-// }
 
+/**
+ * Extracts selected fields from firm data.
+ * @param {Array} dataArray - The array of firm objects.
+ * @returns {Array} - Filtered array with selected fields.
+ */
 const extractFirmFields = (dataArray) => {
-		// Map through the array and extract the required fields
-		return dataArray?.map((item) => {
-			const { _id, type, area, name, status } = item;
-			return { _id, type, area, name, status };
-		});
-	};
-
-const GetAllFirms = async () => {
-	try {
-		const response = await fetch(`${apiURL}/api/firm`);
-		const json = await response.json();
-		return [{ data: json }];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ data: [] }];
-	}	
+	if (!Array.isArray(dataArray)) return [];
+	return dataArray.map(({ _id, type, area, name, status }) => ({
+		_id,
+		type,
+		area,
+		name,
+		status,
+	}));
 };
 
-const GetAllFirmsForSelection = async () => {
+/**
+ * Handles API requests with error handling.
+ * @param {string} endpoint - The API endpoint.
+ * @param {object} [options] - Fetch options.
+ * @returns {Promise<object>} - API response or error object.
+ */
+const fetchWithHandling = async (endpoint, options = {}) => {
 	try {
-		const response = await fetch(`${apiURL}/api/firm/allFirmNames`);
-		const json = await response.json();
-		return [json];
+		const response = await fetch(`${apiURL}${endpoint}`, options);
+		if (!response.ok) {
+			throw new Error(`HTTP Error! Status: ${response.status}`);
+		}
+		const data = await response.json();
+		return { status: response.status, data };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ data: [] }];
+		console.error(`API Error: ${error.message}`);
+		return { status: error?.response?.status || 500, data: [] };
 	}
 };
 
+/**
+ * Fetch all firms from the API.
+ * @returns {Promise<object>} - Firms data or empty array.
+ */
+const GetAllFirms = async () => fetchWithHandling("/api/firm");
+
+/**
+ * Fetch all firm names for selection.
+ * @returns {Promise<object>} - Firm names data or empty array.
+ */
+const GetAllFirmsForSelection = async () =>
+	fetchWithHandling("/api/firm/allFirmNames");
+
+/**
+ * Fetch all firms of type SUPPLIER.
+ * @returns {Promise<object>} - Supplier firms data or empty array.
+ */
 const GetAllSuppliers = async () => {
-	try {
-		const response = await fetch(`${apiURL}/api/firm`);
-		const json = await response.json();
-		// Get Suppliers
-		const supplierResult = json.filter((json) => json.type === "SUPPLIER");
-		return [response.status, supplierResult];
-	}
-	catch (error) {
-		console.error('Error:', err.message);
-		return [{ data: [] }];
-	}
+	const { status, data } = await fetchWithHandling("/api/firm");
+	return { status, data: data.filter((firm) => firm.type === "SUPPLIER") };
 };
 
+/**
+ * Fetch all firms of type RIGCOMPANY.
+ * @returns {Promise<object>} - Rig company firms data or empty array.
+ */
+const GetAllRigCompanies = async () => {
+	const { status, data } = await fetchWithHandling("/api/firm");
+	return { status, data: data.filter((firm) => firm.type === "RIGCOMPANY") };
+};
+
+/**
+ * Fetch all firms of type CUSTOMER.
+ * @returns {Promise<object>} - Customer firms data or empty array.
+ */
 const GetAllCustomers = async () => {
-	try {
-		const response = await fetch(`${apiURL}/api/firm`);
-		const json = await response.json();
-		// Get Customers
-		const customerResult = json.filter((json) => json.type === "CUSTOMER");
-		return [response.status, customerResult];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ data: [] }];
-	}
+	const { status, data } = await fetchWithHandling("/api/firm");
+	return { status, data: data.filter((firm) => firm.type === "CUSTOMER") };
 };
 
-const GetAllContacts = async () => {
-	try {
-		const response = await fetch(
-			`${apiURL}/api/contact`,
-		);
-		const json = await response.json();
-		return [json];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return null;
-	}
-};
+/**
+ * Fetch all contacts from the API.
+ * @returns {Promise<object>} - Contact data or empty array.
+ */
+const GetAllContacts = async () => fetchWithHandling("/api/contact");
 
+/**
+ * Fetch contacts based on firm name.
+ * @param {string} firm - Firm name to filter contacts.
+ * @returns {Promise<object>} - Filtered contacts or empty array.
+ */
 const GetContactsByFirm = async (firm) => {
-	try {
-		const response = await fetch(
-			`${apiURL}/api/contact`,
-		);
-		const json = await response.json();
-		// Get Customer Contacts
-		const contacts = json.filter((json) => json.firm === firm);
-		return [response.status, contacts];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return null;
-	}
+	const { status, data } = await fetchWithHandling("/api/contact");
+	return { status, data: data.filter((contact) => contact.firm === firm) };
 };
+
+/**
+ * Fetches and extracts firm names for selection options.
+ *
+ * @returns {Promise<{ status: number, data: string[] }>} - A promise resolving to status and firm options.
+ */
 
 const GetFirmOptions = async () => {
 	try {
-		const firms = await GetAllFirms();
-		const firmOptions = firms.map((r) => r.name);
-		return [200, firmOptions];
+		const firmsResponse = await GetAllFirms();
+
+		// Validate response structure
+		if (
+			!firmsResponse ||
+			!Array.isArray(firmsResponse) ||
+			!firmsResponse[0]?.data
+		) {
+			throw new Error("Invalid data format received from GetAllFirms");
+		}
+
+		// Extract firm names safely
+		const firmOptions = firmsResponse[0].data
+			.filter((firm) => typeof firm.name === "string")
+			.map((firm) => firm.name);
+
+		return { status: 200, data: firmOptions };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return null;
+		console.error("Error fetching firm options:", error.message);
+		return { status: 500, data: [] };
 	}
 };
 
+/**
+ * Fetches and extracts customer names for selection options.
+ *
+ * @returns {Promise<{ status: number, data: string[] }>} - A promise resolving to status and customer options.
+ */
 const GetCustomerOptions = async () => {
 	try {
-		const customers = await GetAllCustomers();
-		const customerOptions = customers.map((r) => r.name);
-		return [200, customerOptions];
+		const customersResponse = await GetAllCustomers();
+
+		if (
+			!customersResponse ||
+			!Array.isArray(customersResponse) ||
+			!customersResponse[1]
+		) {
+			throw new Error("Invalid data format received from GetAllCustomers");
+		}
+
+		// Extract valid customer names safely
+		const customerOptions = customersResponse[1]
+			.filter((customer) => typeof customer.name === "string")
+			.map((customer) => customer.name);
+
+		return { status: 200, data: customerOptions };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return null;
+		console.error("Error fetching customer options:", error.message);
+		return { status: 500, data: [] };
 	}
 };
 
+/**
+ * Fetches and extracts supplier names for selection options.
+ *
+ * @returns {Promise<{ status: number, data: string[] }>} - A promise resolving to status and supplier options.
+ */
 const GetSupplierOptions = async () => {
 	try {
-	const suppliers = await GetAllSuppliers();
-	const supplierOptions = suppliers.map((r) => r.name);
-	return [200, supplierOptions];
+		const suppliersResponse = await GetAllSuppliers();
+
+		if (!suppliersResponse || !Array.isArray(suppliersResponse.data)) {
+			throw new Error("Invalid data format received from GetAllSuppliers");
+		}
+
+		// Extract valid supplier names safely
+		const supplierOptions = suppliersResponse.data
+			.filter((supplier) => typeof supplier.name === "string")
+			.map((supplier) => supplier.name);
+
+		return { status: 200, data: supplierOptions };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return null;
+		console.error("Error fetching supplier options:", error.message);
+		return { status: 500, data: [] };
 	}
 };
 
+/**
+ * Fetches and extracts contact usernames for selection options.
+ *
+ * @returns {Promise<{ status: number, data: string[] }>} - A promise resolving to status and contact options.
+ */
 const GetContactOptions = async () => {
 	try {
-		const contacts = await GetAllContacts();
-		const contactOptions = contacts.map((r) => r.username);
-		return [200, contactOptions];
+		const contactsResponse = await GetAllContacts();
+
+		if (
+			!contactsResponse ||
+			!Array.isArray(contactsResponse) ||
+			!contactsResponse[0]
+		) {
+			throw new Error("Invalid data format received from GetAllContacts");
+		}
+
+		// Extract valid contact usernames safely
+		const contactOptions = contactsResponse[0]
+			.filter((contact) => typeof contact.username === "string")
+			.map((contact) => contact.username);
+
+		return { status: 200, data: contactOptions };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return null;
+		console.error("Error fetching contact options:", error.message);
+		return { status: 500, data: [] };
 	}
 };
 
+/**
+ * Fetch firm ID based on firm name.
+ * @param {string} firm - Firm name to search.
+ * @returns {Promise<object>} - Firm ID or empty object.
+ */
 const GetFirmID = async (firm) => {
-	try {
-		const firms = await GetAllFirms();
-		const firmID = firms.filter((r) => r.name === firm)[0]._id;
-		return [200, firmID];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return null;
-	}
+	const { status, data } = await GetAllFirms();
+	const firmData = data.find((r) => r.name === firm);
+	return { status, firmID: firmData?._id || null };
 };
 
+/**
+ * Fetches the contact ID based on the given username.
+ *
+ * @param {string} contact - The username of the contact to find.
+ * @returns {Promise<{ status: number, data: string | null }>} - A promise resolving to status and contact ID.
+ */
 const GetContactID = async (contact) => {
+	if (!contact || typeof contact !== "string") {
+		console.error("Invalid contact parameter provided.");
+		return { status: 400, data: null };
+	}
 	try {
 		const contacts = await GetAllContacts();
-		const contactID = contacts.filter((r) => r.username === contact)[0]._id;
-		return [200, contactID];
+		if (!contacts || !Array.isArray(contacts) || contacts.length === 0) {
+			throw new Error("Invalid data format received from GetAllContacts");
+		}
+
+		const foundContact = contacts.find((r) => r.username === contact);
+		if (!foundContact) {
+			throw new Error("Contact not found");
+		}
+
+		return { status: 200, data: foundContact._id };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return null;
+		console.error("Error fetching contact ID:", error.message);
+		return { status: 500, data: null };
 	}
 };
 
+/**
+ * Retrieves Customer-Supplier MSA data by ID.
+ *
+ * @param {string} id - The ID of the customer-supplier MSA.
+ * @returns {Promise<{ status: number, data: object | null }>} - A promise resolving to status and MSA data.
+ */
 const GetCustomerSupplierMSAData = async (id) => {
+	if (!id || typeof id !== "string") {
+		console.error("Invalid ID provided.");
+		return { status: 400, data: null };
+	}
 	try {
-		const response = await fetch(
-			`${apiURL}/api/customersuppliermsa/${id}`,
-		);
+		const response = await fetch(`${apiURL}/api/customersuppliermsa/${id}`);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch MSA data with status: ${response.status}`,
+			);
+		}
+
 		const json = await response.json();
-		return [response.status, json];
+		return { status: response.status, data: json };
 	} catch (error) {
-	console.error('Error:', err.message);
-	return null;
+		console.error("Error fetching MSA data:", error.message);
+		return { status: 500, data: null };
 	}
 };
 
+/**
+ * Retrieves supplier group data by ID.
+ *
+ * @param {string} id - The supplier group ID.
+ * @returns {Promise<{ status: number, data: object | null }>} - A promise resolving to status and supplier group data.
+ */
 const GetSupplierGroupData = async (id) => {
+	if (!id || typeof id !== "string") {
+		console.error("Invalid ID provided.");
+		return { status: 400, data: null };
+	}
 	try {
-		const response = await fetch(
-			`${apiURL}/api/suppliergroup/${id}`,
-		);
+		const response = await fetch(`${apiURL}/api/suppliergroup/${id}`);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch supplier group data with status: ${response.status}`,
+			);
+		}
+
 		const json = await response.json();
-		return [response.status, json];
+		return { status: response.status, data: json };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return null;
+		console.error("Error fetching supplier group data:", error.message);
+		return { status: 500, data: null };
 	}
 };
 
+/**
+ * Fetches all requests from the API.
+ *
+ * @returns {Promise<{ status: number, data: object[] }>} - A promise resolving to status and all request data.
+ */
 const GetAllRequests = async () => {
 	try {
-		const response = await fetch(
-			`${apiURL}/api/request`,
-		);
+		const response = await fetch(`${apiURL}/api/request`);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch requests with status: ${response.status}`,
+			);
+		}
+
 		const json = await response.json();
-		return [{data: json}];
+		return { status: response.status, data: json };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return [{data: []}];
+		console.error("Error fetching all requests:", error.message);
+		return { status: 500, data: [] };
 	}
 };
 
+/**
+ * Fetches all requests associated with a specific project ID.
+ *
+ * @param {string} projectId - The project ID for filtering requests.
+ * @returns {Promise<{ status: number, data: object[] }>} - A promise resolving to status and project-specific request data.
+ */
 const GetAllRequestsByProject = async (projectId) => {
+	if (!projectId || typeof projectId !== "string") {
+		console.error("Invalid project ID provided.");
+		return { status: 400, data: [] };
+	}
 	try {
 		const response = await fetch(
 			`${apiURL}/api/request/byprojectid/${projectId}`,
 		);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch project requests with status: ${response.status}`,
+			);
+		}
 		const json = await response.json();
-		return [{data: json}];
+		return { status: response.status, data: json };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return [{data: []}];
-	}
-};
-
-const SaveNewRequest = async (reqData) => {
-	try {
-		const response = await fetch(`${apiURL}/api/request`, {
-			method: "POST",
-			body: JSON.stringify(reqData),
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
-
-	const newRequestData = await response.json();
-	return { status: response.status, data: newRequestData };
-	} catch (error) {
-		console.error('Error:', err.message);
+		console.error("Error fetching requests by project:", error.message);
 		return { status: 500, data: [] };
 	}
 };
 
-const UpdateRequest = async ({
-		reqID,
-		reqData,
-	}) => {
+/**
+ * Handles API requests with Axios for POST/PUT/PATCH/DELETE.
+ * @param {string} endpoint - API endpoint.
+ * @param {string} method - HTTP method.
+ * @param {object} payload - Request payload.
+ * @returns {Promise<object>} - API response or error object.
+ */
+const apiRequest = async (endpoint, method, payload) => {
 	try {
-		const response = await fetch(`${apiURL}/api/request/${reqID}`, {
-			method: "PATCH",
-			body: JSON.stringify(reqData),
-			headers: {
-				"Content-Type": "application/json",
-			},
+		const response = await axios({
+			method,
+			url: `${apiURL}${endpoint}`,
+			data: payload,
+			headers: { "Content-Type": "application/json" },
 		});
-
-	const newRequestData = await response.json();
-	return { status: response.status, data: newRequestData };
+		return { status: response.status, data: response.data };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return { status: 500, data: [] };
+		console.error(`API Error: ${error.message}`);
+		return { status: error?.response?.status || 500, data: [] };
 	}
 };
 
+/**
+ * Save a new request to the API.
+ * @param {object} reqData - Request data to save.
+ * @returns {Promise<object>} - API response or error object.
+ */
+const SaveNewRequest = async (reqData) =>
+	apiRequest("/api/request", "POST", reqData);
+
+/**
+ * Update an existing request.
+ * @param {string} reqID - Request ID to update.
+ * @param {object} reqData - Updated request data.
+ * @returns {Promise<object>} - API response or error object.
+ */
+const UpdateRequest = async (reqID, reqData) =>
+	apiRequest(`/api/request/${reqID}`, "PATCH", reqData);
+
+/**
+ * Fetches request bids from the API.
+ *
+ * @returns {Promise<{ status: number, data: object[] }>} - A promise resolving to the status and bids data.
+ */
 const GetRequestBids = async () => {
 	try {
-		const response = await fetch(
-			`${apiURL}/api/requestbidsview`,
-		);
+		const response = await fetch(`${apiURL}/api/requestbidsview`);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch request bids. Status: ${response.status}`,
+			);
+		}
+
 		const json = await response.json();
-		return {status: response.status, data: json};
+		return { status: response.status, data: json };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return {status: 500, data: []};
+		console.error("Error fetching request bids:", error.message);
+		return { status: 500, data: [] };
 	}
 };
 
-const UpdateRequestStatus = async ({
-		reqID,
-		status,
-	}) => {
-	try {
-		const strAPI = `${apiURL}/api/request`;
-		const response = await axios.patch(strAPI, 
-			{
-				id: reqID,
-				status: status,
-			})
-		return { status: response.status };
-	} catch (error) {
-		console.error('Error:', err.message);
-		return { status: error.status };
+/**
+ * Updates the status of a request.
+ *
+ * @param {object} params - Parameters object.
+ * @param {string} params.reqID - The ID of the request to update.
+ * @param {string} params.status - The new status to set.
+ * @returns {Promise<{ status: number }>} - A promise resolving to the request status.
+ */
+const UpdateRequestStatus = async ({ reqID, status }) => {
+	if (!reqID || !status) {
+		console.error("Invalid parameters provided to UpdateRequestStatus.");
+		return { status: 400 };
 	}
-};
-
-const SetRequestBidsStatus = async (reqID, status) => {
-	const strAPI = `${apiURL}/api/requestbid/updateall`;
 	try {
-		const response = await axios.post(strAPI, {
+		const response = await axios.patch(`${apiURL}/api/request`, {
 			id: reqID,
 			status: status,
 		});
 		return { status: response.status };
 	} catch (error) {
-		console.error('Error:', error.message);
-		return { status: error.status };
-		}
+		console.error("Error updating request status:", error.message);
+		return { status: error.response?.status || 500 };
+	}
 };
 
+/**
+ * Updates the status of all request bids.
+ *
+ * @param {string} reqID - The ID of the request.
+ * @param {string} status - The new status to set.
+ * @returns {Promise<{ status: number }>} - A promise resolving to the request status.
+ */
+const SetRequestBidsStatus = async (reqID, status) => {
+	if (!reqID || !status) {
+		console.error("Invalid parameters provided to SetRequestBidsStatus.");
+		return { status: 400 };
+	}
+	try {
+		const response = await axios.post(`${apiURL}/api/requestbid/updateall`, {
+			id: reqID,
+			status: status,
+		});
+		return { status: response.status };
+	} catch (error) {
+		console.error("Error updating request bids status:", error.message);
+		return { status: error.response?.status || 500 };
+	}
+};
+
+/**
+ * Updates the status of an awarded request bid.
+ *
+ * @param {string} reqID - The ID of the awarded request bid.
+ * @param {string} status - The new status to set.
+ * @returns {Promise<{ status: number }[]>} - A promise resolving to the request status.
+ */
 const SetAwardedRequestBidStatus = async (reqID, status) => {
- try {
-		const strAPI = `${apiURL}/api/requestbid`;
-		const response = await axios.patch(strAPI, 
-			{
-				id: reqID,
-				status: status,
-			})
+	if (!reqID || !status) {
+		console.error("Invalid parameters provided to SetAwardedRequestBidStatus.");
+		return [{ status: 400 }];
+	}
+	try {
+		const response = await axios.patch(`${apiURL}/api/requestbid`, {
+			id: reqID,
+			status: status,
+		});
 		return [{ status: response.status }];
 	} catch (error) {
-		console.error('Error:', err.message);
+		console.error("Error updating awarded request bid status:", error.message);
 		return [{ status: 500 }];
 	}
 };
 
+/**
+ * Retrieves supplier information based on the supplier ID.
+ *
+ * @param {string} id - The supplier ID.
+ * @returns {Promise<{ status: number, data: object | [] }[]>} - A promise resolving to the supplier data.
+ */
 const GetSupplierInfoFromID = async (id) => {
+	if (!id || typeof id !== "string") {
+		console.error("Invalid ID provided to GetSupplierInfoFromID.");
+		return [{ status: 400, data: [] }];
+	}
 	try {
-		const response = await fetch(
-			`${apiURL}/api/firm/${id}`
-		);
+		const response = await fetch(`${apiURL}/api/firm/${id}`);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch supplier info. Status: ${response.status}`,
+			);
+		}
+
 		const json = await response.json();
 		return [{ status: response.status, data: json }];
 	} catch (error) {
-		console.error('Error:', err.message);
+		console.error("Error fetching supplier info:", error.message);
 		return [{ status: 500, data: [] }];
 	}
 };
 
-const GetRequestsByCustomer = async (customer) => {
+const cleanUpStr = (url) => {
+	// Remove double quotes from the URL string
+	let formattedStr = url.replace(/"([^"]*)"/g, '$1');
+	formattedStr= formattedStr.trimStart();
+	formattedStr= formattedStr.trimEnd();
+    return formattedStr;
+};
+
+/**
+ * Fetches requests by customer name.
+ *
+ * @param {string} companyName - The name of the customer.
+ * @returns {Promise<{ status: number, data: object[] }>} - A promise resolving to the requests data.
+ */
+
+const GetRequestsByCustomer = async ({ clientName: companyName } ) => {
 	try {
-		const response = await fetch(
-			`${apiURL}/api/request`,
-		);
-		const json = await response.json();
-		const requests = json.filter((json) => json.customer === customer);
-		return [response.status, requests];
+		// Input validation
+		if (!companyName) {
+			return { status: 500, data: ["No Customer Name"] };
+		}
+
+		const cleanCompanyName = cleanUpStr(companyName);
+		const fetchString = `${apiURL}/api/request/bycustomername/${cleanCompanyName}`;
+		let data = [];
+		// Make the API request
+		await axios.get(fetchString).then((res) => {
+			data = res.data
+			return { status: 200, data: data };
+		});
+		// Handle successful response
+		
+		return { status: 200, data: data };
+
 	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ data: [] }];
+		// Log detailed error information
+		if (error.response) {
+			console.error('Server error:', error.response.data);
+		} else if (error.request) {
+			console.error('No response received:', error.request);
+		} else {
+			console.error('Request setup error:', error.message);
+		}
+
+		// Return appropriate error response
+		return {
+			status: error.response?.status || 500,
+			data: [],
+			error: error.message
+		};
 	}
 };
 
-const GetRequestData = async (id) => {
-	try {
-		const response = await fetch(
-			`${apiURL}/api/request/${id}`,
-		);
-		const json = await response.json();
-		return {status: response.status, data: json};
-	} catch (error) {
-		console.error('Error:', err.message);
-		return {status: err.status, data: null};
-	}
-};
+/**
+ * Fetch a specific request by ID.
+ * @param {string} id - Request ID.
+ * @returns {Promise<object>} - Request data or error object.
+ */
+const GetRequestData = async (id) => fetchWithHandling(`/api/request/${id}`);
 
+/**
+ * Fetches all request options from the API.
+ *
+ * @returns {Promise<{ status: number, data: string[] }>} - A promise resolving to the request options.
+ */
 const GetRequestOptions = async () => {
-	const response = await fetch(
-		`${apiURL}/api/request`,
-	);
-	const json = await response.json();
-	const requestOptions = json.map((r) => r.requestname);
-	return [response.status, requestOptions];
+	try {
+		const response = await fetch(`${apiURL}/api/request`);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch request options. Status: ${response.status}`,
+			);
+		}
+		const json = await response.json();
+		const requestOptions = json.map((r) => r.requestname);
+		return { status: response.status, data: requestOptions };
+	} catch (error) {
+		console.error("Error fetching request options:", error.message);
+		return { status: 500, data: [] };
+	}
 };
 
+/**
+ * Fetches the request ID based on the given request name.
+ *
+ * @param {string} request - The name of the request.
+ * @returns {Promise<{ status: number, data: string | null }>} - A promise resolving to the request ID.
+ */
 const GetRequestID = async (request) => {
+	if (!request || typeof request !== "string") {
+		console.error("Invalid request name provided to GetRequestID.");
+		return { status: 400, data: null };
+	}
+
 	try {
-		const response = await fetch(
-			`${apiURL}/api/request`,
-		);
+		const response = await fetch(`${apiURL}/api/request`);
+		if (!response.ok) {
+			throw new Error(`Failed to fetch request ID. Status: ${response.status}`);
+		}
 		const json = await response.json();
-		const requestID = json.filter((r) => r.requestname === request)[0]._id;
-		return [response.status, requestID];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ data: [] }];
-	} 
-};
+		const requestItem = json.find((r) => r.requestname === request);
 
-const GetRequestCategoryOptions = async () => {
-	try {
-		const response = await fetch(
-			`${apiURL}/api/request`,
-		);
-		const json = await response.json();
-		const requestCategoryOptions = json.map((r) => r.requestcategory);
-		return [response.status, requestCategoryOptions];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ data: [] }];
-	}
-};
+		if (!requestItem) {
+			throw new Error("Request not found.");
+		}
 
-const GetRequestCategoryID = async (requestCategory) => {
-	try {
-		const response = await fetch(
-			`${apiURL}/api/request`,
-		);
-		const json = await response.json();
-		const requestCategoryID = json.filter(
-			(r) => r.requestcategory === requestCategory,
-		)[0]._id;
-		return [response.status, requestCategoryID];
+		return { status: response.status, data: requestItem._id };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ data: [] }];
-	}
-};
-
-const GetRequestStatusOptions = async () => {
-	try {
-		const response = await fetch(
-			`${apiURL}/api/request`,
-		);
-		const json = await response.json();
-		const requestStatusOptions = json.map((r) => r.requeststatus);
-		return [response.status, requestStatusOptions];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ data: [] }];
-	}
-};
-
-const UserForgotPassword = async (email) => {
-	try {
-		const fetchString = `${apiURL}/api/user/forgotPassword`;
-		const response = await axios.post(fetchString, {
-			email: email.replace(/"/g, ""),
-		});
-		return [response.status, response];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ status: 500 }];
-	}
-};
-
-const UserDoesExist = async (email) => {
-	try {
-		const userEmail = email.replace(/"/g, "");
-		const getUserFetchString = `${apiURL}api/user/does-user-exist/${userEmail}`;
-		const response = await axios.post(getUserFetchString);
-		return [response.status, response];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ status: 500 }];
-	}
-};
-
-const UserResetPassword = async (email, password) => {
-	try {
-		const fetchString = `${apiURL}/api/user/resetPassword`;
-		const response = await axios.post(fetchString, {
-			email: email.replace(/"/g, ""),
-			password: password.replace(/"/g, ""),
-		});
-		return [response.status, response];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ status: 500 }];
-	}
-};
-
-const UserChangePassword = async (email, password) => {
-	try {
-		const fetchString = `${apiURL}/api/user/changePassword`;
-		const response = await axios.post(fetchString, {
-			email: email.replace(/"/g, ""),
-			password: password.replace(/"/g, ""),
-		});
-		return [response.status, response];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ status: 500 }];
-	}
-};
-
-const UserLogin = async (email, password) => {
-	try {
-		const fetchString = `${apiURL}/api/user/login`;
-		const response = await axios.post(fetchString, {
-			email: email.replace(/"/g, ""),
-			password: password.replace(/"/g, ""),
-		});
-		return [response.status, response];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ status: 500 }];
-	}
-};
-
-const UserRegister = async (email, password) => {
-	try {
-		const fetchString = `${apiURL}/api/user/register`;
-		const response = await axios.post(fetchString, {
-			email: email.replace(/"/g, ""),
-			password: password.replace(/"/g, ""),
-		});
-		return [response.status, response];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ status: 500 }];
-	}
-};
-
-const UserLogout = async () => {
-	try {
-		const fetchString = `${apiURL}/api/user/logout`;
-		const response = await axios.post(fetchString);
-		return [response.status, response];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ status: 500 }];
-	}
-};
-
-const UserIsAuthenticated = async () => {
-	try {
-	const fetchString = `${apiURL}/api/user/isAuthenticated`;
-	const response = await axios.post(fetchString);
-	return [response.status, response];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ status: 500 }];
-	}
-};
-
-const GetProducts = async () => {
-	try {
-	const response = await fetch(
-		`${apiURL}/api/product`,
-	);
-	const json = await response.json();
-	return { data: json };
-} catch (error) {
-	console.error('Error:', err.message);
-	return { data: null };
-	}
-};
-
-const DeleteProduct = async (id) => {
-	try {
-		const fetchString = `${apiURL}/api/product/${id}`;
-		const response = await fetch(fetchString, {
-			method: "DELETE",
-		});
-		return [response.status, response];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{status: 500}];
-	}
-};
-
-const GetProductByID = async (id) => {
-	try {
-		const response = await fetch(
-			`${apiURL}/api/product/${id}`,
-		);
-		const json = await response.json();
-		return [response.status, json];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [{status: 500}];
-	}
-};
-
-const GetProductOptions = async () => {
-	try {
-		const response = await fetch(
-			`${apiURL}/api/product`,
-		);
-		const json = await response.json();
-		const productOptions = json.map((r) => r.productname);
-		return [response.status, productOptions];
-	} catch (error) {
-		console.error('Error:', err.message);
-		return [null];
-	}
-};
-
-const GetAllProjects = async () => {
-	try {
-		const response = await fetch(
-			`${apiURL}/api/project`,
-		);
-		const json = await response.json();
-		return { status: response.status, data: json };
-	} catch (error) {
-		console.error('Error:', err.message);
-		return { status: 500 };
-	}
-};
-
-const GetProjectsByStatus = async ({customer, status}) => {
-	try {
-    await axios.get(`${apiURL}/api/project`).then((response) => {
-			console.log(`API Projects: ${JSON.stringify(response.data, null, 2)}`);
-      const projects = response.data.filter((p) => {
-        if (p.status === status)
-          return true;
-        return false;
-      });
-			console.log(`API Filtered Projects: ${JSON.stringify(projects, null, 2)}`);
-		return { status: 200, data: projects[0]};
-		});
-	} catch (error) {
-		console.error('Error:', error.message);
+		console.error("Error fetching request ID:", error.message);
 		return { status: 500, data: null };
 	}
 };
 
-const GetAllProjectsByCustomer = async (customer) => {
+/**
+ * Fetches all request category options from the API.
+ *
+ * @returns {Promise<{ status: number, data: string[] }>} - A promise resolving to the request categories.
+ */
+const GetRequestCategoryOptions = async () => {
 	try {
-		const response = await fetch(
-			`${apiURL}/api/project`,
-		);
+		const response = await fetch(`${apiURL}/api/request`);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch request category options. Status: ${response.status}`,
+			);
+		}
 		const json = await response.json();
-		const projects = json.filter((json) => json.customer === customer);
-		return [response.status, projects];
+		const requestCategoryOptions = json.map((r) => r.requestcategory);
+		return { status: response.status, data: requestCategoryOptions };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return [null];
+		console.error("Error fetching request category options:", error.message);
+		return { status: 500, data: [] };
 	}
 };
 
-const DeleteProject = async (id) => {
+/**
+ * Fetches the request category ID based on the given request category.
+ *
+ * @param {string} requestCategory - The name of the request category.
+ * @returns {Promise<{ status: number, data: string | null }>} - A promise resolving to the request category ID.
+ */
+const GetRequestCategoryID = async (requestCategory) => {
+	if (!requestCategory || typeof requestCategory !== "string") {
+		console.error("Invalid request category provided to GetRequestCategoryID.");
+		return { status: 400, data: null };
+	}
+
 	try {
-		const fetchString = `${apiURL}/api/project/${id}`;
-		const response = await fetch(fetchString, {
-			method: "DELETE",
-		});
-		return [response.status, response];
+		const response = await fetch(`${apiURL}/api/request`);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch request category ID. Status: ${response.status}`,
+			);
+		}
+		const json = await response.json();
+		const categoryItem = json.find(
+			(r) => r.requestcategory === requestCategory,
+		);
+
+		if (!categoryItem) {
+			throw new Error("Request category not found.");
+		}
+
+		return { status: response.status, data: categoryItem._id };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return [{ status: 500 }];
+		console.error("Error fetching request category ID:", error.message);
+		return { status: 500, data: null };
 	}
 };
 
-const SaveProject = async (data) => {
+/**
+ * Fetches all request status options from the API.
+ *
+ * @returns {Promise<{ status: number, data: string[] }>} - A promise resolving to the request statuses.
+ */
+const GetRequestStatusOptions = async () => {
+	try {
+		const response = await fetch(`${apiURL}/api/request`);
+		if (!response.ok) {
+			throw new Error(
+				`Failed to fetch request status options. Status: ${response.status}`,
+			);
+		}
+		const json = await response.json();
+		const requestStatusOptions = json.map((r) => r.requeststatus);
+		return { status: response.status, data: requestStatusOptions };
+	} catch (error) {
+		console.error("Error fetching request status options:", error.message);
+		return { status: 500, data: [] };
+	}
+};
+
+/**
+ * Sends a password reset request for the given email.
+ * @param {string} email - User's email.
+ * @returns {Promise<{status: number, data: object}>} Response status and data.
+ */
+const UserForgotPassword = async (email) => {
+	if (!email || typeof email !== "string") {
+		console.error("Invalid email provided to UserForgotPassword.");
+		return { status: 400, data: null };
+	}
+
+	try {
+		const response = await axios.post(`${apiURL}/api/user/forgotPassword`, {
+			email: email.trim(),
+		});
+		return { status: response.status, data: response.data };
+	} catch (error) {
+		console.error("Error in UserForgotPassword:", error.message);
+		return { status: error.response?.status || 500, data: null };
+	}
+};
+
+/**
+ * Checks if a user exists based on email.
+ * @param {string} email - User's email.
+ * @returns {Promise<{status: number, data: object}>} Response status and data.
+ */
+const UserDoesExist = async (email) => {
+	if (!email || typeof email !== "string") {
+		console.error("Invalid email provided to UserDoesExist.");
+		return { status: 400, data: null };
+	}
+
 	try {
 		const response = await axios.post(
-			`${apiURL}/api/project/`,
-			data,
+			`${apiURL}/api/user/does-user-exist/${encodeURIComponent(email.trim())}`,
 		);
 		return { status: response.status, data: response.data };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return { status: 500 };
+		console.error("Error in UserDoesExist:", error.message);
+		return { status: error.response?.status || 500, data: null };
 	}
 };
 
-const UpdateProject = async (id, body) => {
+/**
+ * Resets the user's password.
+ * @param {string} email - User's email.
+ * @param {string} password - New password.
+ * @returns {Promise<{status: number, data: object}>} Response status and data.
+ */
+const UserResetPassword = async (email, password) => {
+	if (
+		!email ||
+		!password ||
+		typeof email !== "string" ||
+		typeof password !== "string"
+	) {
+		console.error("Invalid email or password provided to UserResetPassword.");
+		return { status: 400, data: null };
+	}
+
 	try {
-		const response = await fetch(
-			`${apiURL}/api/project/${id}`,
-			{ method: "PATCH", headers: { "Content-Type": "application/json" }, body },
-		);
+		const response = await axios.post(`${apiURL}/api/user/resetPassword`, {
+			email: email.trim(),
+			password: password.trim(),
+		});
 		return { status: response.status, data: response.data };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return { status: 500 };
+		console.error("Error in UserResetPassword:", error.message);
+		return { status: error.response?.status || 500, data: null };
 	}
 };
 
+/**
+ * Changes the user's password.
+ * @param {string} email - User's email.
+ * @param {string} password - New password.
+ * @returns {Promise<{status: number, data: object}>} Response status and data.
+ */
+const UserChangePassword = async (email, password) => {
+	if (
+		!email ||
+		!password ||
+		typeof email !== "string" ||
+		typeof password !== "string"
+	) {
+		console.error("Invalid email or password provided to UserChangePassword.");
+		return { status: 400, data: null };
+	}
+
+	try {
+		const response = await axios.post(`${apiURL}/api/user/changePassword`, {
+			email: email.trim(),
+			password: password.trim(),
+		});
+		return { status: response.status, data: response.data };
+	} catch (error) {
+		console.error("Error in UserChangePassword:", error.message);
+		return { status: error.response?.status || 500, data: null };
+	}
+};
+
+/**
+ * Authenticates a user with email and password.
+ * @param {string} email - User's email.
+ * @param {string} password - User's password.
+ * @returns {Promise<{status: number, data: object}>} Response status and data.
+ */
+const UserLogin = async (email, password) => {
+	if (
+		!email ||
+		!password ||
+		typeof email !== "string" ||
+		typeof password !== "string"
+	) {
+		console.error("Invalid email or password provided to UserLogin.");
+		return { status: 400, data: null };
+	}
+
+	try {
+		const response = await axios.post(`${apiURL}/api/user/login`, {
+			email: email.trim(),
+			password: password.trim(),
+		});
+		return { status: response.status, data: response.data };
+	} catch (error) {
+		console.error("Error in UserLogin:", error.message);
+		return { status: error.response?.status || 500, data: null };
+	}
+};
+
+/**
+ * Registers a new user.
+ * @param {string} email - User's email.
+ * @param {string} password - User's password.
+ * @returns {Promise<{status: number, data: object}>} Response status and data.
+ */
+const UserRegister = async (email, password) => {
+	if (
+		!email ||
+		!password ||
+		typeof email !== "string" ||
+		typeof password !== "string"
+	) {
+		console.error("Invalid email or password provided to UserRegister.");
+		return { status: 400, data: null };
+	}
+
+	try {
+		const response = await axios.post(`${apiURL}/api/user/register`, {
+			email: email.trim(),
+			password: password.trim(),
+		});
+		return { status: response.status, data: response.data };
+	} catch (error) {
+		console.error("Error in UserRegister:", error.message);
+		return { status: error.response?.status || 500, data: null };
+	}
+};
+
+/**
+ * Logs out the user.
+ * @returns {Promise<{status: number, data: object}>} Response status and data.
+ */
+const UserLogout = async () => {
+	try {
+		const response = await axios.post(`${apiURL}/api/user/logout`);
+		return { status: response.status, data: response.data };
+	} catch (error) {
+		console.error("Error in UserLogout:", error.message);
+		return { status: error.response?.status || 500, data: null };
+	}
+};
+
+/**
+ * Checks if the user is authenticated.
+ * @returns {Promise<{status: number, data: object}>} Response status and data.
+ */
+const UserIsAuthenticated = async () => {
+	try {
+		const response = await axios.post(`${apiURL}/api/user/isAuthenticated`);
+		return { status: response.status, data: response.data };
+	} catch (error) {
+		console.error("Error in UserIsAuthenticated:", error.message);
+		return { status: error.response?.status || 500, data: null };
+	}
+};
+
+/**
+ * Fetches all products from the API.
+ * @returns {Promise<{data: object[] | null}>} Product data.
+ */
+const GetProducts = async () => {
+	try {
+		const response = await fetch(`${apiURL}/api/product`);
+		if (!response.ok) {
+			throw new Error(`Failed to fetch products. Status: ${response.status}`);
+		}
+		const json = await response.json();
+		return { data: json };
+	} catch (error) {
+		console.error("Error in GetProducts:", error.message);
+		return { data: null };
+	}
+};
+
+/**
+ * Deletes a product by ID.
+ * @param {string} id - Product ID.
+ * @returns {Promise<{status: number, data: object}>} Response status and data.
+ */
+const DeleteProduct = async (id) => {
+	if (!id || typeof id !== "string") {
+		console.error("Invalid product ID provided to DeleteProduct.");
+		return { status: 400, data: null };
+	}
+
+	try {
+		const response = await fetch(`${apiURL}/api/product/${id}`, {
+			method: "DELETE",
+		});
+		return { status: response.status, data: response };
+	} catch (error) {
+		console.error("Error in DeleteProduct:", error.message);
+		return { status: 500, data: null };
+	}
+};
+
+/**
+ * Fetches a product by ID.
+ * @param {string} id - Product ID.
+ * @returns {Promise<{status: number, data: object | null}>} Product data.
+ */
+const GetProductByID = async (id) => {
+	if (!id || typeof id !== "string") {
+		console.error("Invalid product ID provided to GetProductByID.");
+		return { status: 400, data: null };
+	}
+
+	try {
+		const response = await fetch(`${apiURL}/api/product/${id}`);
+		const json = await response.json();
+		return { status: response.status, data: json };
+	} catch (error) {
+		console.error("Error in GetProductByID:", error.message);
+		return { status: 500, data: null };
+	}
+};
+
+/**
+ * Fetches product options from the API.
+ * @returns {Promise<{status: number | null, data: string[] | null}>} Response status and product options.
+ */
+const GetProductOptions = async () => {
+	try {
+		const response = await fetch(`${apiURL}/api/product`);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch products. Status: ${response.status}`);
+		}
+
+		const json = await response.json();
+
+		if (!Array.isArray(json)) {
+			throw new Error("Unexpected response format. Expected an array.");
+		}
+
+		const productOptions = json
+			.filter((product) => typeof product.productname === "string")
+			.map((product) => product.productname);
+
+		return { status: response.status, data: productOptions };
+	} catch (error) {
+		console.error("Error in GetProductOptions:", error.message);
+		return { status: null, data: null };
+	}
+};
+
+/**
+ * Fetch all projects from the API.
+ * @returns {Promise<object>} - Projects data or empty array.
+ */
+const GetAllProjects = async () => fetchWithHandling("/api/project");
+
+/**
+ * Fetches projects filtered by status for a specific customer.
+ * @param {Object} params - Object containing customer and status.
+ * @param {string} params.customer - Customer name to filter projects.
+ * @param {string} params.status - Status to filter projects.
+ * @returns {Promise<{status: number, data: object[] | null}>} Response status and filtered project data.
+ */
+const GetProjectsByStatus = async ({ customer, status }) => {
+	try {
+		const response = await axios.get(`${apiURL}/api/project`);
+
+		if (response.status !== 200) {
+			throw new Error(`Failed to fetch projects. Status: ${response.status}`);
+		}
+
+		if (!Array.isArray(response.data)) {
+			throw new Error("Unexpected response format. Expected an array.");
+		}
+
+		const projects = response.data.filter(
+			(project) => project.customer === customer && project.status === status,
+		);
+
+		return { status: 200, data: projects };
+	} catch (error) {
+		console.error("Error in GetProjectsByStatus:", error.message);
+		return { status: 500, data: null };
+	}
+};
+
+/**
+ * Fetches all projects for a specific customer.
+ * @param {string} customer - Customer name to filter projects.
+ * @returns {Promise<{status: number | null, data: object[] | null}>} Response status and filtered project data.
+ */
+const GetAllProjectsByCustomer = async (customer) => {
+	try {
+		const response = await fetch(`${apiURL}/api/project`);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch projects. Status: ${response.status}`);
+		}
+
+		const json = await response.json();
+
+		if (!Array.isArray(json)) {
+			throw new Error("Unexpected response format. Expected an array.");
+		}
+
+		const projects = json.filter((project) => project.customer === customer);
+
+		return { status: response.status, data: projects };
+	} catch (error) {
+		console.error("Error in GetAllProjectsByCustomer:", error.message);
+		return { status: null, data: null };
+	}
+};
+
+/**
+ * Delete a project by ID.
+ * @param {string} id - Project ID.
+ * @returns {Promise<object>} - API response or error object.
+ */
+const DeleteProject = async (id) => apiRequest(`/api/project/${id}`, "DELETE");
+
+/**
+ * Save a new project to the API.
+ * @param {object} data - Project data to save.
+ * @returns {Promise<object>} - API response or error object.
+ */
+const SaveProject = async (data) => apiRequest("/api/project/", "POST", data);
+
+/**
+ * Update project details.
+ * @param {string} id - Project ID.
+ * @param {object} body - Updated project data.
+ * @returns {Promise<object>} - API response or error object.
+ */
+const UpdateProject = async (id, body) =>
+	apiRequest(`/api/project/${id}`, "PATCH", body);
+
+/**
+ * Fetches all rigs from the API.
+ * @returns {Promise<{status: number, data: object[]}>} Response status and rig data.
+ */
 const GetRigs = async () => {
 	try {
 		const response = await fetch(`${apiURL}/api/rig`);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch rigs. Status: ${response.status}`);
+		}
+
 		const json = await response.json();
-		return [response.status, json];
+
+		if (!Array.isArray(json)) {
+			throw new Error("Unexpected response format. Expected an array.");
+		}
+
+		return { status: response.status, data: json };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return [null];
+		console.error("Error in GetRigs:", error.message);
+		return { status: 500, data: [] };
 	}
 };
 
+/**
+ * Fetches rigs filtered by rig company name.
+ * @param {string} rigCompany - The name of the rig company to filter rigs.
+ * @returns {Promise<{status: number | null, data: object[]}>} Response status and filtered rig data.
+ */
 const GetRigsByRigCompany = async (rigCompany) => {
 	try {
+		if (!rigCompany) throw new Error("Rig company name is required.");
+
 		const response = await fetch(`${apiURL}/api/rig`);
+
+		if (!response.ok) {
+			throw new Error(`Failed to fetch rigs. Status: ${response.status}`);
+		}
+
 		const json = await response.json();
-		const rigs = json.filter((json) => json.rigcompanyname === rigCompany);
-		return [response.status, rigs];
+
+		if (!Array.isArray(json)) {
+			throw new Error("Unexpected response format. Expected an array.");
+		}
+
+		const rigs = json.filter((rig) => rig.rigcompanyname === rigCompany);
+
+		return { status: response.status, data: rigs };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return [null];
+		console.error("Error in GetRigsByRigCompany:", error.message);
+		return { status: 500, data: [] };
 	}
 };
 
+/**
+ * Deletes a rig by ID.
+ * @param {string} id - The ID of the rig to delete.
+ * @returns {Promise<{status: number, data: object | null}>} Response status and result data.
+ */
 const DeleteRig = async (id) => {
 	try {
-	const fetchString = `${apiURL}/api/rig/${id}`;
-	const response = await fetch(fetchString, {
-		method: "DELETE",
-	});
-	return [{ status: response.status, data: response }];
-} catch (error) {
-	console.error('Error:', err.message);
-	return [{ status: 500 }];
+		if (!id) throw new Error("Rig ID is required.");
+
+		const fetchString = `${apiURL}/api/rig/${id}`;
+		const response = await fetch(fetchString, {
+			method: "DELETE",
+		});
+
+		if (!response.ok) {
+			throw new Error(`Failed to delete rig. Status: ${response.status}`);
+		}
+
+		return { status: response.status, data: await response.json() };
+	} catch (error) {
+		console.error("Error in DeleteRig:", error.message);
+		return { status: 500, data: null };
 	}
 };
 
-// TODO This api call is not working properly. Not returning the filtered data.
-const GetSupplierProductsByProduct = async (
-		category,
-		product,
-	) => {
+/**
+ * Fetches supplier products filtered by category and product.
+ * @param {string} category - The product category.
+ * @param {string} product - The product name.
+ * @returns {Promise<{status: number, data: object[] | null}>} Response status and supplier product data.
+ */
+const GetSupplierProductsByProduct = async (category, product) => {
 	try {
-		const suppliers = await axios.get(`${apiURL}/api/supplierproductsview/byproduct`, {
-			category,
-			product,
-		});
-		return {status: 200, data: suppliers.data};
+		if (!category || !product) {
+			throw new Error("Category and product are required.");
+		}
+
+		const response = await axios.get(
+			`${apiURL}/api/supplierproductsview/byproduct`,
+			{
+				params: { category, product },
+			},
+		);
+
+		if (response.status !== 200) {
+			throw new Error(
+				`Failed to fetch supplier products. Status: ${response.status}`,
+			);
+		}
+
+		if (!Array.isArray(response.data)) {
+			throw new Error("Unexpected response format. Expected an array.");
+		}
+
+		return { status: 200, data: response.data };
 	} catch (error) {
-		console.error('Error:', err.message);
-		return {status: err.status, data: null};
+		console.error("Error in GetSupplierProductsByProduct:", error.message);
+		return { status: 500, data: null };
 	}
-	};
+};
 
 export {
 	GetAllFirms,
 	GetAllFirmsForSelection,
 	GetAllSuppliers,
+	GetAllRigCompanies,
 	GetAllCustomers,
 	GetAllContacts,
 	GetContactsByFirm,
