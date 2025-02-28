@@ -16,7 +16,7 @@ import { AuthContextProvider } from "./src/contexts/authContext";
 import { MenuProvider } from "react-native-popup-menu";
 
 import { createStackNavigator } from "@react-navigation/stack";
-import { StyleSheet } from "react-native";
+import { StyleSheet, Platform } from "react-native";
 // import EventListener from "./src/EventListener";
 
 import RootDrawerNavigator from "./routes/RootDrawerNavigator";
@@ -24,6 +24,7 @@ import RootDrawerNavigator from "./routes/RootDrawerNavigator";
 // import { set } from "date-fns";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { addNotificationReceivedListener, addNotificationResponseReceivedListener } from './src/utils/notification-helper';
 
 // const queryClient = new QueryClient({});
 const queryClient = new QueryClient({
@@ -137,6 +138,55 @@ const App = () => {
     setTimeout(() => {
       setHideSplashScreen(true);
     }, 1000);
+
+    let notificationReceivedSubscription;
+    let notificationResponseSubscription;
+
+    try {
+      // Set up notification listeners
+      notificationReceivedSubscription = addNotificationReceivedListener(notification => {
+        try {
+          console.log('Received notification:', notification);
+          
+          // Show toast notification
+          Toast.show({
+            type: 'info',
+            text1: notification.request.content.title || 'New Notification',
+            text2: notification.request.content.body,
+            visibilityTime: 3000,
+            autoHide: true,
+            topOffset: Platform.OS === 'android' ? 50 : 30, // Adjust for Android status bar
+          });
+        } catch (error) {
+          console.error('Error handling received notification:', error);
+        }
+      });
+
+      notificationResponseSubscription = addNotificationResponseReceivedListener(response => {
+        try {
+          console.log('Notification response:', response);
+          // Handle notification tap here if needed
+        } catch (error) {
+          console.error('Error handling notification response:', error);
+        }
+      });
+    } catch (error) {
+      console.error('Error setting up notification listeners:', error);
+    }
+
+    // Cleanup subscriptions
+    return () => {
+      try {
+        if (notificationReceivedSubscription?.remove) {
+          notificationReceivedSubscription.remove();
+        }
+        if (notificationResponseSubscription?.remove) {
+          notificationResponseSubscription.remove();
+        }
+      } catch (error) {
+        console.error('Error cleaning up notification listeners:', error);
+      }
+    };
   }, []);
 
   return (

@@ -919,7 +919,7 @@ const handleSavePasscodeModalChanges = () => {
 					<View className="flex-start justify-center items-center pt-3">
 						<TextInput
 							className={
-								"bg-green-200 relative rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-[300px] h-12 border-[1px] border-solid border-black text-black text-bold p-3 my-1 border-r-4 border-b-4 text-lg align-middle"
+								"bg-green-300 relative rounded-8xs shadow-[0px_4px_4px_rgba(0,_0,_0,_0.25)] box-border w-[300px] h-12 border-[1px] border-solid border-black text-black text-bold p-3 my-1 border-r-4 border-b-4 text-lg align-middle"
 							}
 							type="text"
 							placeholder="Service/Product"

@@ -269,40 +269,36 @@ const RequestMapping = () => {
 
 	const getProgressData = async () => {
 		const reqURL = `${apiURL}/api/progresstracker/${currentRequestId}`;
+    console.log(`ReqURL: ${reqURL}`);
 		try {
 			const response = await axios.get(reqURL);
-      if(response.data !== null) {
-        setDaAssigned(true);
-        // setSupplierUserId(GetChatId(response?.data?.supplierid));
-        setSupplierUserId(response?.data?.daid);
-        setSupplierUserName(response?.data?.daname);
-        setCurrentSupplier(response?.data?.supplier);
-      }
-      else {
-        setDaAssigned(false);
-        // Toast
-        Toast.show({
-          type: "info",
-          text1: "Workside Software",
-          text2: "No Delivery Associate Assigned!",
-          visibilityTime: 3000,
-          autoHide: true,
-        });
-      }
-			// let i = 0;
-			// while (i < 5) {
-			// 	if (response.data.step[i].date === null) stepData[i].date = "";
-			// 	else {
-			// 		stepData[i].date = response.data.step[i].date;
-			// 		setActiveStep(i + 1);
-			// 	}
-			// 	i++;
-			// }
+			
+			// Handle successful response with data
+			if (response?.data) {
+				setDaAssigned(true);
+				setSupplierUserId(response.data.daid);
+				setSupplierUserName(response.data.daname);
+				setCurrentSupplier(response.data.supplier);
+				return true;
+			}
+			
+			// Handle case when no data is found (not an error)
+			setDaAssigned(false);
+			Toast.show({
+				type: "info",
+				text1: "Workside Software",
+				text2: "No Delivery Associate Assigned!",
+				visibilityTime: 3000,
+				autoHide: true,
+			});
+			return true;
+
 		} catch (error) {
-			console.error("Error fetching progress data: ", error);
-      return false;
+			// Log error but don't treat it as fatal
+			console.log("Error fetching progress data (non-critical):", error);
+			setDaAssigned(false);
+			return true; // Continue execution even if there's an error
 		}
-		return true;
 	};
 
   const ContactSupplier = () => {

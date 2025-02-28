@@ -10,6 +10,7 @@ import {
 	StatusBar,
 	TouchableOpacity,
 	KeyboardAvoidingView,
+	Platform,
 } from "react-native";
 import { GlobalStyles } from "../GlobalStyles";
 
@@ -28,6 +29,11 @@ import {
 	heightPercentageToDP as hp,
 } from "react-native-responsive-screen";
 import * as LocalAuthentication from 'expo-local-authentication';
+import { registerForPushNotificationsAsync } from '../src/utils/notification-helper';
+import * as Notifications from 'expo-notifications';
+import {
+	GetContactIDByEmail,
+} from "../src/api/worksideAPI";
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -117,6 +123,92 @@ export default function LoginScreen({ setIsAuthenticated }) {
 				// onAuthenticate();
 			}
 		};
+	};
+
+	const registerPushNotifications = async (userId) => {
+		try {
+			console.log('Registering push notifications for user:', userId);
+			
+			// Check platform
+			if (Platform.OS === 'android') {
+				const { status: existingStatus } = await Notifications.getPermissionsAsync();
+				if (existingStatus !== 'granted') {
+					Toast.show({
+						type: 'info',
+						text1: 'Notification Permission',
+						text2: 'Please enable notifications in your device settings to receive updates.',
+						visibilityTime: 5000,
+					});
+				}
+			}
+
+			const token = await registerForPushNotificationsAsync();
+			
+			if (!token) {
+				console.log('Failed to get push token');
+				return;
+			}
+
+			console.log('Push token obtained:', token);
+
+			try {
+				// Check if contact already has this token
+				const contactResponse = await fetch(`${apiURL}/api/contact/${userId}`, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
+
+				if (!contactResponse.ok) {
+					throw new Error(`Failed to fetch contact details: ${contactResponse.status}`);
+				}
+
+				const contactData = await contactResponse.json();
+				
+				// Only update if token is different
+				if (contactData.pushToken !== token) {
+					console.log('Updating contact with new push token');
+					
+					const updateResponse = await fetch(`${apiURL}/api/contact/pushtoken/${userId}`, {
+						method: 'PATCH',
+						headers: {
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ pushToken: token }),
+					});
+
+					if (!updateResponse.ok) {
+						throw new Error(`Failed to update push token: ${updateResponse.status}`);
+					}
+
+					const result = await updateResponse.json();
+					console.log('Push token update result:', result);
+				} else {
+					console.log('Contact already has current push token');
+				}
+			} catch (error) {
+				console.error('API Error:', error);
+				if (!error.message.includes('Failed to fetch')) {
+					Toast.show({
+						type: 'error',
+						text1: 'Server Error',
+						text2: 'Failed to update notification settings',
+						visibilityTime: 3000,
+					});
+				}
+			}
+		} catch (error) {
+			console.error('Error registering push notifications:', error);
+			Toast.show({
+				type: 'error',
+				text1: 'Notification Error',
+				text2: Platform.OS === 'ios' 
+					? 'Please check your notification permissions'
+					: 'Failed to register for notifications',
+				visibilityTime: 3000,
+			});
+		}
 	};
 
 	const handleLogin = async (event) => {
@@ -256,8 +348,16 @@ export default function LoginScreen({ setIsAuthenticated }) {
 			if (password !== null) await AsyncStorage.setItem("password", password);
 			if (response.user.userId !== null)
 				await AsyncStorage.setItem("userId", response.user.userId);
+
+			// Register push notifications after successful login
+			if (response.user.userId) {
+				const result  = await GetContactIDByEmail(response.user.email);
+				const contactUserId = result.data;
+				await registerPushNotifications(contactUserId);
+			}
 			// Navigate to the Home page
 			navigation.navigate("RootDrawer");
+
 		}
 	};
 

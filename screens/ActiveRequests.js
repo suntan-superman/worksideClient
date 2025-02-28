@@ -196,6 +196,17 @@ const ActiveRequests = () => {
 				textColor= "text-white";
 				buttonText = "POSTPONED";
 			}
+		else if( props.selectedItem.status === "SSR-REQ" )
+		{
+			buttonColor = "bg-blue-200";
+			buttonText = "SSR-REQ";
+		}
+		else if( props.selectedItem.status === "SSR-ACCEPTED" )
+		{
+			buttonColor = "bg-green-800";
+			textColor= "text-white";
+			buttonText = "SSR-ACCEPTED";
+		}
 		else // COMPLETED
 		{
 			buttonColor = "bg-black-500";

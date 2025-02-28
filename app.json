@@ -7,7 +7,7 @@
     "icon": "./assets/worksideIcon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/worksideIcon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -31,13 +31,21 @@
         {
           "faceIDPermission": "Allow Workside Software to use Face ID."
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/worksideIcon.png",
+          "color": "#ffffff"
+        }
       ]
     ],
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
         "UIBackgroundModes": [
-          "location"
+          "location",
+          "remote-notification"
         ],
         "LSMinimumSystemVersion": "12.0",
         "ITSAppUsesNonExemptEncryption": false,
@@ -51,7 +59,7 @@
         "googleMapsApiKey": "AIzaSyBsK1utYDK9o1MR2RsnTobmJW7PVLHp6B4"
       },
       "bundleIdentifier": "com.sjroy5.worksideclient",
-      "buildNumber": "1.1.108"
+      "buildNumber": "1.1.120"
     },
     "android": {
       "adaptiveIcon": {
@@ -66,10 +74,11 @@
       "permissions": [
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION"
+        "ACCESS_BACKGROUND_LOCATION",
+        "NOTIFICATIONS"
       ],
       "package": "com.sjroy5.worksideclient",
-      "versionCode": 37
+      "versionCode": 41
     },
     "web": {
       "favicon": "./assets/favicon.png"
